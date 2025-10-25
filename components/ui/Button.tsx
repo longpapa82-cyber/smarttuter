@@ -1,3 +1,5 @@
+"use client";
+
 import { ButtonHTMLAttributes, ReactNode } from "react";
 import { motion } from "framer-motion";
 
@@ -37,13 +39,16 @@ export function Button({
   } ${className}`;
 
   return (
-    <motion.button
+    <motion.div
       whileHover={!disabled && !isLoading ? { scale: 1.05 } : {}}
       whileTap={!disabled && !isLoading ? { scale: 0.95 } : {}}
-      className={combinedClassName}
-      disabled={disabled || isLoading}
-      {...props}
+      className="inline-block"
     >
+      <button
+        className={combinedClassName}
+        disabled={disabled || isLoading}
+        {...props}
+      >
       {isLoading ? (
         <>
           <svg
@@ -71,6 +76,7 @@ export function Button({
       ) : (
         children
       )}
-    </motion.button>
+      </button>
+    </motion.div>
   );
 }

@@ -64,9 +64,9 @@ export default function Home() {
                 >
                   무료로 시작하기 →
                 </Link>
-                <button className="px-8 py-4 bg-white border-2 border-gray-200 text-gray-700 rounded-full font-semibold text-lg hover:border-primary-500 hover:text-primary-600 transition-all text-center">
+                <a href="#how-it-works" className="px-8 py-4 bg-white border-2 border-gray-200 text-gray-700 rounded-full font-semibold text-lg hover:border-primary-500 hover:text-primary-600 transition-all text-center">
                   데모 영상 보기 ▶
-                </button>
+                </a>
               </div>
 
               <div className="flex items-center space-x-8 pt-4">

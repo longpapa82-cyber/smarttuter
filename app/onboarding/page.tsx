@@ -153,18 +153,20 @@ export default function OnboardingPage() {
 
               <div className="grid md:grid-cols-2 gap-6">
                 {gradeLevels.map((grade, index) => (
-                  <motion.button
+                  <motion.div
                     key={grade.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    onClick={() => setSelectedGrade(grade.id)}
-                    className={`p-8 rounded-2xl border-2 transition-all text-left ${
-                      selectedGrade === grade.id
-                        ? "border-primary-500 bg-primary-50 shadow-xl scale-105"
-                        : "border-gray-200 bg-white hover:border-primary-300 hover:shadow-lg"
-                    }`}
                   >
+                    <button
+                      onClick={() => setSelectedGrade(grade.id)}
+                      className={`w-full p-8 rounded-2xl border-2 transition-all text-left ${
+                        selectedGrade === grade.id
+                          ? "border-primary-500 bg-primary-50 shadow-xl scale-105"
+                          : "border-gray-200 bg-white hover:border-primary-300 hover:shadow-lg"
+                      }`}
+                    >
                     <div className="flex items-start space-x-4">
                       <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${grade.color} flex items-center justify-center text-3xl`}>
                         {grade.icon}
@@ -183,7 +185,8 @@ export default function OnboardingPage() {
                         </motion.div>
                       )}
                     </div>
-                  </motion.button>
+                    </button>
+                  </motion.div>
                 ))}
               </div>
             </motion.div>
@@ -217,18 +220,20 @@ export default function OnboardingPage() {
                 {subjects.map((subject, index) => {
                   const Icon = subject.icon;
                   return (
-                    <motion.button
+                    <motion.div
                       key={subject.id}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
-                      onClick={() => setSelectedSubject(subject.id)}
-                      className={`p-8 rounded-2xl border-2 transition-all text-left ${
-                        selectedSubject === subject.id
-                          ? "border-secondary-500 bg-secondary-50 shadow-xl scale-105"
-                          : "border-gray-200 bg-white hover:border-secondary-300 hover:shadow-lg"
-                      }`}
                     >
+                      <button
+                        onClick={() => setSelectedSubject(subject.id)}
+                        className={`w-full p-8 rounded-2xl border-2 transition-all text-left ${
+                          selectedSubject === subject.id
+                            ? "border-secondary-500 bg-secondary-50 shadow-xl scale-105"
+                            : "border-gray-200 bg-white hover:border-secondary-300 hover:shadow-lg"
+                        }`}
+                      >
                       <div className="space-y-4">
                         <div className="flex items-start justify-between">
                           <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${subject.color} flex items-center justify-center text-white`}>
@@ -259,7 +264,8 @@ export default function OnboardingPage() {
                           </div>
                         </div>
                       </div>
-                    </motion.button>
+                      </button>
+                    </motion.div>
                   );
                 })}
               </div>
@@ -309,15 +315,18 @@ export default function OnboardingPage() {
                 </div>
               </div>
 
-              <motion.button
+              <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={handleStart}
-                className="px-12 py-5 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-full font-bold text-xl shadow-2xl hover:shadow-3xl transition-all inline-flex items-center space-x-2"
               >
-                <span>학습 시작하기</span>
-                <Sparkles className="w-6 h-6" />
-              </motion.button>
+                <button
+                  onClick={handleStart}
+                  className="px-12 py-5 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-full font-bold text-xl shadow-2xl hover:shadow-3xl transition-all inline-flex items-center space-x-2"
+                >
+                  <span>학습 시작하기</span>
+                  <Sparkles className="w-6 h-6" />
+                </button>
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -325,35 +334,41 @@ export default function OnboardingPage() {
         {/* Navigation Buttons */}
         {step < 3 && (
           <div className="flex justify-between mt-12">
-            <motion.button
+            <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={handleBack}
-              disabled={step === 1}
-              className={`px-8 py-3 rounded-full font-semibold transition-all inline-flex items-center space-x-2 ${
-                step === 1
-                  ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                  : "bg-white border-2 border-gray-300 text-gray-700 hover:border-primary-500"
-              }`}
             >
-              <ArrowLeft className="w-5 h-5" />
-              <span>이전</span>
-            </motion.button>
+              <button
+                onClick={handleBack}
+                disabled={step === 1}
+                className={`px-8 py-3 rounded-full font-semibold transition-all inline-flex items-center space-x-2 ${
+                  step === 1
+                    ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                    : "bg-white border-2 border-gray-300 text-gray-700 hover:border-primary-500"
+                }`}
+              >
+                <ArrowLeft className="w-5 h-5" />
+                <span>이전</span>
+              </button>
+            </motion.div>
 
-            <motion.button
+            <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={handleNext}
-              disabled={(step === 1 && !selectedGrade) || (step === 2 && !selectedSubject)}
-              className={`px-8 py-3 rounded-full font-semibold transition-all inline-flex items-center space-x-2 ${
+            >
+              <button
+                onClick={handleNext}
+                disabled={(step === 1 && !selectedGrade) || (step === 2 && !selectedSubject)}
+                className={`px-8 py-3 rounded-full font-semibold transition-all inline-flex items-center space-x-2 ${
                 (step === 1 && !selectedGrade) || (step === 2 && !selectedSubject)
                   ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                   : "bg-gradient-to-r from-primary-500 to-secondary-500 text-white hover:shadow-xl"
               }`}
-            >
-              <span>다음</span>
-              <ArrowRight className="w-5 h-5" />
-            </motion.button>
+              >
+                <span>다음</span>
+                <ArrowRight className="w-5 h-5" />
+              </button>
+            </motion.div>
           </div>
         )}
       </div>
