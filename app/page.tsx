@@ -46,13 +46,13 @@ export default function Home() {
                 </span>
               </div>
 
-              <h1 className="text-5xl lg:text-6xl font-bold leading-tight">
+              <h1 className="text-5xl lg:text-6xl font-bold leading-tight text-gray-900">
                 당신만의 AI 튜터와
                 <br />
                 <span className="gradient-text">스마트하게 학습하세요</span>
               </h1>
 
-              <p className="text-xl text-gray-600 leading-relaxed">
+              <p className="text-xl text-gray-700 leading-relaxed">
                 초등학교부터 대학교까지, 수학과 영어를 실시간 음성 및 채팅으로 배우는
                 차세대 학습 플랫폼입니다.
               </p>
@@ -146,8 +146,8 @@ export default function Home() {
               <div className="w-16 h-16 bg-primary-500 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform">
                 🎙️
               </div>
-              <h3 className="text-2xl font-bold mb-3">실시간 음성 대화</h3>
-              <p className="text-gray-600 leading-relaxed">
+              <h3 className="text-2xl font-bold mb-3 text-gray-900">실시간 음성 대화</h3>
+              <p className="text-gray-700 leading-relaxed">
                 자연스러운 음성 대화로 영어 회화를 연습하고 발음 교정을 받으세요.
                 저지연 음성 인식 기술로 실시간 피드백을 제공합니다.
               </p>
@@ -158,8 +158,8 @@ export default function Home() {
               <div className="w-16 h-16 bg-secondary-500 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform">
                 📐
               </div>
-              <h3 className="text-2xl font-bold mb-3">수학 문제 풀이</h3>
-              <p className="text-gray-600 leading-relaxed">
+              <h3 className="text-2xl font-bold mb-3 text-gray-900">수학 문제 풀이</h3>
+              <p className="text-gray-700 leading-relaxed">
                 문제를 촬영하거나 입력하면 단계별 풀이 과정을 설명해드립니다.
                 개념 이해부터 응용까지 체계적으로 학습하세요.
               </p>
@@ -170,8 +170,8 @@ export default function Home() {
               <div className="w-16 h-16 bg-accent-500 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform">
                 🎯
               </div>
-              <h3 className="text-2xl font-bold mb-3">맞춤형 학습</h3>
-              <p className="text-gray-600 leading-relaxed">
+              <h3 className="text-2xl font-bold mb-3 text-gray-900">맞춤형 학습</h3>
+              <p className="text-gray-700 leading-relaxed">
                 학교급과 현재 수준에 맞는 개인화된 학습 경로를 제공합니다.
                 AI가 취약점을 분석하고 최적의 학습 콘텐츠를 추천합니다.
               </p>
@@ -182,8 +182,8 @@ export default function Home() {
               <div className="w-16 h-16 bg-green-500 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform">
                 📊
               </div>
-              <h3 className="text-2xl font-bold mb-3">학습 분석 리포트</h3>
-              <p className="text-gray-600 leading-relaxed">
+              <h3 className="text-2xl font-bold mb-3 text-gray-900">학습 분석 리포트</h3>
+              <p className="text-gray-700 leading-relaxed">
                 일일, 주간, 월간 학습 리포트로 성장을 확인하세요.
                 시각화된 데이터로 학습 패턴과 향상도를 한눈에 파악합니다.
               </p>
@@ -194,8 +194,8 @@ export default function Home() {
               <div className="w-16 h-16 bg-pink-500 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform">
                 🏆
               </div>
-              <h3 className="text-2xl font-bold mb-3">게이미피케이션</h3>
-              <p className="text-gray-600 leading-relaxed">
+              <h3 className="text-2xl font-bold mb-3 text-gray-900">게이미피케이션</h3>
+              <p className="text-gray-700 leading-relaxed">
                 레벨 시스템, 배지, 학습 스트릭으로 동기부여를 유지하세요.
                 재미있게 학습하면서 목표를 달성하세요.
               </p>
@@ -206,8 +206,8 @@ export default function Home() {
               <div className="w-16 h-16 bg-orange-500 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform">
                 ⚡
               </div>
-              <h3 className="text-2xl font-bold mb-3">즉각적인 피드백</h3>
-              <p className="text-gray-600 leading-relaxed">
+              <h3 className="text-2xl font-bold mb-3 text-gray-900">즉각적인 피드백</h3>
+              <p className="text-gray-700 leading-relaxed">
                 질문에 대한 즉시 답변과 정확한 설명을 제공합니다.
                 24/7 언제든지 학습할 수 있는 AI 튜터가 대기 중입니다.
               </p>
@@ -233,8 +233,8 @@ export default function Home() {
               <div className="w-20 h-20 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center text-white text-3xl font-bold mx-auto mb-6">
                 1
               </div>
-              <h3 className="text-2xl font-bold mb-4">학교급 및 과목 선택</h3>
-              <p className="text-gray-600">
+              <h3 className="text-2xl font-bold mb-4 text-gray-900">학교급 및 과목 선택</h3>
+              <p className="text-gray-700">
                 초등학교부터 대학교까지 학교급을 선택하고,
                 수학 또는 영어 과목을 선택하세요.
               </p>
@@ -244,8 +244,8 @@ export default function Home() {
               <div className="w-20 h-20 bg-gradient-to-br from-secondary-500 to-accent-500 rounded-full flex items-center justify-center text-white text-3xl font-bold mx-auto mb-6">
                 2
               </div>
-              <h3 className="text-2xl font-bold mb-4">AI 튜터와 대화</h3>
-              <p className="text-gray-600">
+              <h3 className="text-2xl font-bold mb-4 text-gray-900">AI 튜터와 대화</h3>
+              <p className="text-gray-700">
                 음성 또는 채팅으로 질문하고,
                 AI 튜터의 맞춤형 설명을 받으세요.
               </p>
@@ -255,8 +255,8 @@ export default function Home() {
               <div className="w-20 h-20 bg-gradient-to-br from-accent-500 to-primary-500 rounded-full flex items-center justify-center text-white text-3xl font-bold mx-auto mb-6">
                 3
               </div>
-              <h3 className="text-2xl font-bold mb-4">성장 확인</h3>
-              <p className="text-gray-600">
+              <h3 className="text-2xl font-bold mb-4 text-gray-900">성장 확인</h3>
+              <p className="text-gray-700">
                 학습 리포트로 진도와 향상도를 확인하고,
                 다음 학습 목표를 설정하세요.
               </p>

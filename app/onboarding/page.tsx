@@ -172,8 +172,8 @@ export default function OnboardingPage() {
                         {grade.icon}
                       </div>
                       <div className="flex-1">
-                        <h3 className="text-2xl font-bold mb-2">{grade.name}</h3>
-                        <p className="text-gray-600">{grade.description}</p>
+                        <h3 className="text-2xl font-bold mb-2 text-gray-900">{grade.name}</h3>
+                        <p className="text-gray-700">{grade.description}</p>
                       </div>
                       {selectedGrade === grade.id && (
                         <motion.div
@@ -250,8 +250,8 @@ export default function OnboardingPage() {
                           )}
                         </div>
                         <div>
-                          <h3 className="text-2xl font-bold mb-2">{subject.name}</h3>
-                          <p className="text-gray-600 mb-4">{subject.description}</p>
+                          <h3 className="text-2xl font-bold mb-2 text-gray-900">{subject.name}</h3>
+                          <p className="text-gray-700 mb-4">{subject.description}</p>
                           <div className="flex flex-wrap gap-2">
                             {subject.features.map((feature) => (
                               <span
@@ -298,17 +298,17 @@ export default function OnboardingPage() {
               </div>
 
               <div className="max-w-md mx-auto p-8 bg-white rounded-2xl shadow-xl space-y-6">
-                <h3 className="text-xl font-bold">선택한 정보</h3>
+                <h3 className="text-xl font-bold text-gray-900">선택한 정보</h3>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                    <span className="text-gray-600">학교급</span>
-                    <span className="font-bold">
+                    <span className="text-gray-700">학교급</span>
+                    <span className="font-bold text-gray-900">
                       {gradeLevels.find((g) => g.id === selectedGrade)?.name}
                     </span>
                   </div>
                   <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                    <span className="text-gray-600">과목</span>
-                    <span className="font-bold">
+                    <span className="text-gray-700">과목</span>
+                    <span className="font-bold text-gray-900">
                       {subjects.find((s) => s.id === selectedSubject)?.name}
                     </span>
                   </div>
