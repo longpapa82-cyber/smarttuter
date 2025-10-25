@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Bot, User } from "lucide-react";
+import { Bot, User, Sparkles } from "lucide-react";
 import { MathRenderer, containsMath } from "./MathRenderer";
 
 interface ChatMessageProps {
@@ -16,22 +16,41 @@ export function ChatMessage({ role, content, timestamp }: ChatMessageProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className={`flex gap-3 ${isUser ? "flex-row-reverse" : "flex-row"} mb-4`}
+      className={`flex gap-4 ${isUser ? "flex-row-reverse" : "flex-row"} mb-6`}
     >
-      {/* Avatar */}
-      <div
-        className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+      {/* Avatar - Enhanced for AI tutor */}
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.4, type: "spring", bounce: 0.4 }}
+        className={`flex-shrink-0 ${isUser ? "w-12 h-12" : "w-16 h-16"} rounded-2xl flex items-center justify-center relative ${
           isUser
-            ? "bg-gradient-to-br from-primary-500 to-secondary-500"
-            : "bg-gradient-to-br from-accent-500 to-primary-500"
+            ? "bg-gradient-to-br from-primary-500 to-secondary-500 shadow-md"
+            : "bg-gradient-to-br from-purple-500 via-pink-500 to-blue-500 shadow-lg"
         }`}
       >
-        {isUser ? (
-          <User className="w-6 h-6 text-white" />
-        ) : (
-          <Bot className="w-6 h-6 text-white" />
+        {!isUser && (
+          <motion.div
+            animate={{
+              scale: [1, 1.2, 1],
+              rotate: [0, 5, -5, 0],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              repeatType: "reverse",
+            }}
+            className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center"
+          >
+            <Sparkles className="w-3 h-3 text-white" />
+          </motion.div>
         )}
-      </div>
+        {isUser ? (
+          <User className="w-7 h-7 text-white" />
+        ) : (
+          <div className="text-3xl">🤖</div>
+        )}
+      </motion.div>
 
       {/* Message Bubble */}
       <div className={`flex flex-col ${isUser ? "items-end" : "items-start"} max-w-[70%]`}>
