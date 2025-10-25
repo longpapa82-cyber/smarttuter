@@ -230,7 +230,7 @@ export default function EnglishTutorPage() {
                   👤
                 </div>
                 <div>
-                  <div className="font-semibold">학습자</div>
+                  <div className="font-semibold" style={{ color: '#111827' }}>학습자</div>
                   <div className="text-sm" style={{ color: '#4B5563' }}>{gradeLevel}</div>
                 </div>
               </div>
@@ -240,7 +240,7 @@ export default function EnglishTutorPage() {
             <Card>
               <div className="flex items-center space-x-2 mb-4">
                 <BookOpen className="w-5 h-5 text-accent-600" />
-                <h3 className="font-bold">Learning Tips</h3>
+                <h3 className="font-bold" style={{ color: '#111827' }}>Learning Tips</h3>
               </div>
               <ul className="space-y-2 text-sm" style={{ color: '#4B5563' }}>
                 <li>• Practice speaking naturally</li>
@@ -254,7 +254,7 @@ export default function EnglishTutorPage() {
             <Card>
               <div className="flex items-center space-x-2 mb-4">
                 <BarChart3 className="w-5 h-5 text-secondary-600" />
-                <h3 className="font-bold">Today&apos;s Practice</h3>
+                <h3 className="font-bold" style={{ color: '#111827' }}>Today&apos;s Practice</h3>
               </div>
               <div className="space-y-3">
                 <div>
@@ -277,7 +277,7 @@ export default function EnglishTutorPage() {
 
             {/* Conversation Starters */}
             <Card>
-              <h3 className="font-bold mb-4">Start a Conversation</h3>
+              <h3 className="font-bold mb-4" style={{ color: '#111827' }}>Start a Conversation</h3>
               <div className="space-y-2">
                 {[
                   "Tell me about your day",
@@ -306,7 +306,7 @@ export default function EnglishTutorPage() {
                 <Card className="bg-gradient-to-r from-accent-500 to-primary-500 text-white">
                   <div className="flex items-center space-x-2 mb-2">
                     <Mic className="w-5 h-5" />
-                    <h3 className="font-bold">Voice Mode Active</h3>
+                    <h3 className="font-bold" style={{ color: '#111827' }}>Voice Mode Active</h3>
                   </div>
                   <p className="text-sm opacity-90">
                     Feature coming in Phase 2!

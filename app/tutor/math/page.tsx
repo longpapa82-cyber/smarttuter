@@ -204,7 +204,7 @@ export default function MathTutorPage() {
                   👤
                 </div>
                 <div>
-                  <div className="font-semibold">학습자</div>
+                  <div className="font-semibold" style={{ color: '#111827' }}>학습자</div>
                   <div className="text-sm" style={{ color: '#4B5563' }}>{gradeLevel}</div>
                 </div>
               </div>
@@ -214,7 +214,7 @@ export default function MathTutorPage() {
             <Card>
               <div className="flex items-center space-x-2 mb-4">
                 <BookOpen className="w-5 h-5 text-primary-600" />
-                <h3 className="font-bold">학습 팁</h3>
+                <h3 className="font-bold" style={{ color: '#111827' }}>학습 팁</h3>
               </div>
               <ul className="space-y-2 text-sm" style={{ color: '#4B5563' }}>
                 <li>• 모르는 개념은 언제든 질문하세요</li>
@@ -228,7 +228,7 @@ export default function MathTutorPage() {
             <Card>
               <div className="flex items-center space-x-2 mb-4">
                 <BarChart3 className="w-5 h-5 text-secondary-600" />
-                <h3 className="font-bold">오늘의 학습</h3>
+                <h3 className="font-bold" style={{ color: '#111827' }}>오늘의 학습</h3>
               </div>
               <div className="space-y-3">
                 <div>
@@ -251,7 +251,7 @@ export default function MathTutorPage() {
 
             {/* Suggested Topics */}
             <Card>
-              <h3 className="font-bold mb-4">추천 학습 주제</h3>
+              <h3 className="font-bold mb-4" style={{ color: '#111827' }}>추천 학습 주제</h3>
               <div className="space-y-2">
                 {[
                   "분수의 덧셈과 뺄셈",

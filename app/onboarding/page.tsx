@@ -257,6 +257,7 @@ export default function OnboardingPage() {
                               <span
                                 key={feature}
                                 className="px-3 py-1 bg-white border border-gray-200 rounded-full text-sm"
+                                style={{ color: '#111827' }}
                               >
                                 {feature}
                               </span>

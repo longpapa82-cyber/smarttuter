@@ -172,11 +172,11 @@ export default function ReportPage() {
 
             {/* Subject Breakdown */}
             <Card className="p-6">
-              <h3 className="text-xl font-bold mb-6">과목별 학습 시간</h3>
+              <h3 className="text-xl font-bold mb-6" style={{ color: '#111827' }}>과목별 학습 시간</h3>
               <div className="grid md:grid-cols-2 gap-8">
                 <div>
                   <div className="flex justify-between items-center mb-2">
-                    <span className="font-semibold">수학</span>
+                    <span className="font-semibold" style={{ color: '#111827' }}>수학</span>
                     <span className="text-primary-600 font-bold">
                       {todayReport.subjectBreakdown.math}분
                     </span>
@@ -197,7 +197,7 @@ export default function ReportPage() {
 
                 <div>
                   <div className="flex justify-between items-center mb-2">
-                    <span className="font-semibold">영어</span>
+                    <span className="font-semibold" style={{ color: '#111827' }}>영어</span>
                     <span className="text-accent-600 font-bold">
                       {todayReport.subjectBreakdown.english}분
                     </span>
@@ -220,7 +220,7 @@ export default function ReportPage() {
 
             {/* Session List */}
             <Card className="p-6">
-              <h3 className="text-xl font-bold mb-6">오늘의 학습 세션</h3>
+              <h3 className="text-xl font-bold mb-6" style={{ color: '#111827' }}>오늘의 학습 세션</h3>
               {todayReport.sessions.length > 0 ? (
                 <div className="space-y-4">
                   {todayReport.sessions.map((session) => (
@@ -277,7 +277,7 @@ export default function ReportPage() {
             {/* Weekly Summary */}
             <div className="grid md:grid-cols-3 gap-6">
               <Card className="p-6 col-span-2">
-                <h3 className="text-xl font-bold mb-6">주간 학습 시간 추이</h3>
+                <h3 className="text-xl font-bold mb-6" style={{ color: '#111827' }}>주간 학습 시간 추이</h3>
                 <WeeklyChart dailyReports={weeklyReport.dailyReports} />
               </Card>
 
@@ -310,7 +310,7 @@ export default function ReportPage() {
 
             {/* Performance Gauge */}
             <Card className="p-6">
-              <h3 className="text-xl font-bold mb-6">주간 평균 성과</h3>
+              <h3 className="text-xl font-bold mb-6" style={{ color: '#111827' }}>주간 평균 성과</h3>
               <div className="flex justify-center">
                 <PerformanceGauge
                   score={
@@ -333,7 +333,7 @@ export default function ReportPage() {
               <Card className="p-6">
                 <div className="flex items-center space-x-2 mb-4">
                   <Award className="w-6 h-6 text-green-500" />
-                  <h3 className="text-xl font-bold">강점</h3>
+                  <h3 className="text-xl font-bold" style={{ color: '#111827' }}>강점</h3>
                 </div>
                 <ul className="space-y-3">
                   {weeklyReport.strengths.map((strength, index) => (
@@ -351,7 +351,7 @@ export default function ReportPage() {
               <Card className="p-6">
                 <div className="flex items-center space-x-2 mb-4">
                   <Target className="w-6 h-6 text-orange-500" />
-                  <h3 className="text-xl font-bold">개선 영역</h3>
+                  <h3 className="text-xl font-bold" style={{ color: '#111827' }}>개선 영역</h3>
                 </div>
                 <ul className="space-y-3">
                   {weeklyReport.weaknesses.map((weakness, index) => (
@@ -371,7 +371,7 @@ export default function ReportPage() {
             <Card className="p-6">
               <div className="flex items-center space-x-2 mb-4">
                 <Lightbulb className="w-6 h-6 text-yellow-500" />
-                <h3 className="text-xl font-bold">학습 추천</h3>
+                <h3 className="text-xl font-bold" style={{ color: '#111827' }}>학습 추천</h3>
               </div>
               <ul className="space-y-3">
                 {weeklyReport.recommendations.map((rec, index) => (
