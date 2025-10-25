@@ -40,6 +40,8 @@ export default function MathTutorPage() {
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [autoSpeak, setAutoSpeak] = useState(true);
   const [currentSession, setCurrentSession] = useState<LearningSession | null>(null);
+  const [currentImage, setCurrentImage] = useState<string | null>(null);
+  const [currentImageFile, setCurrentImageFile] = useState<File | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Speech recognition hook (Korean)
@@ -236,10 +238,155 @@ export default function MathTutorPage() {
     }
   };
 
+  const handleImageSelect = (file: File, preview: string) => {
+    setCurrentImage(preview);
+    setCurrentImageFile(file);
+  };
+
+  const handleImageRemove = () => {
+    setCurrentImage(null);
+    setCurrentImageFile(null);
+  };
+
   const handleImageUpload = (file: File) => {
-    // TODO: Implement image upload for math problems
-    console.log("Image uploaded:", file);
-    alert("이미지 업로드 기능은 곧 제공될 예정입니다!");
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const preview = e.target?.result as string;
+      handleImageSelect(file, preview);
+      // Automatically submit the image
+      setTimeout(() => handleImageSubmit(), 100);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleImageSubmit = async () => {
+    if (!currentImage) return;
+
+    // Add user message with image
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: "user",
+      content: "[📷 이미지 업로드] 수학 문제 이미지를 업로드했습니다.",
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+
+    // Update current session
+    if (currentSession) {
+      setCurrentSession({
+        ...currentSession,
+        messages: [...currentSession.messages, userMessage],
+      });
+    }
+
+    setIsLoading(true);
+
+    // Create assistant message placeholder
+    const assistantMessageId = (Date.now() + 1).toString();
+    const assistantMessage: Message = {
+      id: assistantMessageId,
+      role: "assistant",
+      content: "",
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, assistantMessage]);
+
+    try {
+      // Call Vision API
+      const response = await fetch("/api/chat/vision", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          imageData: currentImage,
+          gradeLevel,
+          conversationHistory: messages.map((m) => ({
+            role: m.role,
+            content: m.content,
+          })),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to analyze image");
+      }
+
+      // Handle streaming response
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (!reader) {
+        throw new Error("No response body");
+      }
+
+      let accumulatedText = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        const lines = chunk.split("\n");
+
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            const data = line.slice(6);
+
+            if (data === "[DONE]") {
+              break;
+            }
+
+            try {
+              const json = JSON.parse(data);
+              if (json.text) {
+                accumulatedText += json.text;
+
+                // Update message in real-time
+                setMessages((prev) =>
+                  prev.map((msg) =>
+                    msg.id === assistantMessageId
+                      ? { ...msg, content: accumulatedText }
+                      : msg
+                  )
+                );
+              }
+            } catch (e) {
+              console.error("JSON parse error:", e);
+            }
+          }
+        }
+      }
+
+      // Clear image after successful submission
+      setCurrentImage(null);
+      setCurrentImageFile(null);
+
+      // Auto-speak response in voice mode
+      if (autoSpeak && isVoiceMode && accumulatedText) {
+        speak(accumulatedText);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+
+      // Update with error message
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === assistantMessageId
+            ? {
+                ...msg,
+                content:
+                  "죄송합니다. 이미지 분석 중 오류가 발생했습니다. 다시 시도해주세요.",
+              }
+            : msg
+        )
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleVoiceStart = () => {
