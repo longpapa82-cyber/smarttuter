@@ -244,7 +244,7 @@ export default function EnglishTutorPage() {
               </div>
               <ul className="space-y-2 text-sm text-gray-600">
                 <li>• Practice speaking naturally</li>
-                <li>• Don't be afraid to make mistakes</li>
+                <li>• Don&apos;t be afraid to make mistakes</li>
                 <li>• Ask for pronunciation help</li>
                 <li>• Use English as much as possible</li>
               </ul>
@@ -254,7 +254,7 @@ export default function EnglishTutorPage() {
             <Card>
               <div className="flex items-center space-x-2 mb-4">
                 <BarChart3 className="w-5 h-5 text-secondary-600" />
-                <h3 className="font-bold">Today's Practice</h3>
+                <h3 className="font-bold">Today&apos;s Practice</h3>
               </div>
               <div className="space-y-3">
                 <div>

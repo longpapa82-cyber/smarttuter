@@ -4,9 +4,6 @@
   "installCommand": "npm install",
   "framework": "nextjs",
   "regions": ["icn1"],
-  "env": {
-    "ANTHROPIC_API_KEY": "@anthropic_api_key"
-  },
   "build": {
     "env": {
       "NEXT_PUBLIC_APP_URL": "https://smarttuter.vercel.app"
