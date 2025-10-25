@@ -14,13 +14,13 @@ export default function Home() {
               <span className="text-2xl font-bold gradient-text">SmartTuter</span>
             </div>
             <div className="hidden md:flex items-center space-x-8">
-              <a href="#features" className="text-gray-700 hover:text-primary-600 font-medium">
+              <a href="#features" className="font-medium hover:text-primary-600" style={{ color: '#374151' }}>
                 기능
               </a>
-              <a href="#how-it-works" className="text-gray-700 hover:text-primary-600 font-medium">
+              <a href="#how-it-works" className="font-medium hover:text-primary-600" style={{ color: '#374151' }}>
                 사용방법
               </a>
-              <a href="#pricing" className="text-gray-700 hover:text-primary-600 font-medium">
+              <a href="#pricing" className="font-medium hover:text-primary-600" style={{ color: '#374151' }}>
                 요금
               </a>
               <Link
@@ -46,13 +46,13 @@ export default function Home() {
                 </span>
               </div>
 
-              <h1 className="text-5xl lg:text-6xl font-bold leading-tight text-gray-900">
+              <h1 className="text-5xl lg:text-6xl font-bold leading-tight" style={{ color: '#111827' }}>
                 당신만의 AI 튜터와
                 <br />
                 <span className="gradient-text">스마트하게 학습하세요</span>
               </h1>
 
-              <p className="text-xl text-gray-700 leading-relaxed">
+              <p className="text-xl leading-relaxed" style={{ color: '#374151' }}>
                 초등학교부터 대학교까지, 수학과 영어를 실시간 음성 및 채팅으로 배우는
                 차세대 학습 플랫폼입니다.
               </p>
