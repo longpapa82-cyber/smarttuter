@@ -289,6 +289,7 @@ export default function EnglishTutorPage() {
                     key={starter}
                     onClick={() => handleSendMessage(starter)}
                     className="w-full text-left px-3 py-2 bg-gray-50 hover:bg-accent-50 rounded-lg text-sm transition-colors"
+                    style={{ color: '#111827' }}
                   >
                     {starter}
                   </button>

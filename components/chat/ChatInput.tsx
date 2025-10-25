@@ -84,6 +84,7 @@ export function ChatInput({
             style={{
               minHeight: "48px",
               maxHeight: "120px",
+              color: "#111827",
             }}
           />
         </div>

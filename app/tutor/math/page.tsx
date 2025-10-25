@@ -263,6 +263,7 @@ export default function MathTutorPage() {
                     key={topic}
                     onClick={() => handleSendMessage(`${topic}에 대해 설명해줘`)}
                     className="w-full text-left px-3 py-2 bg-gray-50 hover:bg-primary-50 rounded-lg text-sm transition-colors"
+                    style={{ color: '#111827' }}
                   >
                     {topic}
                   </button>
