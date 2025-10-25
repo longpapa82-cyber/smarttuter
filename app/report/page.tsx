@@ -242,7 +242,7 @@ export default function ReportPage() {
                           <div className="font-semibold">
                             {session.subject === "math" ? "수학" : "영어"}
                           </div>
-                          <div className="text-sm text-gray-600">
+                          <div className="text-sm" style={{ color: '#4B5563' }}>
                             {new Date(session.startTime).toLocaleTimeString("ko-KR", {
                               hour: "2-digit",
                               minute: "2-digit",
@@ -252,14 +252,14 @@ export default function ReportPage() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-sm text-gray-600">메시지</div>
+                        <div className="text-sm" style={{ color: '#4B5563' }}>메시지</div>
                         <div className="font-bold">{session.messageCount}개</div>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-12 text-gray-500">
+                <div className="text-center py-12" style={{ color: '#6B7280' }}>
                   <p>오늘 학습한 세션이 없습니다.</p>
                   <p className="text-sm mt-2">지금 학습을 시작해보세요!</p>
                 </div>
@@ -294,7 +294,7 @@ export default function ReportPage() {
 
                 <Card className="p-6">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm text-gray-600">학습 추세</p>
+                    <p className="text-sm" style={{ color: '#4B5563' }}>학습 추세</p>
                     {getTrendIcon(weeklyReport.progressTrend)}
                   </div>
                   <p className="text-2xl font-bold">
@@ -343,7 +343,7 @@ export default function ReportPage() {
                     </li>
                   ))}
                   {weeklyReport.strengths.length === 0 && (
-                    <li className="text-gray-500 text-sm">데이터가 충분하지 않습니다</li>
+                    <li className="text-sm" style={{ color: '#6B7280' }}>데이터가 충분하지 않습니다</li>
                   )}
                 </ul>
               </Card>
@@ -361,7 +361,7 @@ export default function ReportPage() {
                     </li>
                   ))}
                   {weeklyReport.weaknesses.length === 0 && (
-                    <li className="text-gray-500 text-sm">개선이 필요한 영역이 없습니다</li>
+                    <li className="text-sm" style={{ color: '#6B7280' }}>개선이 필요한 영역이 없습니다</li>
                   )}
                 </ul>
               </Card>

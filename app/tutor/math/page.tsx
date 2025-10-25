@@ -205,7 +205,7 @@ export default function MathTutorPage() {
                 </div>
                 <div>
                   <div className="font-semibold">학습자</div>
-                  <div className="text-sm text-gray-600">{gradeLevel}</div>
+                  <div className="text-sm" style={{ color: '#4B5563' }}>{gradeLevel}</div>
                 </div>
               </div>
             </Card>
@@ -216,7 +216,7 @@ export default function MathTutorPage() {
                 <BookOpen className="w-5 h-5 text-primary-600" />
                 <h3 className="font-bold">학습 팁</h3>
               </div>
-              <ul className="space-y-2 text-sm text-gray-600">
+              <ul className="space-y-2 text-sm" style={{ color: '#4B5563' }}>
                 <li>• 모르는 개념은 언제든 질문하세요</li>
                 <li>• 문제 풀이를 단계별로 설명받을 수 있어요</li>
                 <li>• 유사한 문제를 추천받아 연습하세요</li>
@@ -243,7 +243,7 @@ export default function MathTutorPage() {
                     />
                   </div>
                 </div>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm" style={{ color: '#4B5563' }}>
                   목표: 10개 질문
                 </div>
               </div>

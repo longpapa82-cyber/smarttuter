@@ -231,7 +231,7 @@ export default function EnglishTutorPage() {
                 </div>
                 <div>
                   <div className="font-semibold">학습자</div>
-                  <div className="text-sm text-gray-600">{gradeLevel}</div>
+                  <div className="text-sm" style={{ color: '#4B5563' }}>{gradeLevel}</div>
                 </div>
               </div>
             </Card>
@@ -242,7 +242,7 @@ export default function EnglishTutorPage() {
                 <BookOpen className="w-5 h-5 text-accent-600" />
                 <h3 className="font-bold">Learning Tips</h3>
               </div>
-              <ul className="space-y-2 text-sm text-gray-600">
+              <ul className="space-y-2 text-sm" style={{ color: '#4B5563' }}>
                 <li>• Practice speaking naturally</li>
                 <li>• Don&apos;t be afraid to make mistakes</li>
                 <li>• Ask for pronunciation help</li>
@@ -269,7 +269,7 @@ export default function EnglishTutorPage() {
                     />
                   </div>
                 </div>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm" style={{ color: '#4B5563' }}>
                   Goal: 20 messages
                 </div>
               </div>
