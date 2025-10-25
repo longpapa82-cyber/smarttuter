@@ -2,11 +2,13 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { MessageCircle, Home, BarChart3, BookOpen, Mic, Volume2 } from "lucide-react";
+import { MessageCircle, Home, BarChart3, BookOpen, Mic, Volume2, MicOff, VolumeX } from "lucide-react";
 import Link from "next/link";
 import { ChatMessage } from "@/components/chat/ChatMessage";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { Card } from "@/components/ui/Card";
+import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
+import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 
 interface Message {
   id: string;
@@ -20,7 +22,41 @@ export default function EnglishTutorPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [gradeLevel, setGradeLevel] = useState<string>("");
   const [isVoiceMode, setIsVoiceMode] = useState(false);
+  const [autoSpeak, setAutoSpeak] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Speech recognition hook
+  const {
+    isListening,
+    transcript,
+    startListening,
+    stopListening,
+    resetTranscript,
+    isSupported: isSpeechRecognitionSupported,
+  } = useSpeechRecognition({
+    lang: "en-US",
+    continuous: false,
+    interimResults: true,
+    onResult: (finalTranscript) => {
+      if (finalTranscript.trim()) {
+        handleSendMessage(finalTranscript);
+        resetTranscript();
+      }
+    },
+  });
+
+  // Text-to-speech hook
+  const {
+    speak,
+    stop: stopSpeaking,
+    isSpeaking,
+    isSupported: isSpeechSynthesisSupported,
+  } = useSpeechSynthesis({
+    lang: "en-US",
+    rate: 0.9,
+    pitch: 1.0,
+    volume: 1.0,
+  });
 
   useEffect(() => {
     // Load user preferences
@@ -133,6 +169,11 @@ export default function EnglishTutorPage() {
           }
         }
       }
+
+      // Auto-speak the response if enabled and in voice mode
+      if (autoSpeak && isVoiceMode && accumulatedText) {
+        speak(accumulatedText);
+      }
     } catch (error) {
       console.error("Error:", error);
 
@@ -154,15 +195,42 @@ export default function EnglishTutorPage() {
   };
 
   const handleVoiceStart = () => {
-    // TODO: Implement voice input
-    alert("음성 입력 기능은 Phase 2에서 구현됩니다!\n\nVoice input feature coming in Phase 2!");
-    setIsVoiceMode(true);
+    if (!isSpeechRecognitionSupported) {
+      alert(
+        "Your browser doesn't support speech recognition.\n\n브라우저가 음성 인식을 지원하지 않습니다.\n\nPlease use Chrome, Edge, or Safari."
+      );
+      return;
+    }
+
+    if (isListening) {
+      stopListening();
+      setIsVoiceMode(false);
+    } else {
+      startListening();
+      setIsVoiceMode(true);
+    }
   };
 
   const handleTextToSpeech = (text: string) => {
-    // TODO: Implement text-to-speech
-    console.log("TTS:", text);
-    alert("음성 출력 기능은 Phase 2에서 구현됩니다!\n\nText-to-speech feature coming in Phase 2!");
+    if (!isSpeechSynthesisSupported) {
+      alert(
+        "Your browser doesn't support text-to-speech.\n\n브라우저가 음성 합성을 지원하지 않습니다."
+      );
+      return;
+    }
+
+    if (isSpeaking) {
+      stopSpeaking();
+    } else {
+      speak(text);
+    }
+  };
+
+  const toggleAutoSpeak = () => {
+    setAutoSpeak((prev) => !prev);
+    if (isSpeaking) {
+      stopSpeaking();
+    }
   };
 
   return (
@@ -186,15 +254,33 @@ export default function EnglishTutorPage() {
             </div>
 
             {/* Navigation */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              {/* Voice Input Button */}
               <button
-                onClick={() => setIsVoiceMode(!isVoiceMode)}
-                className={`p-2 rounded-lg transition-colors ${
-                  isVoiceMode ? "bg-accent-100 text-accent-600" : "hover:bg-gray-100 text-gray-600"
+                onClick={handleVoiceStart}
+                className={`p-2 rounded-lg transition-all ${
+                  isListening
+                    ? "bg-red-100 text-red-600 animate-pulse"
+                    : isVoiceMode
+                    ? "bg-accent-100 text-accent-600"
+                    : "hover:bg-gray-100 text-gray-600"
                 }`}
-                title="음성 모드"
+                title={isListening ? "Stop listening" : "Start voice input"}
+                disabled={!isSpeechRecognitionSupported}
               >
-                <Mic className="w-6 h-6" />
+                {isListening ? <MicOff className="w-6 h-6" /> : <Mic className="w-6 h-6" />}
+              </button>
+
+              {/* Auto-Speak Toggle */}
+              <button
+                onClick={toggleAutoSpeak}
+                className={`p-2 rounded-lg transition-colors ${
+                  autoSpeak ? "bg-blue-100 text-blue-600" : "hover:bg-gray-100 text-gray-400"
+                }`}
+                title={autoSpeak ? "Auto-speak ON" : "Auto-speak OFF"}
+                disabled={!isSpeechSynthesisSupported}
+              >
+                {autoSpeak ? <Volume2 className="w-6 h-6" /> : <VolumeX className="w-6 h-6" />}
               </button>
               <Link
                 href="/"
