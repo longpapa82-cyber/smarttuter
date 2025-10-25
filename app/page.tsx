@@ -72,15 +72,15 @@ export default function Home() {
               <div className="flex items-center space-x-8 pt-4">
                 <div>
                   <div className="text-3xl font-bold text-primary-600">10,000+</div>
-                  <div className="text-sm text-gray-600">활성 학습자</div>
+                  <div className="text-sm" style={{ color: '#4B5563' }}>활성 학습자</div>
                 </div>
                 <div>
                   <div className="text-3xl font-bold text-secondary-600">50,000+</div>
-                  <div className="text-sm text-gray-600">해결된 문제</div>
+                  <div className="text-sm" style={{ color: '#4B5563' }}>해결된 문제</div>
                 </div>
                 <div>
                   <div className="text-3xl font-bold text-accent-600">4.9/5</div>
-                  <div className="text-sm text-gray-600">만족도</div>
+                  <div className="text-sm" style={{ color: '#4B5563' }}>만족도</div>
                 </div>
               </div>
             </div>
@@ -91,10 +91,10 @@ export default function Home() {
                 <div className="absolute inset-0 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-3xl opacity-10 blur-3xl"></div>
                 <div className="relative text-center space-y-6 p-8">
                   <div className="text-8xl animate-bounce-slow">🤖</div>
-                  <div className="text-2xl font-bold text-gray-800">AI 튜터가 함께합니다</div>
+                  <div className="text-2xl font-bold" style={{ color: '#1F2937' }}>AI 튜터가 함께합니다</div>
                   <div className="flex justify-center space-x-4">
-                    <div className="px-4 py-2 bg-white rounded-full shadow-lg">📚 수학</div>
-                    <div className="px-4 py-2 bg-white rounded-full shadow-lg">🗣️ 영어</div>
+                    <div className="px-4 py-2 bg-white rounded-full shadow-lg" style={{ color: '#111827' }}>📚 수학</div>
+                    <div className="px-4 py-2 bg-white rounded-full shadow-lg" style={{ color: '#111827' }}>🗣️ 영어</div>
                   </div>
                 </div>
               </div>
@@ -106,7 +106,7 @@ export default function Home() {
                     ✅
                   </div>
                   <div>
-                    <div className="font-semibold text-sm">정답률</div>
+                    <div className="font-semibold text-sm" style={{ color: '#111827' }}>정답률</div>
                     <div className="text-2xl font-bold text-green-600">95%</div>
                   </div>
                 </div>
@@ -118,7 +118,7 @@ export default function Home() {
                     ⚡
                   </div>
                   <div>
-                    <div className="font-semibold text-sm">학습 시간</div>
+                    <div className="font-semibold text-sm" style={{ color: '#111827' }}>학습 시간</div>
                     <div className="text-2xl font-bold text-blue-600">2.5h</div>
                   </div>
                 </div>
