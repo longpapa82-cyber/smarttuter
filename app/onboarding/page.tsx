@@ -119,7 +119,7 @@ export default function OnboardingPage() {
               </div>
             ))}
           </div>
-          <div className="text-center text-gray-600">
+          <div className="text-center" style={{ color: '#4B5563' }}>
             {step === 1 && "학교급 선택"}
             {step === 2 && "과목 선택"}
             {step === 3 && "준비 완료"}
@@ -146,7 +146,7 @@ export default function OnboardingPage() {
                   <GraduationCap className="w-16 h-16 mx-auto text-primary-500" />
                 </motion.div>
                 <h1 className="text-4xl font-bold gradient-text">학교급을 선택해주세요</h1>
-                <p className="text-xl text-gray-600">
+                <p className="text-xl" style={{ color: '#4B5563' }}>
                   현재 학년에 맞는 맞춤형 학습을 제공합니다
                 </p>
               </div>
@@ -211,7 +211,7 @@ export default function OnboardingPage() {
                   <BookOpen className="w-16 h-16 mx-auto text-secondary-500" />
                 </motion.div>
                 <h1 className="text-4xl font-bold gradient-text">과목을 선택해주세요</h1>
-                <p className="text-xl text-gray-600">
+                <p className="text-xl" style={{ color: '#4B5563' }}>
                   {gradeLevels.find((g) => g.id === selectedGrade)?.name}에 맞는 학습을 시작합니다
                 </p>
               </div>
@@ -292,7 +292,7 @@ export default function OnboardingPage() {
 
               <div className="space-y-4">
                 <h1 className="text-5xl font-bold gradient-text">준비 완료!</h1>
-                <p className="text-2xl text-gray-600">
+                <p className="text-2xl" style={{ color: '#4B5563' }}>
                   이제 AI 튜터와 함께 학습을 시작할 준비가 되었습니다
                 </p>
               </div>
@@ -343,9 +343,10 @@ export default function OnboardingPage() {
                 disabled={step === 1}
                 className={`px-8 py-3 rounded-full font-semibold transition-all inline-flex items-center space-x-2 ${
                   step === 1
-                    ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                    : "bg-white border-2 border-gray-300 text-gray-700 hover:border-primary-500"
+                    ? "bg-gray-200 cursor-not-allowed"
+                    : "bg-white border-2 border-gray-300 hover:border-primary-500"
                 }`}
+                style={{ color: step === 1 ? '#6B7280' : '#374151' }}
               >
                 <ArrowLeft className="w-5 h-5" />
                 <span>이전</span>
@@ -361,9 +362,10 @@ export default function OnboardingPage() {
                 disabled={(step === 1 && !selectedGrade) || (step === 2 && !selectedSubject)}
                 className={`px-8 py-3 rounded-full font-semibold transition-all inline-flex items-center space-x-2 ${
                 (step === 1 && !selectedGrade) || (step === 2 && !selectedSubject)
-                  ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                  ? "bg-gray-200 cursor-not-allowed"
                   : "bg-gradient-to-r from-primary-500 to-secondary-500 text-white hover:shadow-xl"
               }`}
+                style={{ color: ((step === 1 && !selectedGrade) || (step === 2 && !selectedSubject)) ? '#6B7280' : 'white' }}
               >
                 <span>다음</span>
                 <ArrowRight className="w-5 h-5" />
