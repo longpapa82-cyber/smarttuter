@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
 // Initialize Anthropic client
 const anthropic = new Anthropic({
@@ -11,7 +11,7 @@ const gradeLevelPrompts: Record<string, string> = {
   elementary: "초등학생 수준에 맞게 쉽고 친근한 언어로",
   middle: "중학생 수준에 맞게 개념을 명확하게",
   high: "고등학생 수준에 맞게 심화된 내용을",
-  university: "대학생 수준에 맞게 전문적인 내용을",
+  university: "대학교 수준에 맞게 전문적이고 엄밀한 내용을",
 };
 
 const gradeLevelMap: Record<string, string> = {
@@ -26,20 +26,20 @@ export async function POST(req: NextRequest) {
     const { message, gradeLevel, conversationHistory } = await req.json();
 
     if (!message) {
-      return NextResponse.json(
-        { error: "Message is required" },
-        { status: 400 }
+      return new Response(
+        JSON.stringify({ error: "Message is required" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
 
     // Check if API key is configured
     if (!process.env.ANTHROPIC_API_KEY) {
-      return NextResponse.json(
-        {
+      return new Response(
+        JSON.stringify({
           message:
             "API 키가 설정되지 않았습니다.\n\n.env.local 파일에 ANTHROPIC_API_KEY를 추가해주세요.",
-        },
-        { status: 200 }
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
       );
     }
 
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
     const gradeLevelKey = gradeLevelMap[gradeLevel] || "elementary";
     const gradeLevelInstruction = gradeLevelPrompts[gradeLevelKey];
 
-    // System prompt for math tutor
+    // Enhanced system prompt for math tutor
     const systemPrompt = `당신은 친절하고 전문적인 수학 튜터입니다.
 
 역할과 원칙:
@@ -59,6 +59,11 @@ export async function POST(req: NextRequest) {
 6. 격려와 칭찬을 아끼지 않습니다
 7. 학습과 무관한 질문에는 정중하게 수학 학습으로 유도합니다
 
+응답 스타일:
+- 친근하고 격려하는 톤 사용 (예: "좋은 질문이에요!", "잘 하고 있어요!")
+- 이모지를 적절히 사용하여 친근감 표현 (📐, 📊, ✅, 💡 등)
+- 복잡한 개념은 실생활 예시로 설명
+
 응답 형식:
 - 개념 설명 시: 정의 → 예시 → 연습 문제 제안
 - 문제 풀이 시: 문제 이해 → 단계별 풀이 → 검증 → 유사 문제 제안
@@ -67,13 +72,14 @@ export async function POST(req: NextRequest) {
 주의사항:
 - 팩트가 아닌 내용은 절대 답변하지 않습니다
 - 모르는 내용은 솔직하게 인정하고 올바른 방향을 안내합니다
-- 학생의 수준을 고려하여 적절한 난이도로 설명합니다`;
+- 학생의 수준을 고려하여 적절한 난이도로 설명합니다
+- 실수를 하더라도 긍정적으로 격려하며 올바른 방향을 제시합니다`;
 
     // Prepare messages for Claude API
     const messages: Anthropic.MessageParam[] = [];
 
     // Add conversation history (limit to last 10 messages for context)
-    const recentHistory = conversationHistory.slice(-10);
+    const recentHistory = conversationHistory?.slice(-10) || [];
     for (const msg of recentHistory) {
       messages.push({
         role: msg.role === "user" ? "user" : "assistant",
@@ -87,23 +93,41 @@ export async function POST(req: NextRequest) {
       content: message,
     });
 
-    // Call Claude API
-    const response = await anthropic.messages.create({
+    // Create streaming response
+    const stream = await anthropic.messages.stream({
       model: "claude-sonnet-4-5-20250929",
       max_tokens: 2048,
       system: systemPrompt,
       messages: messages,
     });
 
-    // Extract response text
-    const responseText =
-      response.content[0].type === "text"
-        ? response.content[0].text
-        : "죄송합니다. 응답을 생성할 수 없습니다.";
+    // Create a readable stream for the response
+    const encoder = new TextEncoder();
+    const readableStream = new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const chunk of stream) {
+            if (chunk.type === "content_block_delta" &&
+                chunk.delta.type === "text_delta") {
+              const text = chunk.delta.text;
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
+            }
+          }
+          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+          controller.close();
+        } catch (error) {
+          console.error("Streaming error:", error);
+          controller.error(error);
+        }
+      },
+    });
 
-    return NextResponse.json({
-      message: responseText,
-      usage: response.usage,
+    return new Response(readableStream, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+      },
     });
   } catch (error: unknown) {
     console.error("Error in math chat API:", error);
@@ -111,12 +135,15 @@ export async function POST(req: NextRequest) {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error occurred";
 
-    return NextResponse.json(
-      {
+    return new Response(
+      JSON.stringify({
         error: "Failed to process request",
         details: errorMessage,
-      },
-      { status: 500 }
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" }
+      }
     );
   }
 }

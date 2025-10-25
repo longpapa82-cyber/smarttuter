@@ -54,8 +54,19 @@ export default function EnglishTutorPage() {
     setMessages((prev) => [...prev, userMessage]);
     setIsLoading(true);
 
+    // Create assistant message placeholder
+    const assistantMessageId = (Date.now() + 1).toString();
+    const assistantMessage: Message = {
+      id: assistantMessageId,
+      role: "assistant",
+      content: "",
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, assistantMessage]);
+
     try {
-      // Call API to get AI response
+      // Call API to get AI response with streaming
       const response = await fetch("/api/chat/english", {
         method: "POST",
         headers: {
@@ -75,29 +86,68 @@ export default function EnglishTutorPage() {
         throw new Error("Failed to get response");
       }
 
-      const data = await response.json();
+      // Handle streaming response
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
 
-      // Add assistant message
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: data.message,
-        timestamp: new Date(),
-      };
+      if (!reader) {
+        throw new Error("No response body");
+      }
 
-      setMessages((prev) => [...prev, assistantMessage]);
+      let accumulatedText = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        const lines = chunk.split("\n");
+
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            const data = line.slice(6);
+
+            if (data === "[DONE]") {
+              break;
+            }
+
+            try {
+              const json = JSON.parse(data);
+              if (json.text) {
+                accumulatedText += json.text;
+
+                // Update message in real-time
+                setMessages((prev) =>
+                  prev.map((msg) =>
+                    msg.id === assistantMessageId
+                      ? { ...msg, content: accumulatedText }
+                      : msg
+                  )
+                );
+              }
+            } catch (e) {
+              // Skip invalid JSON
+              console.error("JSON parse error:", e);
+            }
+          }
+        }
+      }
     } catch (error) {
       console.error("Error:", error);
 
-      // Fallback response for demo
-      const fallbackMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: "I'm sorry, but I cannot connect to the server right now.\n\n죄송합니다. 현재 서버와 연결할 수 없습니다.\n\nPlease add ANTHROPIC_API_KEY to your .env.local file.",
-        timestamp: new Date(),
-      };
-
-      setMessages((prev) => [...prev, fallbackMessage]);
+      // Update with error message
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === assistantMessageId
+            ? {
+                ...msg,
+                content:
+                  "I'm sorry, but I cannot connect to the server right now.\n\n죄송합니다. 현재 서버와 연결할 수 없습니다.\n\nPlease add ANTHROPIC_API_KEY to your .env.local file.",
+              }
+            : msg
+        )
+      );
     } finally {
       setIsLoading(false);
     }

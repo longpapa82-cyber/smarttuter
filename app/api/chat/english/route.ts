@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
 // Initialize Anthropic client
 const anthropic = new Anthropic({
@@ -26,20 +26,20 @@ export async function POST(req: NextRequest) {
     const { message, gradeLevel, conversationHistory } = await req.json();
 
     if (!message) {
-      return NextResponse.json(
-        { error: "Message is required" },
-        { status: 400 }
+      return new Response(
+        JSON.stringify({ error: "Message is required" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
 
     // Check if API key is configured
     if (!process.env.ANTHROPIC_API_KEY) {
-      return NextResponse.json(
-        {
+      return new Response(
+        JSON.stringify({
           message:
             "API key is not configured.\n\nAPI 키가 설정되지 않았습니다.\n\nPlease add ANTHROPIC_API_KEY to your .env.local file.",
-        },
-        { status: 200 }
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
       );
     }
 
@@ -47,42 +47,51 @@ export async function POST(req: NextRequest) {
     const gradeLevelKey = gradeLevelMap[gradeLevel] || "elementary";
     const gradeLevelInstruction = gradeLevelPrompts[gradeLevelKey];
 
-    // System prompt for English tutor
-    const systemPrompt = `You are a friendly, encouraging, and professional English tutor.
+    // Enhanced system prompt for English tutor
+    const systemPrompt = `You are a friendly, encouraging, and professional English tutor. 🌟
 
 Your Role and Principles:
 1. Teach English ${gradeLevelInstruction}
 2. Use the Socratic method - guide students to discover answers rather than giving them directly
 3. Encourage natural conversation in English as much as possible
-4. Provide explanations in both English and Korean when needed
-5. Correct mistakes gently and constructively
-6. Give pronunciation guidance when asked
+4. Provide explanations in both English and Korean when needed for clarity
+5. Correct mistakes gently and constructively, celebrating progress
+6. Give pronunciation guidance when asked (using phonetic descriptions)
 7. Offer praise and encouragement frequently
 8. If students ask off-topic questions, politely redirect them to English learning
+9. Use emojis naturally to create a warm, friendly atmosphere (📚, 💡, ✅, 🎯, 👏)
+
+Response Style:
+- Use encouraging phrases (e.g., "Great question!", "You're doing well!", "Nice try!")
+- Incorporate relevant emojis to make learning fun and engaging
+- Provide real-world examples and practical usage scenarios
+- Break down complex concepts into digestible pieces
 
 Response Format:
-- For grammar questions: Explanation → Examples → Practice suggestion
-- For vocabulary: Definition → Usage examples → Related words
-- For conversation: Engage naturally, ask follow-up questions
+- For grammar questions: Explanation (with examples) → Practice suggestion → Encouragement
+- For vocabulary: Definition → Usage examples → Related words → Fun tip
+- For conversation: Engage naturally, ask follow-up questions, correct gently
 - Always maintain a warm, supportive tone
 
 Language Guidelines:
 - If the student writes in English, respond primarily in English with Korean support when needed
 - If the student writes in Korean, help them practice by encouraging English responses
 - Adapt your English level to match the student's proficiency
-- Use formatting to highlight key vocabulary or grammar points
+- Use formatting (bold, bullets) to highlight key vocabulary or grammar points
+- Provide Korean translations for difficult words or concepts
 
 Important:
-- Only provide factual information
+- Only provide factual information about English language and usage
 - Admit when you don't know something and guide students to reliable resources
-- Be culturally sensitive and inclusive
-- Focus on practical, real-world English usage`;
+- Be culturally sensitive and inclusive in examples and discussions
+- Focus on practical, real-world English usage that students can apply immediately
+- Celebrate small wins and progress to build confidence`;
 
     // Prepare messages for Claude API
     const messages: Anthropic.MessageParam[] = [];
 
     // Add conversation history (limit to last 15 messages for context)
-    const recentHistory = conversationHistory.slice(-15);
+    const recentHistory = conversationHistory?.slice(-15) || [];
     for (const msg of recentHistory) {
       messages.push({
         role: msg.role === "user" ? "user" : "assistant",
@@ -96,23 +105,41 @@ Important:
       content: message,
     });
 
-    // Call Claude API
-    const response = await anthropic.messages.create({
+    // Create streaming response
+    const stream = await anthropic.messages.stream({
       model: "claude-sonnet-4-5-20250929",
       max_tokens: 2048,
       system: systemPrompt,
       messages: messages,
     });
 
-    // Extract response text
-    const responseText =
-      response.content[0].type === "text"
-        ? response.content[0].text
-        : "I'm sorry, I couldn't generate a response.\n\n죄송합니다. 응답을 생성할 수 없습니다.";
+    // Create a readable stream for the response
+    const encoder = new TextEncoder();
+    const readableStream = new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const chunk of stream) {
+            if (chunk.type === "content_block_delta" &&
+                chunk.delta.type === "text_delta") {
+              const text = chunk.delta.text;
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
+            }
+          }
+          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+          controller.close();
+        } catch (error) {
+          console.error("Streaming error:", error);
+          controller.error(error);
+        }
+      },
+    });
 
-    return NextResponse.json({
-      message: responseText,
-      usage: response.usage,
+    return new Response(readableStream, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+      },
     });
   } catch (error: unknown) {
     console.error("Error in English chat API:", error);
@@ -120,12 +147,15 @@ Important:
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error occurred";
 
-    return NextResponse.json(
-      {
+    return new Response(
+      JSON.stringify({
         error: "Failed to process request",
         details: errorMessage,
-      },
-      { status: 500 }
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" }
+      }
     );
   }
 }

@@ -53,8 +53,19 @@ export default function MathTutorPage() {
     setMessages((prev) => [...prev, userMessage]);
     setIsLoading(true);
 
+    // Create assistant message placeholder
+    const assistantMessageId = (Date.now() + 1).toString();
+    const assistantMessage: Message = {
+      id: assistantMessageId,
+      role: "assistant",
+      content: "",
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, assistantMessage]);
+
     try {
-      // Call API to get AI response
+      // Call API to get AI response with streaming
       const response = await fetch("/api/chat/math", {
         method: "POST",
         headers: {
@@ -74,29 +85,68 @@ export default function MathTutorPage() {
         throw new Error("Failed to get response");
       }
 
-      const data = await response.json();
+      // Handle streaming response
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
 
-      // Add assistant message
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: data.message,
-        timestamp: new Date(),
-      };
+      if (!reader) {
+        throw new Error("No response body");
+      }
 
-      setMessages((prev) => [...prev, assistantMessage]);
+      let accumulatedText = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        const lines = chunk.split("\n");
+
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            const data = line.slice(6);
+
+            if (data === "[DONE]") {
+              break;
+            }
+
+            try {
+              const json = JSON.parse(data);
+              if (json.text) {
+                accumulatedText += json.text;
+
+                // Update message in real-time
+                setMessages((prev) =>
+                  prev.map((msg) =>
+                    msg.id === assistantMessageId
+                      ? { ...msg, content: accumulatedText }
+                      : msg
+                  )
+                );
+              }
+            } catch (e) {
+              // Skip invalid JSON
+              console.error("JSON parse error:", e);
+            }
+          }
+        }
+      }
     } catch (error) {
       console.error("Error:", error);
 
-      // Fallback response for demo
-      const fallbackMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: "죄송합니다. 현재 서버와 연결할 수 없습니다. API 키를 설정해주세요.\n\n.env.local 파일에 ANTHROPIC_API_KEY를 추가하시면 AI 튜터 기능을 사용하실 수 있습니다.",
-        timestamp: new Date(),
-      };
-
-      setMessages((prev) => [...prev, fallbackMessage]);
+      // Update with error message
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === assistantMessageId
+            ? {
+                ...msg,
+                content:
+                  "죄송합니다. 현재 서버와 연결할 수 없습니다. API 키를 설정해주세요.\n\n.env.local 파일에 ANTHROPIC_API_KEY를 추가하시면 AI 튜터 기능을 사용하실 수 있습니다.",
+              }
+            : msg
+        )
+      );
     } finally {
       setIsLoading(false);
     }
