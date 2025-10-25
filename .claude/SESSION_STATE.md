@@ -1,14 +1,14 @@
 # SmartTuter 프로젝트 세션 상태
 
 **마지막 업데이트**: 2025-10-25
-**프로젝트 상태**: Phase 3 완료 - 영어 튜터 음성 기능 구현 완료
+**프로젝트 상태**: Phase 4 완료 - 수학 튜터 음성 기능 구현 완료
 **배포 상태**: ✅ Vercel Production (Ready)
 
 ---
 
 ## 📊 현재 프로젝트 상태
 
-### ✅ 완료된 기능 (Phase 1 + Phase 2 + Phase 3)
+### ✅ 완료된 기능 (Phase 1 ~ Phase 4)
 
 #### **Phase 1: MVP 완성**
 1. ✅ 전체 페이지 구조 구현 (7 pages, 13 components)
@@ -74,6 +74,23 @@
    - `useSpeechSynthesis.ts`: 재사용 가능한 TTS 훅
    - TypeScript 타입 안전성
 
+#### **Phase 4: 수학 튜터 음성 기능** ⭐
+1. ✅ **한국어 음성 통합**
+   - Phase 3 custom hooks 재사용
+   - 한국어 음성 인식 (`ko-KR`)
+   - 한국어 TTS (`ko-KR`)
+
+2. ✅ **수학 튜터 음성 대화**
+   - 음성으로 수학 질문 입력
+   - AI 응답 자동 읽기
+   - 마이크 버튼 및 자동 읽기 토글
+   - 음성 인식 중 실시간 트랜스크립트 표시
+
+3. ✅ **통합 UI/UX**
+   - 영어 튜터와 동일한 UI 패턴
+   - 한국어 메시지 및 안내
+   - 펄스 애니메이션 효과
+
 ---
 
 ## 🗂️ 프로젝트 구조
@@ -84,7 +101,7 @@ smartTuter/
 │   ├── page.tsx                    # 홈페이지
 │   ├── onboarding/page.tsx         # 온보딩
 │   ├── tutor/
-│   │   ├── math/page.tsx          # 수학 튜터 (스트리밍 ✅)
+│   │   ├── math/page.tsx          # 수학 튜터 (스트리밍 ✅ 음성 ✅)
 │   │   └── english/page.tsx       # 영어 튜터 (스트리밍 ✅ 음성 ✅)
 │   ├── report/page.tsx            # 학습 리포트
 │   ├── api/
@@ -117,8 +134,8 @@ smartTuter/
 - **프로젝트명**: smarttuter
 - **조직**: 090723s-projects
 - **GitHub**: https://github.com/longpapa82-cyber/smarttuter
-- **최신 배포 URL**: https://smarttuter-7baermqkv-090723s-projects.vercel.app
-- **배포 상태**: ✅ Ready (Production) - Phase 3 음성 기능 포함
+- **최신 배포 URL**: https://smarttuter-5gupstpfl-090723s-projects.vercel.app
+- **배포 상태**: ✅ Ready (Production) - Phase 4 완료 (영어+수학 음성 기능)
 
 ### 환경 변수
 ```env
@@ -151,35 +168,13 @@ ANTHROPIC_API_KEY=sk-ant-api03-...
 
 ## 📝 현재 작업 중인 기능
 
-### 없음 (Phase 3 완료)
+### 없음 (Phase 4 완료)
 
 ---
 
-## 🎯 다음 단계 계획 (Phase 4/5 추천)
+## 🎯 다음 단계 계획 (Phase 5 추천)
 
-### Option 1: 수학 튜터 음성 기능 확장 ⭐ 추천
-**목표**: 수학 튜터에도 음성 기능 추가 (영어 튜터와 동일)
-
-**구현 내용**:
-1. **수학 튜터 음성 통합**
-   - Phase 3의 custom hooks 재사용
-   - 한국어 음성 인식 (`ko-KR`)
-   - 수학 용어 최적화된 TTS
-
-2. **수식 읽기 최적화**
-   - 수학 기호 → 자연어 변환
-   - 예: "x^2 + 3x + 2" → "엑스 제곱 더하기 3엑스 더하기 2"
-
-3. **음성 + 텍스트 하이브리드**
-   - 수식은 텍스트로 표시
-   - 설명은 음성으로 읽기
-
-**예상 작업 시간**: 1-2시간 (hooks 재사용)
-**난이도**: 하
-
----
-
-### Option 2: 학습 데이터 분석 시스템 (Phase 5)
+### Phase 5: 학습 데이터 분석 시스템 ⭐ 추천
 **목표**: 실제 학습 기록 기반 분석 및 추천
 
 **구현 내용**:
@@ -212,7 +207,7 @@ ANTHROPIC_API_KEY=sk-ant-api03-...
 
 ---
 
-### Option 3: 이미지 기반 문제 풀이 (Phase 6)
+### Phase 6: 이미지 기반 문제 풀이
 **목표**: 수학 문제 사진 업로드 및 AI 분석
 
 **구현 내용**:
@@ -272,10 +267,10 @@ cat .env.local
 ## 🔍 알려진 이슈 및 개선점
 
 ### 개선 가능 영역
-1. ✅ **음성 모드 버튼** (Phase 3 완료)
+1. ✅ **음성 모드 버튼** (Phase 3-4 완료)
    - ~~현재: Alert만 표시~~
-   - ✅ 개선 완료: 영어 튜터에 실제 음성 기능 구현
-   - 📌 남은 작업: 수학 튜터 음성 기능 추가
+   - ✅ 개선 완료: 영어 튜터 실제 음성 기능 (Phase 3)
+   - ✅ 개선 완료: 수학 튜터 실제 음성 기능 (Phase 4)
 
 2. **이미지 업로드 버튼**
    - 현재: Alert만 표시
@@ -425,12 +420,12 @@ vercel logs <deployment-url>
 - [x] 스트리밍 응답 구현
 - [x] 프로덕션 배포 완료
 - [x] **Phase 3 음성 기능 구현 (영어 튜터)** ⭐
-- [ ] Phase 4 수학 튜터 음성 기능
+- [x] **Phase 4 수학 튜터 음성 기능** ⭐
 - [ ] Phase 5 학습 분석 시스템
 - [ ] Phase 6 이미지 업로드 기능
 
 ---
 
-**마지막 커밋**: `feat: Add voice input and text-to-speech for English tutor (Phase 3)` (37dfd14)
-**마지막 배포**: 2025-10-25 (Phase 3 포함)
-**다음 목표**: Phase 4 - 수학 튜터 음성 기능 OR Phase 5 - 학습 분석
+**마지막 커밋**: `feat: Add voice features to Math tutor (Phase 4)` (b869027)
+**마지막 배포**: 2025-10-25 (Phase 4 완료)
+**다음 목표**: Phase 5 - 학습 데이터 분석 시스템

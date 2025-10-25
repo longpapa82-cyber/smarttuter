@@ -19,6 +19,12 @@ import { ChatInput } from "@/components/chat/ChatInput";
 import { Card } from "@/components/ui/Card";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
+import {
+  createSession,
+  endSession,
+  saveSession,
+  type LearningSession,
+} from "@/lib/learningSession";
 
 interface Message {
   id: string;
@@ -33,6 +39,7 @@ export default function MathTutorPage() {
   const [gradeLevel, setGradeLevel] = useState<string>("");
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [autoSpeak, setAutoSpeak] = useState(true);
+  const [currentSession, setCurrentSession] = useState<LearningSession | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Speech recognition hook (Korean)
@@ -73,16 +80,32 @@ export default function MathTutorPage() {
     const grade = localStorage.getItem("userGrade") || "초등학교";
     setGradeLevel(grade);
 
+    // Create new learning session
+    const session = createSession("math", grade);
+    setCurrentSession(session);
+
     // Welcome message
-    setMessages([
-      {
-        id: "welcome",
-        role: "assistant",
-        content: `안녕하세요! 수학 튜터입니다. 👋\n\n${grade} 학생에게 맞는 수학 학습을 도와드리겠습니다.\n\n궁금한 개념이나 풀고 싶은 문제를 자유롭게 질문해주세요!\n\n예시:\n• "이차방정식이 뭐야?"\n• "3x + 5 = 20을 풀어줘"\n• "분수의 나눗셈을 어떻게 하는지 설명해줘"`,
-        timestamp: new Date(),
-      },
-    ]);
-  }, []);
+    const welcomeMessage = {
+      id: "welcome",
+      role: "assistant" as const,
+      content: `안녕하세요! 수학 튜터입니다. 👋\n\n${grade} 학생에게 맞는 수학 학습을 도와드리겠습니다.\n\n궁금한 개념이나 풀고 싶은 문제를 자유롭게 질문해주세요!\n\n예시:\n• "이차방정식이 뭐야?"\n• "3x + 5 = 20을 풀어줘"\n• "분수의 나눗셈을 어떻게 하는지 설명해줘"`,
+      timestamp: new Date(),
+    };
+
+    setMessages([welcomeMessage]);
+
+    // Save session when leaving page
+    return () => {
+      if (session && messages.length > 1) {
+        const sessionWithMessages = {
+          ...session,
+          messages: messages.filter(m => m.id !== "welcome"),
+        };
+        const completedSession = endSession(sessionWithMessages);
+        saveSession(completedSession);
+      }
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -98,6 +121,15 @@ export default function MathTutorPage() {
     };
 
     setMessages((prev) => [...prev, userMessage]);
+
+    // Update current session with new message
+    if (currentSession) {
+      setCurrentSession({
+        ...currentSession,
+        messages: [...currentSession.messages, userMessage],
+      });
+    }
+
     setIsLoading(true);
 
     // Create assistant message placeholder

@@ -9,6 +9,12 @@ import { ChatInput } from "@/components/chat/ChatInput";
 import { Card } from "@/components/ui/Card";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
+import {
+  createSession,
+  endSession,
+  saveSession,
+  type LearningSession,
+} from "@/lib/learningSession";
 
 interface Message {
   id: string;
@@ -23,6 +29,7 @@ export default function EnglishTutorPage() {
   const [gradeLevel, setGradeLevel] = useState<string>("");
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [autoSpeak, setAutoSpeak] = useState(true);
+  const [currentSession, setCurrentSession] = useState<LearningSession | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Speech recognition hook
@@ -63,16 +70,32 @@ export default function EnglishTutorPage() {
     const grade = localStorage.getItem("userGrade") || "초등학교";
     setGradeLevel(grade);
 
+    // Create new learning session
+    const session = createSession("english", grade);
+    setCurrentSession(session);
+
     // Welcome message
-    setMessages([
-      {
-        id: "welcome",
-        role: "assistant",
-        content: `Hello! I'm your English tutor. 👋\n\n안녕하세요! ${grade} 학생을 위한 영어 튜터입니다.\n\n실시간 대화로 영어를 배워보세요!\n\nYou can:\n• Practice conversation in English\n• Ask about grammar and vocabulary\n• Get pronunciation help\n• Discuss any topic in English\n\n영어로 대화하거나 한국어로 질문해도 됩니다!`,
-        timestamp: new Date(),
-      },
-    ]);
-  }, []);
+    const welcomeMessage = {
+      id: "welcome",
+      role: "assistant" as const,
+      content: `Hello! I'm your English tutor. 👋\n\n안녕하세요! ${grade} 학생을 위한 영어 튜터입니다.\n\n실시간 대화로 영어를 배워보세요!\n\nYou can:\n• Practice conversation in English\n• Ask about grammar and vocabulary\n• Get pronunciation help\n• Discuss any topic in English\n\n영어로 대화하거나 한국어로 질문해도 됩니다!`,
+      timestamp: new Date(),
+    };
+
+    setMessages([welcomeMessage]);
+
+    // Save session when leaving page
+    return () => {
+      if (session && messages.length > 1) {
+        const sessionWithMessages = {
+          ...session,
+          messages: messages.filter(m => m.id !== "welcome"),
+        };
+        const completedSession = endSession(sessionWithMessages);
+        saveSession(completedSession);
+      }
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -88,6 +111,15 @@ export default function EnglishTutorPage() {
     };
 
     setMessages((prev) => [...prev, userMessage]);
+
+    // Update current session with new message
+    if (currentSession) {
+      setCurrentSession({
+        ...currentSession,
+        messages: [...currentSession.messages, userMessage],
+      });
+    }
+
     setIsLoading(true);
 
     // Create assistant message placeholder
