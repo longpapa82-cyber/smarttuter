@@ -1,14 +1,14 @@
 # SmartTuter 프로젝트 세션 상태
 
 **마지막 업데이트**: 2025-10-25
-**프로젝트 상태**: Phase 2 완료 - AI 튜터 기능 강화 완료
+**프로젝트 상태**: Phase 3 완료 - 영어 튜터 음성 기능 구현 완료
 **배포 상태**: ✅ Vercel Production (Ready)
 
 ---
 
 ## 📊 현재 프로젝트 상태
 
-### ✅ 완료된 기능 (Phase 1 + Phase 2)
+### ✅ 완료된 기능 (Phase 1 + Phase 2 + Phase 3)
 
 #### **Phase 1: MVP 완성**
 1. ✅ 전체 페이지 구조 구현 (7 pages, 13 components)
@@ -52,6 +52,28 @@
    - API 키 누락 시 안내
    - 네트워크 오류 처리
 
+#### **Phase 3: 음성 기능 구현** ⭐
+1. ✅ **Web Speech API 통합**
+   - SpeechRecognition (음성 → 텍스트)
+   - SpeechSynthesis (텍스트 → 음성)
+   - 브라우저 네이티브 API 사용 (외부 의존성 없음)
+
+2. ✅ **실시간 음성 대화**
+   - 음성 인식 자동 메시지 전송
+   - AI 응답 자동 읽기 기능
+   - 음성 모드 토글 (마이크 버튼)
+   - 자동 읽기 ON/OFF 토글
+
+3. ✅ **시각적 피드백**
+   - 음성 인식 중 애니메이션 (펄스 효과)
+   - 음성 상태 아이콘 변경
+   - 브라우저 호환성 감지
+
+4. ✅ **Custom Hooks 구현**
+   - `useSpeechRecognition.ts`: 재사용 가능한 음성 인식 훅
+   - `useSpeechSynthesis.ts`: 재사용 가능한 TTS 훅
+   - TypeScript 타입 안전성
+
 ---
 
 ## 🗂️ 프로젝트 구조
@@ -63,7 +85,7 @@ smartTuter/
 │   ├── onboarding/page.tsx         # 온보딩
 │   ├── tutor/
 │   │   ├── math/page.tsx          # 수학 튜터 (스트리밍 ✅)
-│   │   └── english/page.tsx       # 영어 튜터 (스트리밍 ✅)
+│   │   └── english/page.tsx       # 영어 튜터 (스트리밍 ✅ 음성 ✅)
 │   ├── report/page.tsx            # 학습 리포트
 │   ├── api/
 │   │   └── chat/
@@ -79,6 +101,9 @@ smartTuter/
 │       ├── Card.tsx
 │       ├── Input.tsx
 │       └── MobileMenu.tsx
+├── hooks/
+│   ├── useSpeechRecognition.ts    # 음성 인식 훅 (Phase 3 ✅)
+│   └── useSpeechSynthesis.ts      # TTS 훅 (Phase 3 ✅)
 └── .claude/
     ├── CLAUDE.md                  # 프로젝트 요구사항
     └── SESSION_STATE.md           # 이 파일
@@ -92,8 +117,8 @@ smartTuter/
 - **프로젝트명**: smarttuter
 - **조직**: 090723s-projects
 - **GitHub**: https://github.com/longpapa82-cyber/smarttuter
-- **최신 배포 URL**: https://smarttuter-o7pl06ml2-090723s-projects.vercel.app
-- **배포 상태**: ✅ Ready (Production)
+- **최신 배포 URL**: https://smarttuter-7baermqkv-090723s-projects.vercel.app
+- **배포 상태**: ✅ Ready (Production) - Phase 3 음성 기능 포함
 
 ### 환경 변수
 ```env
@@ -126,44 +151,35 @@ ANTHROPIC_API_KEY=sk-ant-api03-...
 
 ## 📝 현재 작업 중인 기능
 
-### 없음 (Phase 2 완료)
+### 없음 (Phase 3 완료)
 
 ---
 
-## 🎯 다음 단계 계획 (Phase 3 추천)
+## 🎯 다음 단계 계획 (Phase 4/5 추천)
 
-### Option 1: 음성 기능 구현 (영어 튜터 강화) ⭐ 추천
-**목표**: 실시간 음성 대화 및 발음 평가
+### Option 1: 수학 튜터 음성 기능 확장 ⭐ 추천
+**목표**: 수학 튜터에도 음성 기능 추가 (영어 튜터와 동일)
 
 **구현 내용**:
-1. **Web Speech API 통합**
-   ```typescript
-   // Speech Recognition
-   const recognition = new webkitSpeechRecognition();
-   recognition.lang = 'en-US';
-   recognition.continuous = true;
+1. **수학 튜터 음성 통합**
+   - Phase 3의 custom hooks 재사용
+   - 한국어 음성 인식 (`ko-KR`)
+   - 수학 용어 최적화된 TTS
 
-   // Speech Synthesis
-   const utterance = new SpeechSynthesisUtterance(text);
-   utterance.lang = 'en-US';
-   ```
+2. **수식 읽기 최적화**
+   - 수학 기호 → 자연어 변환
+   - 예: "x^2 + 3x + 2" → "엑스 제곱 더하기 3엑스 더하기 2"
 
-2. **발음 평가 시스템**
-   - 사용자 음성 녹음
-   - Claude API로 발음 분석 요청
-   - 개선점 피드백
+3. **음성 + 텍스트 하이브리드**
+   - 수식은 텍스트로 표시
+   - 설명은 음성으로 읽기
 
-3. **실시간 대화 모드**
-   - 음성 인식 → 텍스트 변환
-   - AI 응답 생성
-   - 텍스트 → 음성 변환
-
-**예상 작업 시간**: 3-4시간
-**난이도**: 중상
+**예상 작업 시간**: 1-2시간 (hooks 재사용)
+**난이도**: 하
 
 ---
 
-### Option 2: 학습 데이터 분석 시스템
+### Option 2: 학습 데이터 분석 시스템 (Phase 5)
 **목표**: 실제 학습 기록 기반 분석 및 추천
 
 **구현 내용**:
@@ -196,7 +212,7 @@ ANTHROPIC_API_KEY=sk-ant-api03-...
 
 ---
 
-### Option 3: 이미지 기반 문제 풀이
+### Option 3: 이미지 기반 문제 풀이 (Phase 6)
 **목표**: 수학 문제 사진 업로드 및 AI 분석
 
 **구현 내용**:
@@ -256,9 +272,10 @@ cat .env.local
 ## 🔍 알려진 이슈 및 개선점
 
 ### 개선 가능 영역
-1. **음성 모드 버튼**
-   - 현재: Alert만 표시
-   - 개선: 실제 음성 기능 구현 필요
+1. ✅ **음성 모드 버튼** (Phase 3 완료)
+   - ~~현재: Alert만 표시~~
+   - ✅ 개선 완료: 영어 튜터에 실제 음성 기능 구현
+   - 📌 남은 작업: 수학 튜터 음성 기능 추가
 
 2. **이미지 업로드 버튼**
    - 현재: Alert만 표시
@@ -407,13 +424,13 @@ vercel logs <deployment-url>
 - [x] 텍스트 가시성 완전 해결
 - [x] 스트리밍 응답 구현
 - [x] 프로덕션 배포 완료
-- [ ] Phase 3 기능 선택 및 구현
-- [ ] 음성 기능 (Option 1)
-- [ ] 학습 분석 (Option 2)
-- [ ] 이미지 업로드 (Option 3)
+- [x] **Phase 3 음성 기능 구현 (영어 튜터)** ⭐
+- [ ] Phase 4 수학 튜터 음성 기능
+- [ ] Phase 5 학습 분석 시스템
+- [ ] Phase 6 이미지 업로드 기능
 
 ---
 
-**마지막 커밋**: `feat: Add streaming AI responses for real-time tutoring` (1345c8b)
-**마지막 배포**: 2025-10-25 (Ready)
-**다음 목표**: Phase 3 - 사용자 선택에 따라 진행
+**마지막 커밋**: `feat: Add voice input and text-to-speech for English tutor (Phase 3)` (37dfd14)
+**마지막 배포**: 2025-10-25 (Phase 3 포함)
+**다음 목표**: Phase 4 - 수학 튜터 음성 기능 OR Phase 5 - 학습 분석

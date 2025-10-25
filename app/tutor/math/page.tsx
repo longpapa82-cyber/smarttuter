@@ -2,11 +2,23 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { Calculator, Home, BarChart3, BookOpen, Sparkles } from "lucide-react";
+import {
+  Calculator,
+  Home,
+  BarChart3,
+  BookOpen,
+  Sparkles,
+  Mic,
+  MicOff,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 import Link from "next/link";
 import { ChatMessage } from "@/components/chat/ChatMessage";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { Card } from "@/components/ui/Card";
+import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
+import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 
 interface Message {
   id: string;
@@ -19,7 +31,42 @@ export default function MathTutorPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [gradeLevel, setGradeLevel] = useState<string>("");
+  const [isVoiceMode, setIsVoiceMode] = useState(false);
+  const [autoSpeak, setAutoSpeak] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Speech recognition hook (Korean)
+  const {
+    isListening,
+    transcript,
+    startListening,
+    stopListening,
+    resetTranscript,
+    isSupported: isSpeechRecognitionSupported,
+  } = useSpeechRecognition({
+    lang: "ko-KR",
+    continuous: false,
+    interimResults: true,
+    onResult: (finalTranscript) => {
+      if (finalTranscript.trim()) {
+        handleSendMessage(finalTranscript);
+        resetTranscript();
+      }
+    },
+  });
+
+  // Text-to-speech hook (Korean)
+  const {
+    speak,
+    stop: stopSpeaking,
+    isSpeaking,
+    isSupported: isSpeechSynthesisSupported,
+  } = useSpeechSynthesis({
+    lang: "ko-KR",
+    rate: 0.9,
+    pitch: 1.0,
+    volume: 1.0,
+  });
 
   useEffect(() => {
     // Load user preferences
@@ -132,6 +179,11 @@ export default function MathTutorPage() {
           }
         }
       }
+
+      // Auto-speak response in voice mode
+      if (autoSpeak && isVoiceMode && accumulatedText) {
+        speak(accumulatedText);
+      }
     } catch (error) {
       console.error("Error:", error);
 
@@ -156,6 +208,43 @@ export default function MathTutorPage() {
     // TODO: Implement image upload for math problems
     console.log("Image uploaded:", file);
     alert("이미지 업로드 기능은 곧 제공될 예정입니다!");
+  };
+
+  const handleVoiceStart = () => {
+    if (!isSpeechRecognitionSupported) {
+      alert(
+        "브라우저가 음성 인식을 지원하지 않습니다.\n\nChrome, Edge, 또는 Safari를 사용해주세요."
+      );
+      return;
+    }
+
+    if (isListening) {
+      stopListening();
+      setIsVoiceMode(false);
+    } else {
+      startListening();
+      setIsVoiceMode(true);
+    }
+  };
+
+  const handleTextToSpeech = (text: string) => {
+    if (!isSpeechSynthesisSupported) {
+      alert("브라우저가 음성 합성을 지원하지 않습니다.");
+      return;
+    }
+
+    if (isSpeaking) {
+      stopSpeaking();
+    } else {
+      speak(text);
+    }
+  };
+
+  const toggleAutoSpeak = () => {
+    setAutoSpeak((prev) => !prev);
+    if (isSpeaking) {
+      stopSpeaking();
+    }
   };
 
   return (
@@ -235,13 +324,69 @@ export default function MathTutorPage() {
           </div>
 
           {/* Input */}
-          <ChatInput
-            onSend={handleSendMessage}
-            onImageUpload={handleImageUpload}
-            disabled={isLoading}
-            placeholder="수학 문제나 개념을 질문해보세요..."
-            enableImage={true}
-          />
+          <div className="border-t-2 border-gray-200 bg-white p-4">
+            <div className="max-w-4xl mx-auto">
+              {/* Voice Mode Indicator */}
+              {isListening && (
+                <div className="mb-3 px-4 py-2 bg-red-50 border-2 border-red-200 rounded-lg text-red-700 text-sm flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                  <span>음성 인식 중... 말씀해주세요</span>
+                  {transcript && <span className="text-gray-600">: &quot;{transcript}&quot;</span>}
+                </div>
+              )}
+
+              <div className="flex items-center space-x-3">
+                {/* Voice Input Button */}
+                <button
+                  onClick={handleVoiceStart}
+                  className={`p-2 rounded-lg transition-all ${
+                    isListening
+                      ? "bg-red-100 text-red-600 animate-pulse"
+                      : isVoiceMode
+                      ? "bg-accent-100 text-accent-600"
+                      : "hover:bg-gray-100 text-gray-600"
+                  }`}
+                  title={isListening ? "음성 인식 중지" : "음성 입력 시작"}
+                  disabled={!isSpeechRecognitionSupported}
+                >
+                  {isListening ? (
+                    <MicOff className="w-6 h-6" />
+                  ) : (
+                    <Mic className="w-6 h-6" />
+                  )}
+                </button>
+
+                {/* Auto-Speak Toggle */}
+                <button
+                  onClick={toggleAutoSpeak}
+                  className={`p-2 rounded-lg transition-colors ${
+                    autoSpeak
+                      ? "bg-blue-100 text-blue-600"
+                      : "hover:bg-gray-100 text-gray-400"
+                  }`}
+                  title={autoSpeak ? "자동 읽기 켜짐" : "자동 읽기 꺼짐"}
+                  disabled={!isSpeechSynthesisSupported}
+                >
+                  {autoSpeak ? (
+                    <Volume2 className="w-6 h-6" />
+                  ) : (
+                    <VolumeX className="w-6 h-6" />
+                  )}
+                </button>
+
+                {/* ChatInput Component */}
+                <div className="flex-1">
+                  <ChatInput
+                    onSend={handleSendMessage}
+                    onImageUpload={handleImageUpload}
+                    disabled={isLoading}
+                    placeholder="수학 문제나 개념을 질문해보세요..."
+                    enableImage={true}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Sidebar */}
