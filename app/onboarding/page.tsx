@@ -331,13 +331,13 @@ export default function OnboardingPage() {
             >
               <button
                 onClick={handleNext}
-                disabled={(step === 1 && !selectedGrade) || (step === 2 && !selectedSubject)}
+                disabled={(step === 1 && !username) || (step === 2 && !selectedGrade)}
                 className={`px-8 py-3 rounded-full font-semibold transition-all inline-flex items-center space-x-2 ${
-                (step === 1 && !selectedGrade) || (step === 2 && !selectedSubject)
+                (step === 1 && !username) || (step === 2 && !selectedGrade)
                   ? "bg-gray-200 cursor-not-allowed"
                   : "bg-gradient-to-r from-primary-500 to-secondary-500 text-white hover:shadow-xl"
               }`}
-                style={{ color: ((step === 1 && !selectedGrade) || (step === 2 && !selectedSubject)) ? '#6B7280' : 'white' }}
+                style={{ color: ((step === 1 && !username) || (step === 2 && !selectedGrade)) ? '#6B7280' : 'white' }}
               >
                 <span>다음</span>
                 <ArrowRight className="w-5 h-5" />
