@@ -12,9 +12,12 @@ import {
   VOICE_TUTOR_XP,
 } from './types';
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY || '',
-});
+// Server-side only - will be null in browser
+const anthropic = typeof window === 'undefined'
+  ? new Anthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY || '',
+    })
+  : null;
 
 export abstract class VoiceTutorEngine {
   protected subject: TutorSubject;
@@ -110,6 +113,10 @@ export abstract class VoiceTutorEngine {
   // Helper: Call Claude API
   protected async callClaude(prompt: string): Promise<string> {
     try {
+      if (!anthropic) {
+        throw new Error('Voice tutor is only available server-side');
+      }
+
       const response = await anthropic.messages.create({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 2000,

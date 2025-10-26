@@ -12,9 +12,12 @@ import {
 } from './types';
 import { getNodeById } from '../adaptive-learning/knowledge-graph';
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY || '',
-});
+// Server-side only - will be null in browser
+const anthropic = typeof window === 'undefined'
+  ? new Anthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY || '',
+    })
+  : null;
 
 export class QuizGenerator {
   /**
@@ -59,6 +62,10 @@ export class QuizGenerator {
     );
 
     try {
+      if (!anthropic) {
+        throw new Error('Quiz generation is only available server-side');
+      }
+
       const response = await anthropic.messages.create({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 4000,
