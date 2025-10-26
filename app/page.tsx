@@ -20,9 +20,13 @@ export default function Home() {
               <a href="#how-it-works" className="font-medium hover:text-primary-600" style={{ color: '#374151' }}>
                 사용방법
               </a>
-              <a href="#pricing" className="font-medium hover:text-primary-600" style={{ color: '#374151' }}>
-                요금
-              </a>
+              <Link
+                href="/dashboard"
+                className="font-medium hover:text-primary-600"
+                style={{ color: '#374151' }}
+              >
+                대시보드
+              </Link>
               <Link
                 href="/onboarding"
                 className="px-6 py-2.5 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-full font-semibold hover:shadow-lg hover:scale-105 transform transition-all"

@@ -1,0 +1,128 @@
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { useUserStore } from "@/lib/gamification/store";
+import { LevelProgress } from "@/components/gamification/LevelProgress";
+import { StreakDisplay } from "@/components/gamification/StreakDisplay";
+import { WeeklyStats } from "@/components/gamification/WeeklyStats";
+import { AchievementBadges } from "@/components/gamification/AchievementBadges";
+import { Home, BookOpen, Calculator } from "lucide-react";
+import Link from "next/link";
+
+export default function DashboardPage() {
+  const router = useRouter();
+  const profile = useUserStore((state) => state.profile);
+
+  // Redirect to onboarding if no profile
+  useEffect(() => {
+    if (!profile) {
+      router.push("/onboarding");
+    }
+  }, [profile, router]);
+
+  if (!profile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-500"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50">
+      {/* Header */}
+      <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Link
+                href="/"
+                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                <Home className="w-5 h-5" />
+                <span className="text-sm font-medium">홈</span>
+              </Link>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent">
+                내 대시보드
+              </h1>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">{profile.avatar}</span>
+              <div>
+                <p className="font-semibold text-gray-900">{profile.username}</p>
+                <p className="text-sm text-gray-600">{profile.gradeLevel}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="space-y-8">
+          {/* Top Section: Level & Streak */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <LevelProgress />
+            <StreakDisplay />
+          </div>
+
+          {/* Weekly Stats */}
+          <WeeklyStats />
+
+          {/* Achievement Badges */}
+          <AchievementBadges />
+
+          {/* Quick Actions */}
+          <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              학습 시작하기
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Link href="/tutor/english">
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-shadow"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                      <BookOpen className="w-8 h-8" />
+                    </div>
+                    <div>
+                      <h4 className="text-xl font-bold">영어 튜터</h4>
+                      <p className="text-sm text-white/80">
+                        영어 대화 연습 시작하기
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              </Link>
+
+              <Link href="/tutor/math">
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="bg-gradient-to-br from-green-500 to-teal-600 rounded-xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-shadow"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                      <Calculator className="w-8 h-8" />
+                    </div>
+                    <div>
+                      <h4 className="text-xl font-bold">수학 튜터</h4>
+                      <p className="text-sm text-white/80">
+                        수학 문제 풀이 시작하기
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
