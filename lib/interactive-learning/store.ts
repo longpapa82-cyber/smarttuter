@@ -156,6 +156,16 @@ export const useInteractiveLearning = create<InteractiveLearningState>()(
               : null,
           };
         });
+
+        // 🆕 Phase 8 Integration: Update adaptive learning profile
+        if (typeof window !== 'undefined') {
+          const quiz = get().quizzes.find(q => q.id === result.quizId);
+          if (quiz) {
+            import('../unified-learning/integration-service').then(({ learningIntegrationService }) => {
+              learningIntegrationService.onQuizCompleted(result, { subject: quiz.subject, difficulty: quiz.difficulty, title: quiz.title });
+            });
+          }
+        }
       },
 
       getQuizzesBySubject: (subject: Subject) => {
@@ -236,6 +246,13 @@ export const useInteractiveLearning = create<InteractiveLearningState>()(
               : null,
           };
         });
+
+        // 🆕 Phase 8 Integration: Update mastery
+        if (typeof window !== 'undefined') {
+          import('../unified-learning/integration-service').then(({ learningIntegrationService }) => {
+            learningIntegrationService.onFlashcardReviewed(cardId, quality, responseTime);
+          });
+        }
       },
 
       getDueFlashcards: () => {

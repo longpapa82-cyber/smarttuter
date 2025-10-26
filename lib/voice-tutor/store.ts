@@ -106,6 +106,13 @@ export const useVoiceTutor = create<VoiceTutorState>()(
           currentTutor: null,
         });
 
+        // 🆕 Phase 8 Integration: Update adaptive learning profile
+        if (typeof window !== 'undefined') {
+          import('../unified-learning/integration-service').then(({ learningIntegrationService }) => {
+            learningIntegrationService.onVoiceSessionEnded(finalSession);
+          });
+        }
+
         return finalSession;
       },
 
