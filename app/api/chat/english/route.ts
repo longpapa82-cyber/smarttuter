@@ -114,42 +114,74 @@ Important:
       content: message,
     });
 
-    // Create streaming response
-    const stream = await anthropic.messages.stream({
-      model: "claude-sonnet-4-5-20250929",
-      max_tokens: 2048,
-      system: systemPrompt,
-      messages: messages,
-    });
-
-    // Create a readable stream for the response
+    // Create streaming response with better error handling
     const encoder = new TextEncoder();
-    const readableStream = new ReadableStream({
-      async start(controller) {
-        try {
-          for await (const chunk of stream) {
-            if (chunk.type === "content_block_delta" &&
-                chunk.delta.type === "text_delta") {
-              const text = chunk.delta.text;
-              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
+
+    try {
+      const stream = await anthropic.messages.stream({
+        model: "claude-sonnet-4-5-20250929",
+        max_tokens: 2048,
+        system: systemPrompt,
+        messages: messages,
+      });
+
+      // Create a readable stream for the response
+      const readableStream = new ReadableStream({
+        async start(controller) {
+          try {
+            for await (const chunk of stream) {
+              if (chunk.type === "content_block_delta" &&
+                  chunk.delta.type === "text_delta") {
+                const text = chunk.delta.text;
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
+              }
             }
+            controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+            controller.close();
+          } catch (error) {
+            console.error("Streaming error:", error);
+            controller.error(error);
           }
+        },
+      });
+
+      return new Response(readableStream, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          "Connection": "keep-alive",
+        },
+      });
+    } catch (apiError: any) {
+      // Handle API-specific errors (credit issues, rate limits, etc.)
+      console.error("Anthropic API error:", apiError);
+
+      // Check for credit balance error
+      const isCreditError =
+        apiError.message?.includes('credit balance') ||
+        apiError.message?.includes('insufficient') ||
+        apiError.status === 402;
+
+      const errorMsg = isCreditError
+        ? "⚠️ API 크레딧이 부족합니다.\n\nAPI credit balance is too low.\n\n관리자에게 문의하여 크레딧을 충전해주세요.\nPlease contact the administrator to add credits.\n\n🔗 https://console.anthropic.com/settings/billing"
+        : "죄송합니다. 일시적인 오류가 발생했습니다.\n\nI apologize, but a temporary error occurred.\n\n잠시 후 다시 시도해주세요.\nPlease try again in a moment.";
+
+      const errorStream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: errorMsg })}\n\n`));
           controller.enqueue(encoder.encode("data: [DONE]\n\n"));
           controller.close();
-        } catch (error) {
-          console.error("Streaming error:", error);
-          controller.error(error);
-        }
-      },
-    });
+        },
+      });
 
-    return new Response(readableStream, {
-      headers: {
-        "Content-Type": "text/event-stream",
-        "Cache-Control": "no-cache",
-        "Connection": "keep-alive",
-      },
-    });
+      return new Response(errorStream, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          "Connection": "keep-alive",
+        },
+      });
+    }
   } catch (error: unknown) {
     console.error("Error in English chat API:", error);
 
