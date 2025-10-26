@@ -163,7 +163,7 @@ export default function OnboardingPage() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="이름을 입력하세요"
-                  className="w-full px-6 py-4 text-lg border-2 border-gray-300 rounded-xl focus:border-primary-500 focus:ring-4 focus:ring-primary-100 outline-none transition-all"
+                  className="w-full px-6 py-4 text-lg text-gray-900 placeholder:text-gray-400 border-2 border-gray-300 rounded-xl focus:border-primary-500 focus:ring-4 focus:ring-primary-100 outline-none transition-all"
                   autoFocus
                   onKeyPress={(e) => {
                     if (e.key === 'Enter' && username) {

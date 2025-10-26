@@ -4,6 +4,8 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useUserStore } from "@/lib/gamification/store";
+import { useAdaptiveLearning } from "@/lib/adaptive-learning/store";
+import { useInteractiveLearning } from "@/lib/interactive-learning/store";
 import { LevelProgress } from "@/components/gamification/LevelProgress";
 import { StreakDisplay } from "@/components/gamification/StreakDisplay";
 import { WeeklyStats } from "@/components/gamification/WeeklyStats";
@@ -14,13 +16,39 @@ import Link from "next/link";
 export default function DashboardPage() {
   const router = useRouter();
   const profile = useUserStore((state) => state.profile);
+  const initializeProfile = useUserStore((state) => state.initializeProfile);
+  const initializeAdaptiveProfile = useAdaptiveLearning((state) => state.initializeProfile);
+  const initializeInteractiveProfile = useInteractiveLearning((state) => state.initializeProfile);
 
-  // Redirect to onboarding if no profile
+  // Initialize stores from onboarding data if available
   useEffect(() => {
-    if (!profile) {
-      router.push("/onboarding");
+    if (!profile && typeof window !== 'undefined') {
+      const onboardingData = localStorage.getItem('onboarding_data');
+      if (onboardingData) {
+        try {
+          const data = JSON.parse(onboardingData);
+
+          // Initialize gamification profile
+          initializeProfile(data.username, data.gradeLevel);
+
+          // Initialize adaptive learning profile
+          initializeAdaptiveProfile(data.userId, data.gradeLevel);
+
+          // Initialize interactive learning profile
+          initializeInteractiveProfile(data.userId);
+
+          // Clear onboarding data after initialization
+          localStorage.removeItem('onboarding_data');
+        } catch (error) {
+          console.error('Failed to initialize from onboarding data:', error);
+          router.push("/onboarding");
+        }
+      } else {
+        // No onboarding data, redirect to onboarding
+        router.push("/onboarding");
+      }
     }
-  }, [profile, router]);
+  }, [profile, initializeProfile, initializeAdaptiveProfile, initializeInteractiveProfile, router]);
 
   if (!profile) {
     return (
