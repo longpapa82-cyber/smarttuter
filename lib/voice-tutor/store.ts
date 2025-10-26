@@ -1,5 +1,5 @@
 // Phase 10: Voice Tutor Store
-// State management for voice tutor sessions
+// API-based state management for voice tutor sessions
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
@@ -9,13 +9,12 @@ import {
   SessionStats,
   GradeLevel,
 } from './types';
-import { EnglishVoiceTutor } from './english-tutor';
-import { MathVoiceTutor } from './math-tutor';
 
 interface VoiceTutorState {
   // Current session
   currentSession: VoiceTutorSession | null;
-  currentTutor: EnglishVoiceTutor | MathVoiceTutor | null;
+  currentProblem: any | null; // For math tutor
+  hintsUsed: number;
 
   // Session history
   sessions: VoiceTutorSession[];
@@ -46,66 +45,126 @@ export const useVoiceTutor = create<VoiceTutorState>()(
     (set, get) => ({
       // Initial state
       currentSession: null,
-      currentTutor: null,
+      currentProblem: null,
+      hintsUsed: 0,
       sessions: [],
 
-      // Start a new session
+      // Start a new session via API
       startSession: async (subject: TutorSubject, gradeLevel: GradeLevel, userId: string) => {
-        // TEMP FIX: Voice tutor requires server-side API integration
-        // TODO: Move tutor logic to API routes to avoid browser-side Anthropic client initialization
-        throw new Error('Voice Tutor is currently under maintenance. Please try again later or use other learning features.');
+        try {
+          const response = await fetch('/api/tutor/start', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ subject, gradeLevel, userId }),
+          });
 
-        // This code requires server-side execution:
-        // const tutor = subject === 'english'
-        //   ? new EnglishVoiceTutor(gradeLevel, userId)
-        //   : new MathVoiceTutor(gradeLevel, userId);
-        //
-        // const greeting = await tutor.startConversation();
-        //
-        // set({
-        //   currentTutor: tutor,
-        //   currentSession: tutor.getSession(),
-        // });
-        //
-        // return greeting;
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to start session');
+          }
+
+          const data = await response.json();
+
+          // Create session object
+          const session: VoiceTutorSession = {
+            ...data.session,
+            startTime: new Date(data.session.startTime),
+            endTime: undefined,
+            messages: [],
+            speakingTime: 0,
+            listeningTime: 0,
+            interactionCount: 0,
+            badgesEarned: [],
+          };
+
+          set({
+            currentSession: session,
+            currentProblem: null,
+            hintsUsed: 0,
+          });
+
+          return data.greeting;
+        } catch (error: any) {
+          console.error('Start session error:', error);
+          throw error;
+        }
       },
 
-      // Send a message to the tutor
+      // Send a message to the tutor via API
       sendMessage: async (message: string, audioMetadata?: { confidence?: number; duration?: number }) => {
-        const { currentTutor } = get();
+        const { currentSession } = get();
 
-        if (!currentTutor) {
+        if (!currentSession) {
           throw new Error('No active session. Start a session first.');
         }
 
-        // Get response from tutor
-        const result = await currentTutor.converse(message, audioMetadata);
+        try {
+          const response = await fetch('/api/tutor/message', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              subject: currentSession.subject,
+              gradeLevel: currentSession.gradeLevel,
+              userId: currentSession.userId,
+              message,
+              audioMetadata,
+              conversationHistory: currentSession.messages,
+            }),
+          });
 
-        // Update current session
-        set({
-          currentSession: currentTutor.getSession(),
-        });
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to send message');
+          }
 
-        return {
-          response: result.response,
-          xpEarned: result.xpEarned,
-        };
+          const data = await response.json();
+
+          // Update session with new messages
+          const updatedSession = {
+            ...currentSession,
+            messages: data.session.messages,
+            duration: data.session.duration,
+            interactionCount: (currentSession.interactionCount || 0) + 1,
+            xpEarned: (currentSession.xpEarned || 0) + data.xpEarned,
+          };
+
+          set({ currentSession: updatedSession });
+
+          return {
+            response: data.response,
+            xpEarned: data.xpEarned,
+          };
+        } catch (error: any) {
+          console.error('Send message error:', error);
+          throw error;
+        }
       },
 
       // End the current session
       endSession: () => {
-        const { currentTutor, sessions } = get();
+        const { currentSession, sessions } = get();
 
-        if (!currentTutor) return null;
+        if (!currentSession) return null;
 
         // Finalize session
-        const finalSession = currentTutor.endSession();
+        const finalSession: VoiceTutorSession = {
+          ...currentSession,
+          status: 'completed',
+          endTime: new Date(),
+          xpEarned: (currentSession.xpEarned || 0) + 50, // Completion bonus
+        };
+
+        // Add bonus for long sessions (15+ minutes)
+        if (finalSession.duration >= 900) {
+          finalSession.xpEarned += 100;
+        }
 
         // Add to history
         set({
           sessions: [...sessions, finalSession],
           currentSession: null,
-          currentTutor: null,
+          currentProblem: null,
+          hintsUsed: 0,
         });
 
         // 🆕 Phase 8 Integration: Update adaptive learning profile
@@ -120,69 +179,129 @@ export const useVoiceTutor = create<VoiceTutorState>()(
 
       // Pause session
       pauseSession: () => {
-        const { currentTutor } = get();
-        if (currentTutor) {
-          currentTutor.pauseSession();
-          set({ currentSession: currentTutor.getSession() });
+        const { currentSession } = get();
+        if (currentSession) {
+          set({
+            currentSession: {
+              ...currentSession,
+              status: 'paused',
+            },
+          });
         }
       },
 
       // Resume session
       resumeSession: () => {
-        const { currentTutor } = get();
-        if (currentTutor) {
-          currentTutor.resumeSession();
-          set({ currentSession: currentTutor.getSession() });
+        const { currentSession } = get();
+        if (currentSession) {
+          set({
+            currentSession: {
+              ...currentSession,
+              status: 'active',
+            },
+          });
         }
       },
 
-      // Request a hint (math only)
+      // Request a hint (math only) via API
       requestHint: async () => {
-        const { currentTutor } = get();
+        const { currentSession, currentProblem, hintsUsed } = get();
 
-        if (!currentTutor) {
+        if (!currentSession) {
           throw new Error('No active session');
         }
 
-        if (!(currentTutor instanceof MathVoiceTutor)) {
+        if (currentSession.subject !== 'math') {
           throw new Error('Hints are only available in math sessions');
         }
 
-        return await currentTutor.giveHint();
+        if (!currentProblem) {
+          throw new Error('No active problem. Generate a problem first.');
+        }
+
+        try {
+          const response = await fetch('/api/tutor/hint', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              gradeLevel: currentSession.gradeLevel,
+              userId: currentSession.userId,
+              currentProblem,
+              hintsUsed,
+            }),
+          });
+
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to get hint');
+          }
+
+          const data = await response.json();
+
+          set({ hintsUsed: data.hintsUsed });
+
+          return data.hint;
+        } catch (error: any) {
+          console.error('Request hint error:', error);
+          throw error;
+        }
       },
 
-      // Generate math problem (math only)
+      // Generate math problem (math only) via API
       generateProblem: async (topic?: string) => {
-        const { currentTutor } = get();
+        const { currentSession } = get();
 
-        if (!currentTutor) {
+        if (!currentSession) {
           throw new Error('No active session');
         }
 
-        if (!(currentTutor instanceof MathVoiceTutor)) {
+        if (currentSession.subject !== 'math') {
           throw new Error('Problem generation is only available in math sessions');
         }
 
-        const problem = await currentTutor.generateProblem(topic);
+        try {
+          const response = await fetch('/api/tutor/problem', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              gradeLevel: currentSession.gradeLevel,
+              userId: currentSession.userId,
+              topic,
+            }),
+          });
 
-        set({ currentSession: currentTutor.getSession() });
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to generate problem');
+          }
 
-        return problem;
+          const data = await response.json();
+
+          set({
+            currentProblem: data.problem,
+            hintsUsed: 0,
+          });
+
+          return data.problem;
+        } catch (error: any) {
+          console.error('Generate problem error:', error);
+          throw error;
+        }
       },
 
       // Show solution (math only)
       showSolution: async () => {
-        const { currentTutor } = get();
+        const { currentProblem } = get();
 
-        if (!currentTutor) {
-          throw new Error('No active session');
+        if (!currentProblem) {
+          throw new Error('No active problem');
         }
 
-        if (!(currentTutor instanceof MathVoiceTutor)) {
-          throw new Error('Solution view is only available in math sessions');
-        }
+        // Simply return the solution from current problem
+        const steps = currentProblem.steps.join('\n');
+        const explanation = currentProblem.explanation;
 
-        return await currentTutor.showSolution();
+        return `**Solution: ${currentProblem.solution}**\n\n**Steps:**\n${steps}\n\n**Explanation:**\n${explanation}`;
       },
 
       // Get session statistics
@@ -239,7 +358,7 @@ export const useVoiceTutor = create<VoiceTutorState>()(
     }),
     {
       name: 'voice-tutor-storage',
-      version: 1,
+      version: 2, // Increment version due to breaking changes
       partialize: (state) => ({
         sessions: state.sessions,
       }),
