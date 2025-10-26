@@ -7,10 +7,12 @@ import { Subject, GradeLevel, DifficultyLevel } from '../adaptive-learning/types
 import { Quiz, Flashcard } from '../interactive-learning/types';
 import { VoiceTutorSession, TutorMessage } from '../voice-tutor/types';
 
-const anthropic = new Anthropic({
-  apiKey: process.env.NEXT_PUBLIC_ANTHROPIC_API_KEY!,
-  dangerouslyAllowBrowser: true,
-});
+// Server-side only - will be null in browser
+const anthropic = typeof window === 'undefined'
+  ? new Anthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY || process.env.NEXT_PUBLIC_ANTHROPIC_API_KEY!,
+    })
+  : null;
 
 export class AIContentGenerator {
   /**
@@ -44,6 +46,11 @@ Return ONLY a JSON object in this exact format:
 }`;
 
     try {
+      // Check if running in browser (anthropic will be null)
+      if (!anthropic) {
+        throw new Error('AI content generation is only available server-side');
+      }
+
       const response = await anthropic.messages.create({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 500,
@@ -120,6 +127,10 @@ Return ONLY a JSON array in this exact format:
 ]`;
 
     try {
+      if (!anthropic) {
+        throw new Error('AI content generation is only available server-side');
+      }
+
       const response = await anthropic.messages.create({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1500,
@@ -206,6 +217,10 @@ Return ONLY a JSON object in this exact format:
 }`;
 
     try {
+      if (!anthropic) {
+        throw new Error('AI content generation is only available server-side');
+      }
+
       const response = await anthropic.messages.create({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 2000,
@@ -291,6 +306,10 @@ Return ONLY a JSON object in this exact format:
 }`;
 
     try {
+      if (!anthropic) {
+        throw new Error('AI content generation is only available server-side');
+      }
+
       const response = await anthropic.messages.create({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1000,

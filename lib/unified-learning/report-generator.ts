@@ -9,10 +9,12 @@ import { useUserStore } from '../gamification/store';
 import { UnifiedLearningReport } from './types';
 import { Subject } from '../adaptive-learning/types';
 
-const anthropic = new Anthropic({
-  apiKey: process.env.NEXT_PUBLIC_ANTHROPIC_API_KEY!,
-  dangerouslyAllowBrowser: true,
-});
+// Server-side only - will be null in browser
+const anthropic = typeof window === 'undefined'
+  ? new Anthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY || process.env.NEXT_PUBLIC_ANTHROPIC_API_KEY!,
+    })
+  : null;
 
 export class UnifiedReportGenerator {
   /**
@@ -251,6 +253,10 @@ Return ONLY JSON:
 }`;
 
     try {
+      if (!anthropic) {
+        throw new Error('AI insights generation is only available server-side');
+      }
+
       const response = await anthropic.messages.create({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1000,
