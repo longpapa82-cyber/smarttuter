@@ -4,9 +4,6 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GraduationCap, BookOpen, Calculator, MessageCircle, ArrowRight, ArrowLeft, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useUserStore } from "@/lib/gamification/store";
-import { useAdaptiveLearning } from "@/lib/adaptive-learning/store";
-import { useInteractiveLearning } from "@/lib/interactive-learning/store";
 
 type GradeLevel = "elementary" | "middle" | "high" | "university" | null;
 type Subject = "math" | "english" | null;
@@ -63,9 +60,6 @@ const subjects = [
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const initializeProfile = useUserStore((state) => state.initializeProfile);
-  const initializeAdaptiveProfile = useAdaptiveLearning((state) => state.initializeProfile);
-  const initializeInteractiveProfile = useInteractiveLearning((state) => state.initializeProfile);
 
   const [step, setStep] = useState(1);
   const [username, setUsername] = useState("");
@@ -89,17 +83,17 @@ export default function OnboardingPage() {
   const handleStart = () => {
     if (!username || !selectedGrade) return;
 
-    // Initialize gamification profile
-    initializeProfile(username, selectedGrade);
+    // Store onboarding data in localStorage for dashboard to initialize
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('onboarding_data', JSON.stringify({
+        username,
+        gradeLevel: selectedGrade,
+        userId: `user-${Date.now()}`,
+        timestamp: Date.now()
+      }));
+    }
 
-    // Initialize adaptive learning profile
-    const userId = `user-${Date.now()}`;
-    initializeAdaptiveProfile(userId, selectedGrade);
-
-    // Initialize interactive learning profile
-    initializeInteractiveProfile(userId);
-
-    // Navigate to dashboard
+    // Navigate to dashboard (dashboard will initialize all stores)
     router.push("/dashboard");
   };
 
