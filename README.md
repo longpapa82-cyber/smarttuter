@@ -68,6 +68,8 @@ npm run dev
 
 ---
 
-**Live Demo**: https://smarttuter-vrfhnl4m0-090723s-projects.vercel.app
+**Live Demo**: https://smarttuter-3mkfea3h2-090723s-projects.vercel.app
 
-> ⚠️ **중요**: 브라우저 캐시를 지우고 새로고침하여 최신 버전을 확인하세요! (Ctrl+Shift+R 또는 Cmd+Shift+R)
+> ⚠️ **API 크레딧 필요**: 현재 Anthropic API 크레딧이 부족합니다. 서비스를 사용하려면 [Anthropic Console](https://console.anthropic.com/settings/billing)에서 크레딧을 추가해주세요.
+>
+> **브라우저 캐시**: 최신 버전을 확인하려면 브라우저 캐시를 지우세요 (Ctrl+Shift+R 또는 Cmd+Shift+R)
