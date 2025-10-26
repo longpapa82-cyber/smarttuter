@@ -6,6 +6,7 @@ import { GraduationCap, BookOpen, Calculator, MessageCircle, ArrowRight, ArrowLe
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/lib/gamification/store";
 import { useAdaptiveLearning } from "@/lib/adaptive-learning/store";
+import { useInteractiveLearning } from "@/lib/interactive-learning/store";
 
 type GradeLevel = "elementary" | "middle" | "high" | "university" | null;
 type Subject = "math" | "english" | null;
@@ -64,6 +65,7 @@ export default function OnboardingPage() {
   const router = useRouter();
   const initializeProfile = useUserStore((state) => state.initializeProfile);
   const initializeAdaptiveProfile = useAdaptiveLearning((state) => state.initializeProfile);
+  const initializeInteractiveProfile = useInteractiveLearning((state) => state.initializeProfile);
 
   const [step, setStep] = useState(1);
   const [username, setUsername] = useState("");
@@ -93,6 +95,9 @@ export default function OnboardingPage() {
     // Initialize adaptive learning profile
     const userId = `user-${Date.now()}`;
     initializeAdaptiveProfile(userId, selectedGrade);
+
+    // Initialize interactive learning profile
+    initializeInteractiveProfile(userId);
 
     // Navigate to dashboard
     router.push("/dashboard");

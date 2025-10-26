@@ -150,6 +150,59 @@ export default function DashboardPage() {
               </Link>
             </div>
           </div>
+
+          {/* Phase 9: Interactive Learning */}
+          <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">
+                인터랙티브 학습
+              </h3>
+              <div className="px-3 py-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-full text-xs font-bold">
+                NEW 🚀
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Link href="/quiz">
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-shadow"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-3xl">
+                      🎯
+                    </div>
+                    <div>
+                      <h4 className="text-xl font-bold">AI 퀴즈</h4>
+                      <p className="text-sm text-white/80">
+                        맞춤형 퀴즈로 실력 테스트
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              </Link>
+
+              <Link href="/flashcards">
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-shadow"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-3xl">
+                      🗂️
+                    </div>
+                    <div>
+                      <h4 className="text-xl font-bold">스마트 플래시카드</h4>
+                      <p className="text-sm text-white/80">
+                        SM-2 알고리즘 기반 복습
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              </Link>
+            </div>
+          </div>
         </div>
       </main>
     </div>
