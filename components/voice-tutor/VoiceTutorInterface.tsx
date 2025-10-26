@@ -55,9 +55,9 @@ export default function VoiceTutorInterface({
 
       // Speak the greeting
       await speakText(greeting);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to start session:', error);
-      setError('Failed to start voice tutor. Please try again.');
+      setError(error?.message || 'Voice Tutor is currently under maintenance. Please try other learning features like Quiz or Flashcards.');
     }
   };
 

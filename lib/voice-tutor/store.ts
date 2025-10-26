@@ -51,21 +51,23 @@ export const useVoiceTutor = create<VoiceTutorState>()(
 
       // Start a new session
       startSession: async (subject: TutorSubject, gradeLevel: GradeLevel, userId: string) => {
-        // Create appropriate tutor
-        const tutor = subject === 'english'
-          ? new EnglishVoiceTutor(gradeLevel, userId)
-          : new MathVoiceTutor(gradeLevel, userId);
+        // TEMP FIX: Voice tutor requires server-side API integration
+        // TODO: Move tutor logic to API routes to avoid browser-side Anthropic client initialization
+        throw new Error('Voice Tutor is currently under maintenance. Please try again later or use other learning features.');
 
-        // Get initial greeting
-        const greeting = await tutor.startConversation();
-
-        // Update state
-        set({
-          currentTutor: tutor,
-          currentSession: tutor.getSession(),
-        });
-
-        return greeting;
+        // This code requires server-side execution:
+        // const tutor = subject === 'english'
+        //   ? new EnglishVoiceTutor(gradeLevel, userId)
+        //   : new MathVoiceTutor(gradeLevel, userId);
+        //
+        // const greeting = await tutor.startConversation();
+        //
+        // set({
+        //   currentTutor: tutor,
+        //   currentSession: tutor.getSession(),
+        // });
+        //
+        // return greeting;
       },
 
       // Send a message to the tutor

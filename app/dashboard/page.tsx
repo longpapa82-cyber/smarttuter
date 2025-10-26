@@ -99,7 +99,7 @@ export default function DashboardPage() {
           <AchievementBadges />
 
           {/* Analytics Link */}
-          <Link href="/analytics">
+          <Link href="/analytics" className="mt-6">
             <motion.div
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
