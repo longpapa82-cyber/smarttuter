@@ -34,13 +34,22 @@ export async function POST(req: NextRequest) {
 
     // Check if API key is configured
     if (!process.env.ANTHROPIC_API_KEY) {
-      return new Response(
-        JSON.stringify({
-          message:
-            "API 키가 설정되지 않았습니다.\n\n.env.local 파일에 ANTHROPIC_API_KEY를 추가해주세요.",
-        }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
-      );
+      const encoder = new TextEncoder();
+      const errorStream = new ReadableStream({
+        start(controller) {
+          const errorMsg = "죄송합니다. 현재 서버와 연결할 수 없습니다.\n\nPlease contact the administrator to configure ANTHROPIC_API_KEY.";
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: errorMsg })}\n\n`));
+          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+          controller.close();
+        },
+      });
+      return new Response(errorStream, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          Connection: "keep-alive",
+        },
+      });
     }
 
     // Get grade level prompt
