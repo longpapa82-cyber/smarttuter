@@ -68,4 +68,6 @@ npm run dev
 
 ---
 
-**Live Demo**: https://smarttuter-3rfu3g04q-090723s-projects.vercel.app
+**Live Demo**: https://smarttuter-vrfhnl4m0-090723s-projects.vercel.app
+
+> ⚠️ **중요**: 브라우저 캐시를 지우고 새로고침하여 최신 버전을 확인하세요! (Ctrl+Shift+R 또는 Cmd+Shift+R)
