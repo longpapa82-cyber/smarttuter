@@ -28,13 +28,9 @@ export default function DashboardPage() {
         try {
           const data = JSON.parse(onboardingData);
 
-          // Initialize gamification profile
+          // Initialize all stores
           initializeProfile(data.username, data.gradeLevel);
-
-          // Initialize adaptive learning profile
           initializeAdaptiveProfile(data.userId, data.gradeLevel);
-
-          // Initialize interactive learning profile
           initializeInteractiveProfile(data.userId);
 
           // Clear onboarding data after initialization
@@ -48,7 +44,7 @@ export default function DashboardPage() {
         router.push("/onboarding");
       }
     }
-  }, [profile, initializeProfile, initializeAdaptiveProfile, initializeInteractiveProfile, router]);
+  }, [profile, router]);
 
   if (!profile) {
     return (
