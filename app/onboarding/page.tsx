@@ -4,6 +4,8 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GraduationCap, BookOpen, Calculator, MessageCircle, ArrowRight, ArrowLeft, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useUserStore } from "@/lib/gamification/store";
+import { useAdaptiveLearning } from "@/lib/adaptive-learning/store";
 
 type GradeLevel = "elementary" | "middle" | "high" | "university" | null;
 type Subject = "math" | "english" | null;
@@ -60,14 +62,18 @@ const subjects = [
 
 export default function OnboardingPage() {
   const router = useRouter();
+  const initializeProfile = useUserStore((state) => state.initializeProfile);
+  const initializeAdaptiveProfile = useAdaptiveLearning((state) => state.initializeProfile);
+
   const [step, setStep] = useState(1);
+  const [username, setUsername] = useState("");
   const [selectedGrade, setSelectedGrade] = useState<GradeLevel>(null);
   const [selectedSubject, setSelectedSubject] = useState<Subject>(null);
 
   const handleNext = () => {
-    if (step === 1 && selectedGrade) {
+    if (step === 1 && username) {
       setStep(2);
-    } else if (step === 2 && selectedSubject) {
+    } else if (step === 2 && selectedGrade) {
       setStep(3);
     }
   };
@@ -79,16 +85,17 @@ export default function OnboardingPage() {
   };
 
   const handleStart = () => {
-    // Store selections in localStorage or state management
-    localStorage.setItem("userGrade", selectedGrade || "");
-    localStorage.setItem("userSubject", selectedSubject || "");
+    if (!username || !selectedGrade) return;
 
-    // Navigate to appropriate tutor page
-    if (selectedSubject === "math") {
-      router.push("/tutor/math");
-    } else if (selectedSubject === "english") {
-      router.push("/tutor/english");
-    }
+    // Initialize gamification profile
+    initializeProfile(username, selectedGrade);
+
+    // Initialize adaptive learning profile
+    const userId = `user-${Date.now()}`;
+    initializeAdaptiveProfile(userId, selectedGrade);
+
+    // Navigate to dashboard
+    router.push("/dashboard");
   };
 
   return (
@@ -120,17 +127,59 @@ export default function OnboardingPage() {
             ))}
           </div>
           <div className="text-center" style={{ color: '#4B5563' }}>
-            {step === 1 && "학교급 선택"}
-            {step === 2 && "과목 선택"}
+            {step === 1 && "이름 입력"}
+            {step === 2 && "학교급 선택"}
             {step === 3 && "준비 완료"}
           </div>
         </div>
 
         <AnimatePresence mode="wait">
-          {/* Step 1: Grade Level Selection */}
+          {/* Step 1: Username Input */}
           {step === 1 && (
             <motion.div
               key="step1"
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-8"
+            >
+              <div className="text-center space-y-4">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.2, type: "spring" }}
+                >
+                  <Sparkles className="w-16 h-16 mx-auto text-primary-500" />
+                </motion.div>
+                <h1 className="text-4xl font-bold gradient-text">환영합니다!</h1>
+                <p className="text-xl" style={{ color: '#4B5563' }}>
+                  당신의 이름을 알려주세요
+                </p>
+              </div>
+
+              <div className="max-w-md mx-auto">
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="이름을 입력하세요"
+                  className="w-full px-6 py-4 text-lg border-2 border-gray-300 rounded-xl focus:border-primary-500 focus:ring-4 focus:ring-primary-100 outline-none transition-all"
+                  autoFocus
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' && username) {
+                      handleNext();
+                    }
+                  }}
+                />
+              </div>
+            </motion.div>
+          )}
+
+          {/* Step 2: Grade Level Selection */}
+          {step === 2 && (
+            <motion.div
+              key="step2"
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -50 }}
@@ -192,87 +241,6 @@ export default function OnboardingPage() {
             </motion.div>
           )}
 
-          {/* Step 2: Subject Selection */}
-          {step === 2 && (
-            <motion.div
-              key="step2"
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-              transition={{ duration: 0.3 }}
-              className="space-y-8"
-            >
-              <div className="text-center space-y-4">
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.2, type: "spring" }}
-                >
-                  <BookOpen className="w-16 h-16 mx-auto text-secondary-500" />
-                </motion.div>
-                <h1 className="text-4xl font-bold gradient-text">과목을 선택해주세요</h1>
-                <p className="text-xl" style={{ color: '#4B5563' }}>
-                  {gradeLevels.find((g) => g.id === selectedGrade)?.name}에 맞는 학습을 시작합니다
-                </p>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-6">
-                {subjects.map((subject, index) => {
-                  const Icon = subject.icon;
-                  return (
-                    <motion.div
-                      key={subject.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                    >
-                      <button
-                        onClick={() => setSelectedSubject(subject.id)}
-                        className={`w-full p-8 rounded-2xl border-2 transition-all text-left ${
-                          selectedSubject === subject.id
-                            ? "border-secondary-500 bg-secondary-50 shadow-xl scale-105"
-                            : "border-gray-200 bg-white hover:border-secondary-300 hover:shadow-lg"
-                        }`}
-                      >
-                      <div className="space-y-4">
-                        <div className="flex items-start justify-between">
-                          <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${subject.color} flex items-center justify-center text-white`}>
-                            <Icon className="w-8 h-8" />
-                          </div>
-                          {selectedSubject === subject.id && (
-                            <motion.div
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              className="w-8 h-8 bg-secondary-500 rounded-full flex items-center justify-center text-white"
-                            >
-                              ✓
-                            </motion.div>
-                          )}
-                        </div>
-                        <div>
-                          <h3 className="text-2xl font-bold mb-2 text-gray-900">{subject.name}</h3>
-                          <p className="text-gray-700 mb-4">{subject.description}</p>
-                          <div className="flex flex-wrap gap-2">
-                            {subject.features.map((feature) => (
-                              <span
-                                key={feature}
-                                className="px-3 py-1 bg-white border border-gray-200 rounded-full text-sm"
-                                style={{ color: '#111827' }}
-                              >
-                                {feature}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                      </button>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            </motion.div>
-          )}
-
           {/* Step 3: Ready to Start */}
           {step === 3 && (
             <motion.div
@@ -302,15 +270,13 @@ export default function OnboardingPage() {
                 <h3 className="text-xl font-bold text-gray-900">선택한 정보</h3>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                    <span className="text-gray-700">이름</span>
+                    <span className="font-bold text-gray-900">{username}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                     <span className="text-gray-700">학교급</span>
                     <span className="font-bold text-gray-900">
                       {gradeLevels.find((g) => g.id === selectedGrade)?.name}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                    <span className="text-gray-700">과목</span>
-                    <span className="font-bold text-gray-900">
-                      {subjects.find((s) => s.id === selectedSubject)?.name}
                     </span>
                   </div>
                 </div>

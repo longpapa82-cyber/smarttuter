@@ -8,7 +8,7 @@ import { LevelProgress } from "@/components/gamification/LevelProgress";
 import { StreakDisplay } from "@/components/gamification/StreakDisplay";
 import { WeeklyStats } from "@/components/gamification/WeeklyStats";
 import { AchievementBadges } from "@/components/gamification/AchievementBadges";
-import { Home, BookOpen, Calculator } from "lucide-react";
+import { Home, BookOpen, Calculator, BarChart3 } from "lucide-react";
 import Link from "next/link";
 
 export default function DashboardPage() {
@@ -73,6 +73,35 @@ export default function DashboardPage() {
 
           {/* Achievement Badges */}
           <AchievementBadges />
+
+          {/* Analytics Link */}
+          <Link href="/analytics">
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 rounded-2xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                    <BarChart3 className="w-8 h-8" />
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-bold mb-1">학습 분석</h4>
+                    <p className="text-sm text-white/80">
+                      AI 기반 개인화 진단 및 학습 경로 추천
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-xs text-white/60 mb-1">Phase 8</div>
+                  <div className="px-3 py-1 bg-white/20 rounded-full text-xs font-bold">
+                    NEW ✨
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </Link>
 
           {/* Quick Actions */}
           <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
