@@ -46,20 +46,33 @@ export default function VoiceTutorInterface({
 
   // Start session on mount
   useEffect(() => {
-    initializeSession();
+    // Only initialize on client side
+    if (typeof window === 'undefined') return;
+
+    let mounted = true;
+
+    const initSession = async () => {
+      try {
+        const greeting = await startSession(subject, gradeLevel, userId);
+
+        if (!mounted) return;
+
+        // Speak the greeting (only on client)
+        await speakText(greeting);
+      } catch (error: any) {
+        if (!mounted) return;
+        console.error('Failed to start session:', error);
+        setError(error?.message || 'Voice Tutor is currently under maintenance. Please try other learning features like Quiz or Flashcards.');
+      }
+    };
+
+    initSession();
+
+    return () => {
+      mounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const initializeSession = async () => {
-    try {
-      const greeting = await startSession(subject, gradeLevel, userId);
-
-      // Speak the greeting
-      await speakText(greeting);
-    } catch (error: any) {
-      console.error('Failed to start session:', error);
-      setError(error?.message || 'Voice Tutor is currently under maintenance. Please try other learning features like Quiz or Flashcards.');
-    }
-  };
 
   // Handle voice input
   const handleVoiceInput = async () => {
@@ -110,6 +123,9 @@ export default function VoiceTutorInterface({
 
   // Speak text using TTS
   const speakText = async (text: string) => {
+    // Client-side only
+    if (typeof window === 'undefined') return;
+
     setIsSpeaking(true);
 
     try {
