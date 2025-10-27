@@ -47,13 +47,19 @@ curl -I https://smarttuter.vercel.app
    - 일반 사용자에게는 "Authenticating..." 페이지가 표시됨
    - 500 에러처럼 보일 수 있지만 실제로는 인증 문제
 
-## 🚀 최신 변경사항 (2025-10-26)
+## 🚀 최신 변경사항 (2025-10-27)
 
-### Phase 10: Voice Tutor API 구현
-- ✅ 서버 사이드 API 라우트 완료
-- ✅ `/api/tutor/start`, `/api/tutor/message`, `/api/tutor/hint`, `/api/tutor/problem`
-- ✅ 500 에러 완전 해결 (Anthropic client 서버 사이드 전용)
-- ✅ 학습 분석 버튼 여백 추가 (`mt-6` 클래스)
+### Phase 10: Voice Tutor Hydration 오류 해결
+- ✅ React Hydration Error (#185) 근본 원인 확인 및 해결
+- ✅ VoiceTutorInterface.tsx SSR 안전성 개선
+- ✅ `typeof window === 'undefined'` 체크 추가
+- ✅ useEffect 및 speakText 함수에 클라이언트 사이드 검증 적용
+- ✅ 500 에러 완전 해결
+
+### 기술적 수정사항:
+- **문제**: 서버 사이드 렌더링 중 브라우저 전용 API(window.speechSynthesis) 접근으로 인한 hydration 불일치
+- **해결**: 모든 브라우저 API 접근 전 클라이언트 환경 검증
+- **파일**: [components/voice-tutor/VoiceTutorInterface.tsx](../components/voice-tutor/VoiceTutorInterface.tsx)
 
 ### 테스트 방법:
 ```
@@ -61,9 +67,16 @@ curl -I https://smarttuter.vercel.app
 2. 온보딩 완료 (이름 입력 → 학교급 선택)
 3. 대시보드에서 영어/수학 튜터 클릭
 4. Voice Tutor 인터페이스 정상 작동 확인
+5. 브라우저 콘솔에서 500 에러 또는 Hydration 에러 없음 확인
 ```
+
+### 캐시 초기화 방법:
+브라우저 하드 리프레시로 최신 버전 확인:
+- **Windows/Linux**: Ctrl + Shift + R
+- **Mac**: Cmd + Shift + R
 
 ---
 
-**마지막 업데이트**: 2025-10-26 22:10 KST
-**최신 커밋**: e5b9145 (feat: Implement server-side Voice Tutor API routes)
+**마지막 업데이트**: 2025-10-27 16:14 KST
+**최신 커밋**: 741dc75 (fix: Fix Voice Tutor hydration error and client-side rendering issues)
+**배포 상태**: ✅ Ready (Production)
