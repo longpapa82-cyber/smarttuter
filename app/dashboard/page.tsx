@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { useUserStore } from "@/lib/gamification/store";
 import { useAdaptiveLearning } from "@/lib/adaptive-learning/store";
@@ -13,7 +13,15 @@ import { AchievementBadges } from "@/components/gamification/AchievementBadges";
 import { Home, BookOpen, Calculator, BarChart3 } from "lucide-react";
 import Link from "next/link";
 
-export default function DashboardPage() {
+function LoadingSpinner() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50">
+      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-500"></div>
+    </div>
+  );
+}
+
+function DashboardContent() {
   const router = useRouter();
   const profile = useUserStore((state) => state.profile);
   const initializeProfile = useUserStore((state) => state.initializeProfile);
@@ -48,11 +56,7 @@ export default function DashboardPage() {
   }, [profile]);
 
   if (!profile) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-500"></div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (
@@ -231,5 +235,23 @@ export default function DashboardPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+function ForceDynamic() {
+  useSearchParams();
+  return null;
+}
+
+export default function DashboardPage() {
+  return (
+    <>
+      <Suspense fallback={null}>
+        <ForceDynamic />
+      </Suspense>
+      <Suspense fallback={<LoadingSpinner />}>
+        <DashboardContent />
+      </Suspense>
+    </>
   );
 }
