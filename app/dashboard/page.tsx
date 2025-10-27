@@ -1,8 +1,11 @@
 "use client";
 
+import dynamic from 'next/dynamic';
 import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { motion } from "framer-motion";
+import { BookOpen, Calculator, BarChart3, Trophy, Target, TrendingUp, Award, Clock, Star, Zap, Home } from "lucide-react";
 import { useUserStore } from "@/lib/gamification/store";
 import { useAdaptiveLearning } from "@/lib/adaptive-learning/store";
 import { useInteractiveLearning } from "@/lib/interactive-learning/store";
@@ -10,8 +13,6 @@ import { LevelProgress } from "@/components/gamification/LevelProgress";
 import { StreakDisplay } from "@/components/gamification/StreakDisplay";
 import { WeeklyStats } from "@/components/gamification/WeeklyStats";
 import { AchievementBadges } from "@/components/gamification/AchievementBadges";
-import { Home, BookOpen, Calculator, BarChart3 } from "lucide-react";
-import Link from "next/link";
 
 function LoadingSpinner() {
   return (

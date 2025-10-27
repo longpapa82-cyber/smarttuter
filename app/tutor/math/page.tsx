@@ -1,10 +1,7 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useSearchParams } from 'next/navigation';
-import { useUserStore } from '@/lib/gamification/store';
-import VoiceTutorInterface from '@/components/voice-tutor/VoiceTutorInterface';
+import dynamic from 'next/dynamic';
+import { useEffect, useState } from 'react';
 
 function LoadingSpinner() {
   return (
@@ -14,53 +11,25 @@ function LoadingSpinner() {
   );
 }
 
-function MathTutorContent() {
-  const router = useRouter();
-  const profile = useUserStore((state) => state.profile);
-  const [isHydrated, setIsHydrated] = useState(false);
+// Dynamically import with SSR disabled - this prevents hydration errors
+const MathTutorClient = dynamic(
+  () => import('@/components/tutor-pages/MathTutorClient'),
+  {
+    ssr: false,
+    loading: () => <LoadingSpinner />
+  }
+);
 
-  // Wait for client-side hydration
+export default function MathTutorPage() {
+  const [isMounted, setIsMounted] = useState(false);
+
   useEffect(() => {
-    setIsHydrated(true);
+    setIsMounted(true);
   }, []);
 
-  // Check profile only after hydration completes
-  useEffect(() => {
-    if (!isHydrated) return; // Skip during SSR and initial hydration
-
-    if (!profile) {
-      router.push('/onboarding');
-    }
-  }, [isHydrated, profile, router]);
-
-  // Show loading during hydration OR when no profile
-  if (!isHydrated || !profile) {
+  if (!isMounted) {
     return <LoadingSpinner />;
   }
 
-  return (
-    <VoiceTutorInterface
-      subject="math"
-      userId={`user-${profile.username}`}
-      gradeLevel={profile.gradeLevel as 'elementary' | 'middle' | 'high' | 'university'}
-    />
-  );
-}
-
-function ForceDynamic() {
-  useSearchParams();
-  return null;
-}
-
-export default function MathTutorPage() {
-  return (
-    <>
-      <Suspense fallback={null}>
-        <ForceDynamic />
-      </Suspense>
-      <Suspense fallback={<LoadingSpinner />}>
-        <MathTutorContent />
-      </Suspense>
-    </>
-  );
+  return <MathTutorClient />;
 }

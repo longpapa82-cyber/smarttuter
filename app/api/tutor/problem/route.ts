@@ -9,6 +9,12 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return NextResponse.json(
+        { error: 'Service unavailable: ANTHROPIC_API_KEY is not configured' },
+        { status: 503 }
+      );
+    }
     const body = await request.json();
     const { gradeLevel, userId, topic } = body as {
       gradeLevel: GradeLevel;
@@ -35,9 +41,12 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     console.error('Error generating problem:', error);
-    return NextResponse.json(
-      { error: error.message || 'Failed to generate problem' },
-      { status: 500 }
-    );
+    const message =
+      (typeof error?.message === 'string' && error.message) || 'Failed to generate problem';
+    const status = /apikey|unauthorized|auth|forbidden|permission/i.test(message) ? 401
+      : /quota|credit|billing|limit/i.test(message) ? 402
+      : /timeout|temporarily|unavailable|upstream|bad gateway|502|503/i.test(message) ? 503
+      : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }
