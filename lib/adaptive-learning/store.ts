@@ -477,6 +477,22 @@ export const useAdaptiveLearning = create<AdaptiveLearningStore>()(
     }),
     {
       name: 'smarttuter-adaptive-learning',
+      skipHydration: true,
+      storage: {
+        getItem: (name) => {
+          if (typeof window === 'undefined') return null;
+          const str = localStorage.getItem(name);
+          return str ? JSON.parse(str) : null;
+        },
+        setItem: (name, value) => {
+          if (typeof window === 'undefined') return;
+          localStorage.setItem(name, JSON.stringify(value));
+        },
+        removeItem: (name) => {
+          if (typeof window === 'undefined') return;
+          localStorage.removeItem(name);
+        },
+      },
     }
   )
 );
