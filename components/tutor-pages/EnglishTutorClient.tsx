@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserStore } from '@/lib/gamification/store';
 import VoiceTutorInterface from '@/components/voice-tutor/VoiceTutorInterface';
@@ -15,15 +15,21 @@ function LoadingSpinner() {
 
 export default function EnglishTutorClient() {
   const router = useRouter();
+  const [isHydrated, setIsHydrated] = useState(false);
   const profile = useUserStore((state) => state.profile);
 
+  // Wait for hydration
   useEffect(() => {
-    if (!profile) {
+    setIsHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (isHydrated && !profile) {
       router.push('/onboarding');
     }
-  }, [profile, router]);
+  }, [isHydrated, profile, router]);
 
-  if (!profile) {
+  if (!isHydrated || !profile) {
     return <LoadingSpinner />;
   }
 
