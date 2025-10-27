@@ -44,7 +44,8 @@ export default function DashboardPage() {
         router.push("/onboarding");
       }
     }
-  }, [profile, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile]);
 
   if (!profile) {
     return (

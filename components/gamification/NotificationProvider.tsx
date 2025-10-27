@@ -11,6 +11,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
+    // Client-side only
+    if (typeof window === 'undefined') return;
+
     // Set window dimensions
     setDimensions({
       width: window.innerWidth,
