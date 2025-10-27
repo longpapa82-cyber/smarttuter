@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { StoreProvider } from "@/components/providers/StoreProvider";
 import { NotificationProvider } from "@/components/gamification/NotificationProvider";
 
 const inter = Inter({
@@ -86,9 +87,11 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body className="antialiased">
-        <NotificationProvider>
-          {children}
-        </NotificationProvider>
+        <StoreProvider>
+          <NotificationProvider>
+            {children}
+          </NotificationProvider>
+        </StoreProvider>
       </body>
     </html>
   );
