@@ -130,9 +130,37 @@ export abstract class VoiceTutorEngine {
 
       const content = response.content[0];
       return content.type === 'text' ? content.text : '';
-    } catch (error) {
+    } catch (error: any) {
       console.error('Claude API error:', error);
-      return 'I apologize, but I encountered an error. Could you please repeat that?';
+
+      // Graceful error handling - detect credit exhaustion
+      const errorMessage = error?.message || '';
+      const errorType = error?.type || '';
+      const errorStatus = error?.status || 0;
+
+      // Credit exhaustion detection
+      if (
+        /credit|billing|quota|payment|balance/i.test(errorMessage) ||
+        errorType === 'invalid_request_error' ||
+        errorStatus === 402 ||
+        errorStatus === 529
+      ) {
+        return this.subject === 'english'
+          ? `I'm very sorry, but our AI tutoring service is temporarily unavailable due to API credit limitations. 😔\n\nPlease ask your administrator to refill the Claude API credits so we can continue our learning session together.\n\nIn the meantime, you can try our Quiz and Flashcard features on the Dashboard!\n\n죄송합니다. AI 튜터링 서비스를 위한 API 크레딧이 부족합니다. 관리자에게 크레딧 충전을 요청해주세요. 대시보드의 퀴즈와 플래시카드 기능을 이용해보세요!`
+          : `죄송합니다. 현재 AI 튜터 서비스의 API 크레딧이 부족하여 일시적으로 이용이 어렵습니다. 😔\n\n관리자에게 Claude API 크레딧 충전을 요청해주세요.\n\n그동안 대시보드에서 퀴즈와 플래시카드 학습을 이용하실 수 있습니다!\n\nI'm sorry, but our AI tutor service is temporarily unavailable due to API credit limitations. Please ask your administrator to refill the credits. Try our Quiz and Flashcards in the meantime!`;
+      }
+
+      // Authentication/API key errors
+      if (/api.*key|unauthorized|authentication|forbidden/i.test(errorMessage) || errorStatus === 401) {
+        return this.subject === 'english'
+          ? `I apologize, but there seems to be an API configuration issue. Please contact your administrator to check the API key settings.\n\n죄송합니다. API 설정에 문제가 있습니다. 관리자에게 문의해주세요.`
+          : `죄송합니다. API 설정에 문제가 있습니다. 관리자에게 문의해주세요.\n\nI apologize, but there seems to be an API configuration issue. Please contact your administrator.`;
+      }
+
+      // Generic fallback
+      return this.subject === 'english'
+        ? `I apologize, but I encountered a temporary error. Could you please try again? If the problem persists, please contact support.\n\n죄송합니다. 일시적인 오류가 발생했습니다. 다시 시도해주세요.`
+        : `죄송합니다. 일시적인 오류가 발생했습니다. 다시 시도해주세요.\n\nI apologize, but I encountered a temporary error. Please try again.`;
     }
   }
 
