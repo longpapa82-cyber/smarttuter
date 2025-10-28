@@ -19,24 +19,39 @@ function LoadingSpinner() {
 export default function MathTutorWithImage() {
   const router = useRouter();
   const [isHydrated, setIsHydrated] = useState(false);
+  const [profile, setProfile] = useState<ReturnType<typeof useUserStore.getState>['profile']>(null);
   const [mode, setMode] = useState<'select' | 'image' | 'voice'>('select');
   const [currentImage, setCurrentImage] = useState<string | null>(null);
   const [currentFile, setCurrentFile] = useState<File | null>(null);
   const [recognizedProblem, setRecognizedProblem] = useState<any>(null);
 
-  const profile = useUserStore((state) => state.profile);
-
-  // Wait for hydration
+  // Properly handle Zustand hydration to avoid hydration mismatch
   useEffect(() => {
+    // Manually hydrate the Zustand store
+    useUserStore.persist.rehydrate();
+
+    // Set hydration flag and get profile after rehydration
     setIsHydrated(true);
+
+    // Subscribe to store changes
+    const unsubscribe = useUserStore.subscribe((state) => {
+      setProfile(state.profile);
+    });
+
+    // Get initial profile value
+    setProfile(useUserStore.getState().profile);
+
+    return () => unsubscribe();
   }, []);
 
+  // Redirect to onboarding if no profile after hydration
   useEffect(() => {
     if (isHydrated && !profile) {
       router.push('/onboarding');
     }
   }, [isHydrated, profile, router]);
 
+  // Always show loading spinner until hydration is complete
   if (!isHydrated || !profile) {
     return <LoadingSpinner />;
   }
