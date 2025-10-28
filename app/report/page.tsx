@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { motion } from "framer-motion";
+import dynamic from "next/dynamic";
 import {
   Home,
   Calendar,
@@ -17,8 +18,6 @@ import {
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { WeeklyChart } from "@/components/report/WeeklyChart";
-import { PerformanceGauge } from "@/components/report/PerformanceGauge";
 import {
   getTodayReport,
   getWeeklyReport,
@@ -26,6 +25,23 @@ import {
   type DailyReport,
   type WeeklyReport,
 } from "@/lib/utils/learningData";
+
+// Dynamic imports for heavy chart components
+const WeeklyChart = dynamic(
+  () => import("@/components/report/WeeklyChart").then(mod => ({ default: mod.WeeklyChart })),
+  {
+    loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg flex items-center justify-center"><Clock className="w-8 h-8 text-gray-400 animate-spin" /></div>,
+    ssr: false
+  }
+);
+
+const PerformanceGauge = dynamic(
+  () => import("@/components/report/PerformanceGauge").then(mod => ({ default: mod.PerformanceGauge })),
+  {
+    loading: () => <div className="h-48 bg-gray-100 animate-pulse rounded-lg flex items-center justify-center"><Clock className="w-8 h-8 text-gray-400 animate-spin" /></div>,
+    ssr: false
+  }
+);
 
 export default function ReportPage() {
   const [todayReport, setTodayReport] = useState<DailyReport | null>(null);

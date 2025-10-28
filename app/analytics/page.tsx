@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useUserStore } from '@/lib/gamification/store';
@@ -34,17 +34,7 @@ export default function AnalyticsPage() {
   const [analytics, setAnalytics] = useState<ProgressAnalytics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    if (!userProfile || !adaptiveProfile) {
-      router.push('/');
-      return;
-    }
-
-    calculateAnalytics();
-    setIsLoading(false);
-  }, [userProfile, adaptiveProfile, selectedSubject]);
-
-  const calculateAnalytics = () => {
+  const calculateAnalytics = useCallback(() => {
     if (!adaptiveProfile) return;
 
     const result = ProgressCalculator.calculateAnalytics(
@@ -57,7 +47,17 @@ export default function AnalyticsPage() {
     );
 
     setAnalytics(result);
-  };
+  }, [adaptiveProfile, selectedSubject]);
+
+  useEffect(() => {
+    if (!userProfile || !adaptiveProfile) {
+      router.push('/');
+      return;
+    }
+
+    calculateAnalytics();
+    setIsLoading(false);
+  }, [userProfile, adaptiveProfile, selectedSubject, router, calculateAnalytics]);
 
   const handleGeneratePath = () => {
     if (!adaptiveProfile) return;
