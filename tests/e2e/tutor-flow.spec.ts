@@ -8,9 +8,9 @@ test.describe('Tutor Pages', () => {
     // Should redirect to onboarding
     await expect(page).toHaveURL(/\/onboarding/, { timeout: 10000 });
 
-    // Check for onboarding content
+    // Check for onboarding content (use first() to avoid strict mode violation)
     await expect(page.locator('text=환영합니다')).toBeVisible({ timeout: 5000 });
-    await expect(page.locator('text=/이름|당신의 이름/')).toBeVisible();
+    await expect(page.locator('text=이름 입력').first()).toBeVisible();
   });
 
   test('English tutor redirects to onboarding without profile', async ({ page }) => {
@@ -27,9 +27,9 @@ test.describe('Tutor Pages', () => {
   test('Homepage loads correctly', async ({ page }) => {
     await page.goto('/');
 
-    // Check for main content
-    await expect(page.locator('text=SmartTuter')).toBeVisible();
-    await expect(page.locator('text=/AI 튜터|스마트하게 학습/')).toBeVisible();
+    // Check for main content (use first() to handle multiple matches)
+    await expect(page.locator('text=SmartTuter').first()).toBeVisible();
+    await expect(page.locator('text=/AI 튜터|스마트하게 학습/').first()).toBeVisible();
 
     // Check for CTA button
     const ctaButton = page.locator('text=/시작하기|무료로 시작/');
@@ -45,8 +45,8 @@ test.describe('Tutor Pages', () => {
     // Check for input field
     await expect(page.locator('input[type="text"]')).toBeVisible();
 
-    // Check for navigation buttons
-    await expect(page.locator('text=/이전|다음/')).toBeVisible();
+    // Check for navigation buttons (use first() to avoid strict mode violation)
+    await expect(page.getByRole('button', { name: '다음' })).toBeVisible();
   });
 
   test('No console errors on homepage', async ({ page }) => {
