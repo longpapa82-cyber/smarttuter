@@ -1,12 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GraduationCap, BookOpen, Calculator, MessageCircle, ArrowRight, ArrowLeft, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 type GradeLevel = "elementary" | "middle" | "high" | "university" | null;
 type Subject = "math" | "english" | null;
+
+interface OnboardingData {
+  username: string;
+  gradeLevel: GradeLevel;
+  step: number;
+}
 
 const gradeLevels = [
   {
@@ -66,6 +72,36 @@ export default function OnboardingPage() {
   const [selectedGrade, setSelectedGrade] = useState<GradeLevel>(null);
   const [selectedSubject, setSelectedSubject] = useState<Subject>(null);
 
+  // Auto-save progress to localStorage
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const savedData = localStorage.getItem('onboarding_progress');
+    if (savedData) {
+      try {
+        const data: OnboardingData = JSON.parse(savedData);
+        setUsername(data.username || "");
+        setSelectedGrade(data.gradeLevel || null);
+        setStep(data.step || 1);
+      } catch (e) {
+        console.error('Failed to load onboarding progress:', e);
+      }
+    }
+  }, []);
+
+  // Save progress on changes
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const data: OnboardingData = {
+      username,
+      gradeLevel: selectedGrade,
+      step
+    };
+
+    localStorage.setItem('onboarding_progress', JSON.stringify(data));
+  }, [username, selectedGrade, step]);
+
   const handleNext = () => {
     if (step === 1 && username) {
       setStep(2);
@@ -91,6 +127,9 @@ export default function OnboardingPage() {
         userId: `user-${Date.now()}`,
         timestamp: Date.now()
       }));
+
+      // Clear progress data after completion
+      localStorage.removeItem('onboarding_progress');
     }
 
     // Navigate to dashboard (dashboard will initialize all stores)
@@ -101,7 +140,7 @@ export default function OnboardingPage() {
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 flex items-center justify-center p-4">
       <div className="w-full max-w-5xl">
         {/* Progress Bar */}
-        <div className="mb-12">
+        <div className="mb-12" role="progressbar" aria-valuenow={Math.round((step / 3) * 100)} aria-valuemin={0} aria-valuemax={100}>
           <div className="flex items-center justify-center space-x-4 mb-4">
             {[1, 2, 3].map((i) => (
               <div key={i} className="flex items-center">
@@ -111,13 +150,15 @@ export default function OnboardingPage() {
                     scale: step === i ? 1.2 : 1,
                     backgroundColor: step >= i ? "#6366f1" : "#e5e7eb",
                   }}
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
+                  className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-white font-bold"
+                  aria-label={`Step ${i}`}
+                  aria-current={step === i ? "step" : undefined}
                 >
                   {i}
                 </motion.div>
                 {i < 3 && (
                   <div
-                    className={`w-16 h-1 mx-2 transition-colors ${
+                    className={`w-12 md:w-16 h-1 mx-2 transition-colors ${
                       step > i ? "bg-primary-500" : "bg-gray-300"
                     }`}
                   />
@@ -125,10 +166,15 @@ export default function OnboardingPage() {
               </div>
             ))}
           </div>
-          <div className="text-center" style={{ color: '#4B5563' }}>
-            {step === 1 && "이름 입력"}
-            {step === 2 && "학교급 선택"}
-            {step === 3 && "준비 완료"}
+          <div className="text-center flex flex-col items-center gap-2">
+            <p className="text-sm md:text-base font-medium" style={{ color: '#4B5563' }}>
+              {step === 1 && "이름 입력"}
+              {step === 2 && "학교급 선택"}
+              {step === 3 && "준비 완료"}
+            </p>
+            <p className="text-xs md:text-sm text-gray-500">
+              {Math.round((step / 3) * 100)}% 완료
+            </p>
           </div>
         </div>
 
@@ -158,19 +204,34 @@ export default function OnboardingPage() {
               </div>
 
               <div className="max-w-md mx-auto">
+                <label htmlFor="username-input" className="sr-only">
+                  이름 입력
+                </label>
                 <input
+                  id="username-input"
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="이름을 입력하세요"
-                  className="w-full px-6 py-4 text-lg text-gray-900 placeholder:text-gray-400 border-2 border-gray-300 rounded-xl focus:border-primary-500 focus:ring-4 focus:ring-primary-100 outline-none transition-all"
+                  className="w-full px-4 md:px-6 py-3 md:py-4 text-base md:text-lg text-gray-900 placeholder:text-gray-400 border-2 border-gray-300 rounded-xl focus:border-primary-500 focus:ring-4 focus:ring-primary-100 outline-none transition-all"
                   autoFocus
+                  aria-label="사용자 이름 입력"
                   onKeyPress={(e) => {
                     if (e.key === 'Enter' && username) {
                       handleNext();
                     }
                   }}
                 />
+                {username && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-3 text-sm text-green-600 flex items-center gap-2"
+                  >
+                    <span className="text-green-500">✓</span>
+                    이름이 입력되었습니다
+                  </motion.p>
+                )}
               </div>
             </motion.div>
           )}
@@ -199,7 +260,7 @@ export default function OnboardingPage() {
                 </p>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid sm:grid-cols-2 gap-4 md:gap-6">
                 {gradeLevels.map((grade, index) => (
                   <motion.div
                     key={grade.id}
@@ -209,25 +270,34 @@ export default function OnboardingPage() {
                   >
                     <button
                       onClick={() => setSelectedGrade(grade.id)}
-                      className={`w-full p-8 rounded-2xl border-2 transition-all text-left ${
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setSelectedGrade(grade.id);
+                        }
+                      }}
+                      className={`w-full p-6 md:p-8 rounded-2xl border-2 transition-all text-left focus:outline-none focus:ring-4 focus:ring-primary-200 ${
                         selectedGrade === grade.id
                           ? "border-primary-500 bg-primary-50 shadow-xl scale-105"
-                          : "border-gray-200 bg-white hover:border-primary-300 hover:shadow-lg"
+                          : "border-gray-200 bg-white hover:border-primary-300 hover:shadow-lg active:scale-95"
                       }`}
+                      aria-pressed={selectedGrade === grade.id}
+                      aria-label={`${grade.name} 선택`}
                     >
-                    <div className="flex items-start space-x-4">
-                      <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${grade.color} flex items-center justify-center text-3xl`}>
+                    <div className="flex items-start space-x-3 md:space-x-4">
+                      <div className={`w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br ${grade.color} flex items-center justify-center text-2xl md:text-3xl flex-shrink-0`}>
                         {grade.icon}
                       </div>
-                      <div className="flex-1">
-                        <h3 className="text-2xl font-bold mb-2 text-gray-900">{grade.name}</h3>
-                        <p className="text-gray-700">{grade.description}</p>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-lg md:text-2xl font-bold mb-1 md:mb-2 text-gray-900">{grade.name}</h3>
+                        <p className="text-sm md:text-base text-gray-700">{grade.description}</p>
                       </div>
                       {selectedGrade === grade.id && (
                         <motion.div
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
-                          className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center text-white"
+                          className="w-6 h-6 md:w-8 md:h-8 bg-primary-500 rounded-full flex items-center justify-center text-white flex-shrink-0"
+                          aria-hidden="true"
                         >
                           ✓
                         </motion.div>
@@ -259,13 +329,13 @@ export default function OnboardingPage() {
               </motion.div>
 
               <div className="space-y-4">
-                <h1 className="text-5xl font-bold gradient-text">준비 완료!</h1>
-                <p className="text-2xl" style={{ color: '#4B5563' }}>
+                <h1 className="text-3xl md:text-5xl font-bold gradient-text">준비 완료!</h1>
+                <p className="text-lg md:text-2xl px-4" style={{ color: '#4B5563' }}>
                   이제 AI 튜터와 함께 학습을 시작할 준비가 되었습니다
                 </p>
               </div>
 
-              <div className="max-w-md mx-auto p-8 bg-white rounded-2xl shadow-xl space-y-6">
+              <div className="max-w-md mx-auto p-6 md:p-8 bg-white rounded-2xl shadow-xl space-y-6">
                 <h3 className="text-xl font-bold text-gray-900">선택한 정보</h3>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
@@ -287,10 +357,11 @@ export default function OnboardingPage() {
               >
                 <button
                   onClick={handleStart}
-                  className="px-12 py-5 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-full font-bold text-xl shadow-2xl hover:shadow-3xl transition-all inline-flex items-center space-x-2"
+                  className="px-8 md:px-12 py-4 md:py-5 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-full font-bold text-lg md:text-xl shadow-2xl hover:shadow-3xl transition-all inline-flex items-center space-x-2 focus:outline-none focus:ring-4 focus:ring-primary-300"
+                  aria-label="학습 시작하기"
                 >
                   <span>학습 시작하기</span>
-                  <Sparkles className="w-6 h-6" />
+                  <Sparkles className="w-5 h-5 md:w-6 md:h-6" />
                 </button>
               </motion.div>
             </motion.div>
@@ -299,45 +370,47 @@ export default function OnboardingPage() {
 
         {/* Navigation Buttons */}
         {step < 3 && (
-          <div className="flex justify-between mt-12">
+          <nav className="flex justify-between mt-12" aria-label="온보딩 진행 네비게이션">
             <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: step === 1 ? 1 : 1.05 }}
+              whileTap={{ scale: step === 1 ? 1 : 0.95 }}
             >
               <button
                 onClick={handleBack}
                 disabled={step === 1}
-                className={`px-8 py-3 rounded-full font-semibold transition-all inline-flex items-center space-x-2 ${
+                className={`px-6 md:px-8 py-3 rounded-full font-semibold transition-all inline-flex items-center space-x-2 focus:outline-none focus:ring-4 focus:ring-primary-200 ${
                   step === 1
-                    ? "bg-gray-200 cursor-not-allowed"
-                    : "bg-white border-2 border-gray-300 hover:border-primary-500"
+                    ? "bg-gray-200 cursor-not-allowed opacity-50"
+                    : "bg-white border-2 border-gray-300 hover:border-primary-500 active:scale-95"
                 }`}
                 style={{ color: step === 1 ? '#6B7280' : '#374151' }}
+                aria-label="이전 단계"
               >
-                <ArrowLeft className="w-5 h-5" />
-                <span>이전</span>
+                <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
+                <span className="hidden sm:inline">이전</span>
               </button>
             </motion.div>
 
             <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: ((step === 1 && !username) || (step === 2 && !selectedGrade)) ? 1 : 1.05 }}
+              whileTap={{ scale: ((step === 1 && !username) || (step === 2 && !selectedGrade)) ? 1 : 0.95 }}
             >
               <button
                 onClick={handleNext}
                 disabled={(step === 1 && !username) || (step === 2 && !selectedGrade)}
-                className={`px-8 py-3 rounded-full font-semibold transition-all inline-flex items-center space-x-2 ${
+                className={`px-6 md:px-8 py-3 rounded-full font-semibold transition-all inline-flex items-center space-x-2 focus:outline-none focus:ring-4 focus:ring-primary-200 ${
                 (step === 1 && !username) || (step === 2 && !selectedGrade)
-                  ? "bg-gray-200 cursor-not-allowed"
-                  : "bg-gradient-to-r from-primary-500 to-secondary-500 text-white hover:shadow-xl"
+                  ? "bg-gray-200 cursor-not-allowed opacity-50"
+                  : "bg-gradient-to-r from-primary-500 to-secondary-500 text-white hover:shadow-xl active:scale-95"
               }`}
                 style={{ color: ((step === 1 && !username) || (step === 2 && !selectedGrade)) ? '#6B7280' : 'white' }}
+                aria-label="다음 단계"
               >
-                <span>다음</span>
-                <ArrowRight className="w-5 h-5" />
+                <span className="hidden sm:inline">다음</span>
+                <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
               </button>
             </motion.div>
-          </div>
+          </nav>
         )}
       </div>
     </div>
