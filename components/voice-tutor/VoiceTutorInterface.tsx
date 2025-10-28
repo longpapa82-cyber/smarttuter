@@ -62,7 +62,16 @@ export default function VoiceTutorInterface({
       } catch (error: any) {
         if (!mounted) return;
         console.error('Failed to start session:', error);
-        setError(error?.message || 'Voice Tutor is currently under maintenance. Please try other learning features like Quiz or Flashcards.');
+
+        // User-friendly error messages
+        let errorMessage = error?.message || '';
+        if (errorMessage.includes('💳') || errorMessage.includes('크레딧')) {
+          setError('💳 Claude API 크레딧이 부족합니다.\n\n관리자에게 크레딧 충전을 요청해주세요.\n\n다른 학습 기능(퀴즈, 플래시카드)을 이용해보세요.');
+        } else if (errorMessage.includes('⚠️') || errorMessage.includes('API')) {
+          setError('⚠️ API 설정 오류가 발생했습니다.\n\n관리자에게 문의해주세요.\n\n다른 학습 기능(퀴즈, 플래시카드)을 이용해보세요.');
+        } else {
+          setError('음성 튜터 서비스를 일시적으로 사용할 수 없습니다.\n\n다른 학습 기능(퀴즈, 플래시카드)을 이용해보세요.');
+        }
       }
     };
 
