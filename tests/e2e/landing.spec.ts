@@ -7,20 +7,20 @@ test.describe('Landing Page', () => {
     // Check page title
     await expect(page).toHaveTitle(/SmartTuter/);
 
-    // Check hero section
-    await expect(page.locator('text=AI 튜터와 함께하는')).toBeVisible();
-    await expect(page.locator('text=스마트 학습')).toBeVisible();
+    // Check hero section - using actual page content
+    await expect(page.locator('text=당신만의 AI 튜터와').first()).toBeVisible();
+    await expect(page.locator('text=스마트하게 학습하세요').first()).toBeVisible();
   });
 
   test('should show all feature cards', async ({ page }) => {
     await page.goto('/');
 
-    // Check for 6 feature cards
+    // Check for 6 feature cards - using exact text from page
     const featureCards = [
       '실시간 음성 대화',
       '수학 문제 풀이',
-      '맞춤 학습 경험',
-      '학습 리포트',
+      '맞춤형 학습',  // Changed from '맞춤 학습 경험'
+      '학습 분석 리포트',  // Changed from '학습 리포트'
       '게이미피케이션',
       '즉각적인 피드백'
     ];
@@ -78,8 +78,8 @@ test.describe('Landing Page', () => {
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto('/');
 
-    // Page should still be readable
-    await expect(page.locator('text=SmartTuter').or(page.locator('text=AI 튜터'))).toBeVisible();
+    // Page should still be readable - use .first() to avoid strict mode violation
+    await expect(page.locator('text=SmartTuter').first()).toBeVisible();
 
     // CTA should be visible
     const ctaButton = page.locator('a:has-text("시작하기"), button:has-text("시작하기")').first();
