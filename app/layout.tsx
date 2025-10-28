@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { StoreProvider } from "@/components/providers/StoreProvider";
 import { NotificationProvider } from "@/components/gamification/NotificationProvider";
+import { WebVitalsReporter } from "@/components/WebVitalsReporter";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -92,6 +93,7 @@ export default function RootLayout({
             {children}
           </NotificationProvider>
         </StoreProvider>
+        <WebVitalsReporter />
       </body>
     </html>
   );
