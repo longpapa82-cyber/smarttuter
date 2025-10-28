@@ -44,44 +44,36 @@ export default function VoiceTutorInterface({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [currentSession?.messages]);
 
-  // Start session on mount
-  useEffect(() => {
-    // Only initialize on client side
-    if (typeof window === 'undefined') return;
+  // Lazy session initialization (only when user interacts)
+  const initSessionIfNeeded = async () => {
+    if (currentSession) return true; // Already initialized
 
-    let mounted = true;
+    try {
+      const greeting = await startSession(subject, gradeLevel, userId);
 
-    const initSession = async () => {
-      try {
-        const greeting = await startSession(subject, gradeLevel, userId);
-
-        if (!mounted) return;
-
-        // Speak the greeting (only on client)
-        await speakText(greeting);
-      } catch (error: any) {
-        if (!mounted) return;
-        console.error('Failed to start session:', error);
-
-        // User-friendly error messages
-        let errorMessage = error?.message || '';
-        if (errorMessage.includes('💳') || errorMessage.includes('크레딧')) {
-          setError('💳 Claude API 크레딧이 부족합니다.\n\n관리자에게 크레딧 충전을 요청해주세요.\n\n다른 학습 기능(퀴즈, 플래시카드)을 이용해보세요.');
-        } else if (errorMessage.includes('⚠️') || errorMessage.includes('API')) {
-          setError('⚠️ API 설정 오류가 발생했습니다.\n\n관리자에게 문의해주세요.\n\n다른 학습 기능(퀴즈, 플래시카드)을 이용해보세요.');
-        } else {
-          setError('음성 튜터 서비스를 일시적으로 사용할 수 없습니다.\n\n다른 학습 기능(퀴즈, 플래시카드)을 이용해보세요.');
-        }
+      // Show greeting as first message
+      if (greeting && typeof window !== 'undefined') {
+        // Add greeting to messages display (will be handled by store)
+        console.log('Session started:', greeting);
       }
-    };
 
-    initSession();
+      return true;
+    } catch (error: any) {
+      console.error('Failed to start session:', error);
 
-    return () => {
-      mounted = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+      // User-friendly error messages
+      let errorMessage = error?.message || '';
+      if (errorMessage.includes('💳') || errorMessage.includes('크레딧')) {
+        setError('💳 Claude API 크레딧이 부족합니다.\n\n관리자에게 크레딧 충전을 요청해주세요.\n\n다른 학습 기능(퀴즈, 플래시카드)을 이용해보세요.');
+      } else if (errorMessage.includes('⚠️') || errorMessage.includes('API')) {
+        setError('⚠️ API 설정 오류가 발생했습니다.\n\n관리자에게 문의해주세요.\n\n다른 학습 기능(퀴즈, 플래시카드)을 이용해보세요.');
+      } else {
+        setError('음성 튜터 서비스를 일시적으로 사용할 수 없습니다.\n\n다른 학습 기능(퀴즈, 플래시카드)을 이용해보세요.');
+      }
+
+      return false;
+    }
+  };
 
   // Handle voice input
   const handleVoiceInput = async () => {
@@ -91,6 +83,13 @@ export default function VoiceTutorInterface({
     setError(null);
 
     try {
+      // Initialize session if needed (lazy loading)
+      const sessionReady = await initSessionIfNeeded();
+      if (!sessionReady) {
+        setIsListening(false);
+        return; // Error already set in initSessionIfNeeded
+      }
+
       // Note: MCP Voice Mode would be used here in production
       // For now, we'll simulate with text input
       // In production: const response = await mcp__voice_mode__converse({...})
@@ -122,9 +121,19 @@ export default function VoiceTutorInterface({
       await speakText(result.response);
 
       setIsProcessing(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Voice input error:', error);
-      setError('Sorry, I had trouble understanding. Please try again.');
+
+      // Show user-friendly error in chat
+      const errorMsg = error?.message || '';
+      if (errorMsg.includes('💳') || errorMsg.includes('크레딧')) {
+        setError('💳 Claude API 크레딧이 부족합니다.\n\n관리자에게 크레딧 충전을 요청해주세요.');
+      } else if (errorMsg.includes('⚠️') || errorMsg.includes('API')) {
+        setError('⚠️ API 설정 오류가 발생했습니다.\n\n관리자에게 문의해주세요.');
+      } else {
+        setError('Sorry, I had trouble understanding. Please try again.');
+      }
+
       setIsListening(false);
       setIsProcessing(false);
     }
@@ -167,10 +176,21 @@ export default function VoiceTutorInterface({
     if (subject !== 'math') return;
 
     try {
+      // Initialize session if needed
+      const sessionReady = await initSessionIfNeeded();
+      if (!sessionReady) return;
+
       const hint = await requestHint();
       await speakText(hint);
     } catch (error: any) {
-      setError(error.message);
+      const errorMsg = error?.message || '';
+      if (errorMsg.includes('💳') || errorMsg.includes('크레딧')) {
+        setError('💳 Claude API 크레딧이 부족합니다.\n\n관리자에게 크레딧 충전을 요청해주세요.');
+      } else if (errorMsg.includes('⚠️') || errorMsg.includes('API')) {
+        setError('⚠️ API 설정 오류가 발생했습니다.\n\n관리자에게 문의해주세요.');
+      } else {
+        setError(error.message);
+      }
     }
   };
 
@@ -179,10 +199,21 @@ export default function VoiceTutorInterface({
     if (subject !== 'math') return;
 
     try {
+      // Initialize session if needed
+      const sessionReady = await initSessionIfNeeded();
+      if (!sessionReady) return;
+
       const problem = await generateProblem();
       await speakText(problem.question);
     } catch (error: any) {
-      setError(error.message);
+      const errorMsg = error?.message || '';
+      if (errorMsg.includes('💳') || errorMsg.includes('크레딧')) {
+        setError('💳 Claude API 크레딧이 부족합니다.\n\n관리자에게 크레딧 충전을 요청해주세요.');
+      } else if (errorMsg.includes('⚠️') || errorMsg.includes('API')) {
+        setError('⚠️ API 설정 오류가 발생했습니다.\n\n관리자에게 문의해주세요.');
+      } else {
+        setError(error.message);
+      }
     }
   };
 
@@ -191,10 +222,21 @@ export default function VoiceTutorInterface({
     if (subject !== 'math') return;
 
     try {
+      // Initialize session if needed
+      const sessionReady = await initSessionIfNeeded();
+      if (!sessionReady) return;
+
       const solution = await showSolution();
       await speakText(solution);
     } catch (error: any) {
-      setError(error.message);
+      const errorMsg = error?.message || '';
+      if (errorMsg.includes('💳') || errorMsg.includes('크레딧')) {
+        setError('💳 Claude API 크레딧이 부족합니다.\n\n관리자에게 크레딧 충전을 요청해주세요.');
+      } else if (errorMsg.includes('⚠️') || errorMsg.includes('API')) {
+        setError('⚠️ API 설정 오류가 발생했습니다.\n\n관리자에게 문의해주세요.');
+      } else {
+        setError(error.message);
+      }
     }
   };
 
