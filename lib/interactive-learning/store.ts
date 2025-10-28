@@ -346,7 +346,7 @@ export const useInteractiveLearning = create<InteractiveLearningState>()(
     {
       name: 'interactive-learning-storage',
       version: 1,
-      skipHydration: true,
+      
       storage: {
         getItem: (name) => {
           if (typeof window === 'undefined') return null;

@@ -477,7 +477,7 @@ export const useAdaptiveLearning = create<AdaptiveLearningStore>()(
     }),
     {
       name: 'smarttuter-adaptive-learning',
-      skipHydration: true,
+      
       storage: {
         getItem: (name) => {
           if (typeof window === 'undefined') return null;
