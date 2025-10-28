@@ -1,7 +1,8 @@
 // Phase 10: Voice Tutor Engine
 // Base class for English and Math tutors
+// Now supports multi-provider LLM system with automatic fallback
 
-import Anthropic from '@anthropic-ai/sdk';
+import { getLLMManager, type LLMMessage } from '@/lib/llm';
 import {
   TutorSubject,
   VoiceTutorSession,
@@ -12,12 +13,8 @@ import {
   VOICE_TUTOR_XP,
 } from './types';
 
-// Server-side only - will be null in browser
-const anthropic = typeof window === 'undefined'
-  ? new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY || '',
-    })
-  : null;
+// Multi-provider LLM manager (server-side only)
+const llmManager = typeof window === 'undefined' ? getLLMManager() : null;
 
 export abstract class VoiceTutorEngine {
   protected subject: TutorSubject;
@@ -110,50 +107,51 @@ export abstract class VoiceTutorEngine {
     return message;
   }
 
-  // Helper: Call Claude API
+  // Helper: Call LLM API with automatic provider fallback
   protected async callClaude(prompt: string): Promise<string> {
     try {
-      if (!anthropic) {
+      if (!llmManager) {
         throw new Error('Voice tutor is only available server-side');
       }
 
-      const response = await anthropic.messages.create({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 2000,
-        messages: [
-          {
-            role: 'user',
-            content: prompt,
-          },
-        ],
-      });
+      // Convert to LLM message format
+      const messages: LLMMessage[] = [
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ];
 
-      const content = response.content[0];
-      return content.type === 'text' ? content.text : '';
+      // Use multi-provider system with automatic fallback
+      const response = await llmManager.complete(messages, 2000);
+
+      // Log which provider was used for monitoring
+      console.log(`[VoiceTutor] Response from ${response.provider} (${response.model})`);
+
+      return response.text;
     } catch (error: any) {
-      console.error('Claude API error:', error);
+      console.error('LLM API error:', error);
 
-      // Graceful error handling - detect credit exhaustion
+      // Check attempt log to see what happened
+      const attemptLog = llmManager?.getAttemptLog() || [];
+      const allProvidersExhausted = attemptLog.every((attempt) => !attempt.success);
+
+      // Graceful error handling with context about which providers were tried
       const errorMessage = error?.message || '';
-      const errorType = error?.type || '';
-      const errorStatus = error?.status || 0;
 
-      // Credit exhaustion detection
-      if (
-        /credit|billing|quota|payment|balance/i.test(errorMessage) ||
-        errorType === 'invalid_request_error' ||
-        errorStatus === 402 ||
-        errorStatus === 529
-      ) {
+      // If all providers exhausted or credit issues
+      if (allProvidersExhausted || /credit|billing|quota|payment|balance|no.*provider/i.test(errorMessage)) {
+        const providersAttempted = attemptLog.map((a) => a.provider).join(', ') || 'Claude';
+
         return this.subject === 'english'
-          ? `I'm very sorry, but our AI tutoring service is temporarily unavailable due to API credit limitations. 😔\n\nPlease ask your administrator to refill the Claude API credits so we can continue our learning session together.\n\nIn the meantime, you can try our Quiz and Flashcard features on the Dashboard!\n\n죄송합니다. AI 튜터링 서비스를 위한 API 크레딧이 부족합니다. 관리자에게 크레딧 충전을 요청해주세요. 대시보드의 퀴즈와 플래시카드 기능을 이용해보세요!`
-          : `죄송합니다. 현재 AI 튜터 서비스의 API 크레딧이 부족하여 일시적으로 이용이 어렵습니다. 😔\n\n관리자에게 Claude API 크레딧 충전을 요청해주세요.\n\n그동안 대시보드에서 퀴즈와 플래시카드 학습을 이용하실 수 있습니다!\n\nI'm sorry, but our AI tutor service is temporarily unavailable due to API credit limitations. Please ask your administrator to refill the credits. Try our Quiz and Flashcards in the meantime!`;
+          ? `I'm very sorry, but our AI tutoring service is temporarily unavailable. 😔\n\nWe tried multiple providers (${providersAttempted}) but encountered limitations.\n\nPlease ask your administrator to:\n• Refill API credits (Claude, Gemini, or OpenAI)\n• Configure at least one working API key\n\nIn the meantime, you can try our Quiz and Flashcard features on the Dashboard!\n\n죄송합니다. AI 튜터링 서비스가 일시적으로 이용 불가능합니다. 관리자에게 API 크레딧 충전 또는 API 키 설정을 요청해주세요. 대시보드의 퀴즈와 플래시카드를 이용해보세요!`
+          : `죄송합니다. AI 튜터 서비스가 일시적으로 이용 불가능합니다. 😔\n\n여러 공급자(${providersAttempted})를 시도했지만 제한이 발생했습니다.\n\n관리자에게 다음을 요청해주세요:\n• API 크레딧 충전 (Claude, Gemini, 또는 OpenAI)\n• 최소 하나의 작동하는 API 키 설정\n\n그동안 대시보드에서 퀴즈와 플래시카드를 이용하실 수 있습니다!\n\nI'm sorry, but our AI tutor service is temporarily unavailable. Please ask your administrator to refill credits or configure API keys. Try our Quiz and Flashcards in the meantime!`;
       }
 
-      // Authentication/API key errors
-      if (/api.*key|unauthorized|authentication|forbidden/i.test(errorMessage) || errorStatus === 401) {
+      // Configuration errors
+      if (/api.*key|unauthorized|authentication|configuration/i.test(errorMessage)) {
         return this.subject === 'english'
-          ? `I apologize, but there seems to be an API configuration issue. Please contact your administrator to check the API key settings.\n\n죄송합니다. API 설정에 문제가 있습니다. 관리자에게 문의해주세요.`
+          ? `I apologize, but there seems to be an API configuration issue. Please contact your administrator to configure at least one LLM provider (Claude, Gemini, or OpenAI).\n\n죄송합니다. API 설정에 문제가 있습니다. 관리자에게 문의해주세요.`
           : `죄송합니다. API 설정에 문제가 있습니다. 관리자에게 문의해주세요.\n\nI apologize, but there seems to be an API configuration issue. Please contact your administrator.`;
       }
 
