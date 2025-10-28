@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Home, RefreshCw, AlertCircle } from "lucide-react";
+import * as Sentry from "@sentry/nextjs";
 
 export default function Error({
   error,
@@ -15,7 +16,17 @@ export default function Error({
   const [showCacheClearHelp, setShowCacheClearHelp] = useState(false);
 
   useEffect(() => {
-    // 에러 로깅 (프로덕션에서는 에러 모니터링 서비스로 전송)
+    // Send error to Sentry for monitoring
+    Sentry.captureException(error, {
+      tags: {
+        errorBoundary: "app-level",
+      },
+      extra: {
+        digest: error.digest,
+        autoRetryCount,
+      },
+    });
+
     console.error("Application error:", error);
 
     // Auto-retry once after 2 seconds (for transient errors)

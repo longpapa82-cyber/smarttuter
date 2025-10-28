@@ -90,8 +90,68 @@ npm run dev
 
 ---
 
-**Live Demo**: https://smarttuter-3mkfea3h2-090723s-projects.vercel.app
+## 🔧 문제 해결
 
-> ⚠️ **API 크레딧 필요**: 현재 Anthropic API 크레딧이 부족합니다. 서비스를 사용하려면 [Anthropic Console](https://console.anthropic.com/settings/billing)에서 크레딧을 추가해주세요.
+### 500 에러 또는 빈 화면이 보이는 경우
+
+**원인**: 브라우저나 CDN에 이전 버전이 캐시되어 있을 수 있습니다.
+
+**해결 방법**:
+
+1. **하드 리프레시 (가장 빠름)**
+   - Mac: `Cmd ⌘` + `Shift ⇧` + `R`
+   - Windows/Linux: `Ctrl` + `Shift` + `R`
+
+2. **브라우저 캐시 완전 삭제**
+   - Chrome: DevTools (F12) > Application > Clear Storage > Clear site data
+   - Safari: 환경설정 > 개인정보 보호 > 웹사이트 데이터 관리
+   - Firefox: 환경설정 > 개인정보 및 보안 > 쿠키 및 사이트 데이터
+
+3. **시크릿 모드에서 테스트**
+   - 새 시크릿/프라이빗 창에서 열어보세요
+
+4. **자동 복구 기능 사용**
+   - 에러 페이지가 표시되면 2초 후 자동으로 복구를 시도합니다
+   - "캐시 삭제 후 새로고침" 버튼을 클릭하세요
+
+### 튜터 페이지 접근 시 온보딩으로 이동하는 경우
+
+**정상 동작입니다!** 프로필이 없으면 자동으로 온보딩 페이지로 리디렉션됩니다.
+
+**해결**: 온보딩을 완료하면 튜터 페이지에 접근할 수 있습니다.
+
+### API 에러 (402, 503 등)
+
+**원인**: Anthropic API 크레딧 부족 또는 일시적 서버 문제
+
+**해결**:
+- 502 Payment Required: [Anthropic Console](https://console.anthropic.com/settings/billing)에서 크레딧 추가
+- 503 Service Unavailable: 잠시 후 다시 시도
+
+### 아이콘이 깨지거나 404 에러
+
+**해결됨**: 최신 배포에서 모든 아이콘 파일이 포함되었습니다.
+- 여전히 문제가 있다면 브라우저 캐시를 삭제하세요.
+
+---
+
+## 🧪 테스트
+
+```bash
+# E2E 테스트 실행
+npm run test:e2e
+
+# UI 모드로 테스트
+npm run test:e2e:ui
+
+# 디버그 모드
+npm run test:e2e:debug
+```
+
+---
+
+**Live Demo**: https://smarttuter.vercel.app
+
+> ⚠️ **API 크레딧 필요**: 서비스를 사용하려면 [Anthropic Console](https://console.anthropic.com/settings/billing)에서 API 크레딧을 추가해주세요.
 >
-> **브라우저 캐시**: 최신 버전을 확인하려면 브라우저 캐시를 지우세요 (Ctrl+Shift+R 또는 Cmd+Shift+R)
+> **최신 버전**: 브라우저 캐시 이슈가 있다면 `Cmd+Shift+R` (Mac) 또는 `Ctrl+Shift+R` (Windows)로 하드 리프레시하세요.
