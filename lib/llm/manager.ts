@@ -21,7 +21,10 @@ export class LLMManager {
   private attemptLog: Array<{ provider: LLMProviderType; success: boolean; error?: string }> = [];
 
   constructor(config: LLMManagerConfig = {}) {
-    this.providerChain = config.providerChain || ['claude', 'gemini', 'openai'];
+    // CHANGED: Gemini-first for 95% cost reduction and immediate 500 error resolution
+    // Gemini 2.5 Flash: $0.15/$0.60 per M tokens (vs Claude $3/$15)
+    // Free tier available! No credit card required.
+    this.providerChain = config.providerChain || ['gemini', 'claude', 'openai'];
     this.enableFallback = config.enableFallback !== false; // Default true
     this.logAttempts = config.logAttempts !== false; // Default true
 
