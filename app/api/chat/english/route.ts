@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
       const encoder = new TextEncoder();
       const errorStream = new ReadableStream({
         start(controller) {
-          const errorMsg = "I apologize, but I cannot connect to the server right now.\n\n죄송합니다. 현재 서버와 연결할 수 없습니다.\n\nPlease contact the administrator to configure ANTHROPIC_API_KEY.";
+          const errorMsg = "⚠️ API Configuration Error\n\nPlease ask the administrator to set up the API key.\n\n관리자에게 문의하여 API 키를 설정해주세요.";
           controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: errorMsg })}\n\n`));
           controller.enqueue(encoder.encode("data: [DONE]\n\n"));
           controller.close();
@@ -163,8 +163,8 @@ Important:
         apiError.status === 402;
 
       const errorMsg = isCreditError
-        ? "⚠️ API 크레딧이 부족합니다.\n\nAPI credit balance is too low.\n\n관리자에게 문의하여 크레딧을 충전해주세요.\nPlease contact the administrator to add credits.\n\n🔗 https://console.anthropic.com/settings/billing"
-        : "죄송합니다. 일시적인 오류가 발생했습니다.\n\nI apologize, but a temporary error occurred.\n\n잠시 후 다시 시도해주세요.\nPlease try again in a moment.";
+        ? "💳 Claude API Credit Insufficient\n\nPlease ask the administrator to add credits.\n\nClaude API 크레딧이 부족합니다.\n관리자에게 크레딧 충전을 요청해주세요."
+        : "⏱️ Temporary Service Error\n\nPlease try again in a moment.\n\n일시적인 오류가 발생했습니다.\n잠시 후 다시 시도해주세요.";
 
       const errorStream = new ReadableStream({
         start(controller) {

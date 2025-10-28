@@ -116,6 +116,24 @@ export class VisionService {
       };
     } catch (error: any) {
       console.error('Vision recognition error:', error);
+
+      // Check for API credit/authentication errors
+      if (error?.status === 401 || error?.message?.includes('authentication') || error?.message?.includes('API key')) {
+        return {
+          success: false,
+          error: '⚠️ API 인증 오류: 관리자에게 문의하여 API 키를 확인해주세요.',
+          confidence: 0,
+        };
+      }
+
+      if (error?.status === 429 || error?.message?.includes('rate limit') || error?.message?.includes('quota')) {
+        return {
+          success: false,
+          error: '💳 Claude API 크레딧이 부족합니다. 관리자에게 크레딧 충전을 요청해주세요.',
+          confidence: 0,
+        };
+      }
+
       return {
         success: false,
         error: error?.message || '이미지 인식 중 오류가 발생했습니다. 다시 시도해주세요.',
@@ -197,6 +215,24 @@ export class VisionService {
       };
     } catch (error: any) {
       console.error('Handwriting recognition error:', error);
+
+      // Check for API credit/authentication errors
+      if (error?.status === 401 || error?.message?.includes('authentication') || error?.message?.includes('API key')) {
+        return {
+          success: false,
+          error: '⚠️ API 인증 오류: 관리자에게 문의하여 API 키를 확인해주세요.',
+          confidence: 0,
+        };
+      }
+
+      if (error?.status === 429 || error?.message?.includes('rate limit') || error?.message?.includes('quota')) {
+        return {
+          success: false,
+          error: '💳 Claude API 크레딧이 부족합니다. 관리자에게 크레딧 충전을 요청해주세요.',
+          confidence: 0,
+        };
+      }
+
       return {
         success: false,
         error: error?.message || '손글씨 인식 중 오류가 발생했습니다.',

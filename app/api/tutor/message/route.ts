@@ -68,12 +68,22 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     console.error('Error processing tutor message:', error);
-    const message =
-      (typeof error?.message === 'string' && error.message) || 'Failed to process message';
+    const message = (typeof error?.message === 'string' && error.message) || 'Failed to process message';
+
+    // User-friendly error messages
+    let userMessage = message;
+    if (/apikey|unauthorized|auth|forbidden|permission/i.test(message)) {
+      userMessage = '⚠️ API 인증 오류: 관리자에게 문의하여 API 키를 확인해주세요.';
+    } else if (/quota|credit|billing|limit|rate.*limit/i.test(message)) {
+      userMessage = '💳 Claude API 크레딧이 부족합니다. 관리자에게 크레딧 충전을 요청해주세요.';
+    } else if (/timeout|temporarily|unavailable|upstream|bad gateway|502|503/i.test(message)) {
+      userMessage = '⏱️ 서비스가 일시적으로 응답하지 않습니다. 잠시 후 다시 시도해주세요.';
+    }
+
     const status = /apikey|unauthorized|auth|forbidden|permission/i.test(message) ? 401
       : /quota|credit|billing|limit/i.test(message) ? 402
       : /timeout|temporarily|unavailable|upstream|bad gateway|502|503/i.test(message) ? 503
       : 500;
-    return NextResponse.json({ error: message }, { status });
+    return NextResponse.json({ error: userMessage }, { status });
   }
 }
