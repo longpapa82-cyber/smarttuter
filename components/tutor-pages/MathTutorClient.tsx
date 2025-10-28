@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserStore } from '@/lib/gamification/store';
-import VoiceTutorInterface from '@/components/voice-tutor/VoiceTutorInterface';
+import MathTutorWithImage from './MathTutorWithImage';
 
 function LoadingSpinner() {
   return (
@@ -33,11 +33,5 @@ export default function MathTutorClient() {
     return <LoadingSpinner />;
   }
 
-  return (
-    <VoiceTutorInterface
-      subject="math"
-      userId={`user-${profile.username}`}
-      gradeLevel={profile.gradeLevel as 'elementary' | 'middle' | 'high' | 'university'}
-    />
-  );
+  return <MathTutorWithImage />;
 }
