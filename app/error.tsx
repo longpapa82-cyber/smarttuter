@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Home, RefreshCw } from "lucide-react";
+import { Home, RefreshCw, AlertCircle } from "lucide-react";
 
 export default function Error({
   error,
@@ -11,10 +11,49 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const [autoRetryCount, setAutoRetryCount] = useState(0);
+  const [showCacheClearHelp, setShowCacheClearHelp] = useState(false);
+
   useEffect(() => {
     // 에러 로깅 (프로덕션에서는 에러 모니터링 서비스로 전송)
     console.error("Application error:", error);
-  }, [error]);
+
+    // Auto-retry once after 2 seconds (for transient errors)
+    if (autoRetryCount === 0) {
+      const timer = setTimeout(() => {
+        console.log("Auto-retrying after error...");
+        setAutoRetryCount(1);
+        reset();
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    }
+
+    // If auto-retry failed, show cache clear help after 5 seconds
+    if (autoRetryCount === 1) {
+      const timer = setTimeout(() => {
+        setShowCacheClearHelp(true);
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [error, reset, autoRetryCount]);
+
+  const handleHardRefresh = () => {
+    // Clear localStorage and sessionStorage
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+        console.log('Storage cleared');
+      } catch (e) {
+        console.error('Failed to clear storage:', e);
+      }
+    }
+
+    // Force hard reload
+    window.location.reload();
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 flex items-center justify-center px-4">
@@ -27,12 +66,22 @@ export default function Error({
 
         {/* Message */}
         <h1 className="text-3xl font-bold text-gray-800 mb-4">
-          문제가 발생했습니다
+          {autoRetryCount === 0 ? '잠시만 기다려주세요...' : '문제가 발생했습니다'}
         </h1>
         <p className="text-gray-600 mb-8">
-          일시적인 오류가 발생했습니다.
-          <br />
-          잠시 후 다시 시도해주세요.
+          {autoRetryCount === 0 ? (
+            <>
+              자동으로 복구를 시도하고 있습니다.
+              <br />
+              <span className="text-sm text-gray-500">({autoRetryCount + 1}/2)</span>
+            </>
+          ) : (
+            <>
+              일시적인 오류가 발생했습니다.
+              <br />
+              아래 버튼을 클릭하여 다시 시도해주세요.
+            </>
+          )}
         </p>
 
         {/* Error Details (개발 환경에서만 표시) */}
@@ -68,12 +117,50 @@ export default function Error({
           </Link>
         </div>
 
+        {/* Cache Clear Help */}
+        {showCacheClearHelp && (
+          <div className="mt-8 p-4 bg-yellow-50 border-2 border-yellow-200 rounded-xl">
+            <div className="flex items-start gap-3 text-left">
+              <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+              <div className="text-sm">
+                <p className="font-semibold text-yellow-800 mb-2">
+                  캐시 문제일 수 있습니다
+                </p>
+                <p className="text-yellow-700 mb-3">
+                  이전 버전이 캐시되어 있을 수 있습니다. 아래 방법을 시도해보세요:
+                </p>
+                <button
+                  onClick={handleHardRefresh}
+                  className="w-full px-4 py-2 bg-yellow-600 text-white rounded-lg font-medium hover:bg-yellow-700 transition-colors"
+                >
+                  캐시 삭제 후 새로고침
+                </button>
+                <p className="text-xs text-yellow-600 mt-2">
+                  또는 키보드 단축키: <br />
+                  <kbd className="px-2 py-1 bg-yellow-100 rounded">Cmd+Shift+R</kbd> (Mac) /
+                  <kbd className="px-2 py-1 bg-yellow-100 rounded ml-1">Ctrl+Shift+R</kbd> (Windows)
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Helpful Text */}
         <div className="mt-12 pt-8 border-t border-gray-200">
           <p className="text-sm text-gray-600">
-            문제가 계속되면 새로고침하거나
-            <br />
-            다른 브라우저를 사용해보세요.
+            {showCacheClearHelp ? (
+              <>
+                그래도 문제가 해결되지 않으면
+                <br />
+                시크릿 모드나 다른 브라우저를 사용해보세요.
+              </>
+            ) : (
+              <>
+                문제가 계속되면 새로고침하거나
+                <br />
+                다른 브라우저를 사용해보세요.
+              </>
+            )}
           </p>
         </div>
       </div>
