@@ -477,6 +477,7 @@ export const useAdaptiveLearning = create<AdaptiveLearningStore>()(
     }),
     {
       name: 'smarttuter-adaptive-learning',
+      skipHydration: true,
       
       storage: {
         getItem: (name) => {

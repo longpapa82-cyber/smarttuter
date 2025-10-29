@@ -358,6 +358,7 @@ export const useVoiceTutor = create<VoiceTutorState>()(
     }),
     {
       name: 'voice-tutor-storage',
+      skipHydration: true,
       version: 2, // Increment version due to breaking changes
       
       partialize: (state) => ({
