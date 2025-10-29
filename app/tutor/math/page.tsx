@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 function LoadingSpinner() {
   return (
@@ -20,5 +21,9 @@ const MathTutorClient = dynamic(
 );
 
 export default function MathTutorPage() {
-  return <MathTutorClient />;
+  return (
+    <ErrorBoundary>
+      <MathTutorClient />
+    </ErrorBoundary>
+  );
 }
