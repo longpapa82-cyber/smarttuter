@@ -1,65 +1,25 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useUserStore } from '@/lib/gamification/store';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { ImageUploadWithRecognition } from '@/components/chat/ImageUploadWithRecognition';
-import { Camera, MessageSquare, Sparkles, ArrowLeft } from 'lucide-react';
+import { Camera, MessageSquare, ArrowLeft } from 'lucide-react';
 import VoiceTutorInterface from '@/components/voice-tutor/VoiceTutorInterface';
 
-function LoadingSpinner() {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-teal-50">
-      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-500"></div>
-    </div>
-  );
-}
-
 export default function MathTutorWithImage() {
-  const router = useRouter();
-  const [isMounted, setIsMounted] = useState(false);
-  const [isHydrated, setIsHydrated] = useState(false);
-  const [profile, setProfile] = useState<ReturnType<typeof useUserStore.getState>['profile']>(null);
+  const { profile, initializeProfile } = useUserStore();
   const [mode, setMode] = useState<'select' | 'image' | 'voice'>('select');
   const [currentImage, setCurrentImage] = useState<string | null>(null);
   const [currentFile, setCurrentFile] = useState<File | null>(null);
   const [recognizedProblem, setRecognizedProblem] = useState<any>(null);
 
-  // Wait for client-side mount to prevent hydration mismatch
+  // Auto-initialize profile if it doesn't exist
   useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  // Wait for Zustand automatic hydration (skipHydration is removed)
-  useEffect(() => {
-    if (!isMounted) return;
-
-    // Zustand hydrates automatically, just subscribe to changes
-    const unsubscribe = useUserStore.subscribe((state) => {
-      setProfile(state.profile);
-    });
-
-    // Get initial profile value after automatic hydration
-    setProfile(useUserStore.getState().profile);
-
-    // Set hydration flag immediately
-    setIsHydrated(true);
-
-    return () => unsubscribe();
-  }, [isMounted]);
-
-  // Redirect to onboarding if no profile after hydration
-  useEffect(() => {
-    if (isHydrated && !profile) {
-      router.push('/onboarding');
+    if (!profile) {
+      initializeProfile('Student', 'middle');
     }
-  }, [isHydrated, profile, router]);
-
-  // Always show loading spinner until fully mounted and hydrated
-  if (!isMounted || !isHydrated || !profile) {
-    return <LoadingSpinner />;
-  }
+  }, [profile, initializeProfile]);
 
   // Mode selection screen
   if (mode === 'select') {
@@ -100,27 +60,13 @@ export default function MathTutorWithImage() {
                 </h2>
 
                 <p className="text-gray-600 mb-4">
-                  문제를 사진으로 찍거나 이미지를 업로드하면 AI가 자동으로 인식하여 설명해드립니다
+                  수학 문제를 촬영하거나 업로드하여<br />
+                  AI가 문제를 분석하고 설명해드려요
                 </p>
 
-                <div className="flex items-center gap-2 justify-center text-sm text-purple-600">
-                  <Sparkles className="w-4 h-4" />
-                  <span>Photomath 스타일 자동 인식</span>
-                </div>
-
-                <div className="mt-6 space-y-2 text-sm text-gray-500 text-left">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-green-500 rounded-full" />
-                    <span>손글씨 문제 인식</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-green-500 rounded-full" />
-                    <span>인쇄된 문제 인식</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-green-500 rounded-full" />
-                    <span>단계별 풀이 제공</span>
-                  </div>
+                <div className="flex items-center justify-center gap-2 text-sm text-blue-600 font-medium">
+                  시작하기
+                  <ArrowLeft className="w-4 h-4 rotate-180" />
                 </div>
               </div>
             </motion.button>
@@ -141,161 +87,75 @@ export default function MathTutorWithImage() {
                 </div>
 
                 <h2 className="text-2xl font-bold text-gray-900 mb-3">
-                  음성으로 대화하기
+                  대화로 질문하기
                 </h2>
 
                 <p className="text-gray-600 mb-4">
-                  실시간 음성 대화로 개념을 묻고, 문제 풀이를 함께 진행합니다
+                  궁금한 수학 개념이나 문제를<br />
+                  자유롭게 대화하며 학습해요
                 </p>
 
-                <div className="flex items-center gap-2 justify-center text-sm text-teal-600">
-                  <Sparkles className="w-4 h-4" />
-                  <span>실시간 음성 튜터링</span>
-                </div>
-
-                <div className="mt-6 space-y-2 text-sm text-gray-500 text-left">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-green-500 rounded-full" />
-                    <span>개념 설명 요청</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-green-500 rounded-full" />
-                    <span>문제 풀이 힌트</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-green-500 rounded-full" />
-                    <span>대화형 학습</span>
-                  </div>
+                <div className="flex items-center justify-center gap-2 text-sm text-green-600 font-medium">
+                  시작하기
+                  <ArrowLeft className="w-4 h-4 rotate-180" />
                 </div>
               </div>
             </motion.button>
           </div>
-
-          <motion.button
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            onClick={() => router.push('/dashboard')}
-            className="mt-8 mx-auto flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>대시보드로 돌아가기</span>
-          </motion.button>
         </div>
       </div>
     );
   }
 
-  // Image recognition mode
+  // Image mode
   if (mode === 'image') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-teal-50 to-blue-50">
-        <div className="max-w-4xl mx-auto px-4 py-8">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <button
-              onClick={() => {
-                setMode('select');
-                setCurrentImage(null);
-                setCurrentFile(null);
-                setRecognizedProblem(null);
-              }}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              <span>뒤로가기</span>
-            </button>
-
-            <h1 className="text-2xl font-bold text-gray-900">
-              📸 이미지로 질문하기
-            </h1>
-
-            <div className="w-24" /> {/* Spacer for centering */}
-          </div>
-
-          {/* Image Upload */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl shadow-xl p-6 md:p-8"
+        <div className="container mx-auto px-4 py-8">
+          <button
+            onClick={() => setMode('select')}
+            className="mb-6 flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
           >
-            <ImageUploadWithRecognition
-              currentImage={currentImage}
-              onImageSelect={(file, preview) => {
-                setCurrentFile(file);
-                setCurrentImage(preview);
-              }}
-              onImageRemove={() => {
-                setCurrentImage(null);
-                setCurrentFile(null);
-                setRecognizedProblem(null);
-              }}
-              gradeLevel={profile.gradeLevel as 'elementary' | 'middle' | 'high' | 'university'}
-              onRecognitionComplete={(result) => {
-                setRecognizedProblem(result);
-              }}
-              enableCamera={true}
-              autoRecognize={true}
-            />
+            <ArrowLeft className="w-5 h-5" />
+            돌아가기
+          </button>
 
-            {/* Ask tutor button */}
-            {recognizedProblem && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-6"
-              >
-                <button
-                  onClick={() => {
-                    // TODO: Send to tutor with recognized problem context
-                    alert('곧 구현될 기능입니다: 인식된 문제를 튜터에게 전달합니다');
-                  }}
-                  className="w-full py-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
-                >
-                  <MessageSquare className="w-5 h-5" />
-                  <span>튜터에게 이 문제 물어보기</span>
-                </button>
-
-                <p className="text-center text-sm text-gray-500 mt-3">
-                  인식된 문제를 바탕으로 AI 튜터가 설명해드립니다
-                </p>
-              </motion.div>
-            )}
-          </motion.div>
-
-          {/* Usage tips */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="mt-6 bg-blue-50 border border-blue-200 rounded-xl p-4"
-          >
-            <h3 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
-              <Sparkles className="w-4 h-4" />
-              촬영 팁
-            </h3>
-            <ul className="space-y-1 text-sm text-blue-700">
-              <li>• 문제가 화면 중앙에 오도록 촬영해주세요</li>
-              <li>• 조명이 밝은 곳에서 촬영하면 인식률이 높아집니다</li>
-              <li>• 글자가 선명하게 보이도록 초점을 맞춰주세요</li>
-              <li>• 손글씨는 &quot;손글씨 인식&quot; 버튼을 사용하면 더 정확합니다</li>
-            </ul>
-          </motion.div>
+          <ImageUploadWithRecognition
+            onImageUpload={(image, file) => {
+              setCurrentImage(image);
+              setCurrentFile(file);
+            }}
+            onProblemRecognized={(problem) => {
+              setRecognizedProblem(problem);
+            }}
+          />
         </div>
       </div>
     );
   }
 
-  // Voice mode - use existing VoiceTutorInterface
+  // Voice mode
   if (mode === 'voice') {
     return (
-      <VoiceTutorInterface
-        subject="math"
-        userId={`user-${profile.username}`}
-        gradeLevel={profile.gradeLevel as 'elementary' | 'middle' | 'high' | 'university'}
-      />
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-teal-50 to-blue-50">
+        <div className="container mx-auto px-4 py-8">
+          <button
+            onClick={() => setMode('select')}
+            className="mb-6 flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            돌아가기
+          </button>
+
+          <VoiceTutorInterface
+            subject="math"
+            userId={profile?.id || 'user-default'}
+            gradeLevel={profile?.gradeLevel as any || 'middle'}
+          />
+        </div>
+      </div>
     );
   }
 
-  return <LoadingSpinner />;
+  return null;
 }
