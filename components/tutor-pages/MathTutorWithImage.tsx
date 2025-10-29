@@ -121,12 +121,19 @@ export default function MathTutorWithImage() {
           </button>
 
           <ImageUploadWithRecognition
-            onImageUpload={(image, file) => {
-              setCurrentImage(image);
+            onImageSelect={(file, preview) => {
+              setCurrentImage(preview);
               setCurrentFile(file);
             }}
-            onProblemRecognized={(problem) => {
-              setRecognizedProblem(problem);
+            onImageRemove={() => {
+              setCurrentImage(null);
+              setCurrentFile(null);
+              setRecognizedProblem(null);
+            }}
+            currentImage={currentImage}
+            gradeLevel={(profile?.gradeLevel as 'elementary' | 'middle' | 'high' | 'university') || 'middle'}
+            onRecognitionComplete={(result) => {
+              setRecognizedProblem(result);
             }}
           />
         </div>
