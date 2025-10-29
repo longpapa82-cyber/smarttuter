@@ -20,6 +20,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.67.0",
     "@google/genai": "^1.27.0",
+    "@google/generative-ai": "^0.24.1",
     "@sentry/nextjs": "^10.22.0",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.23.24",

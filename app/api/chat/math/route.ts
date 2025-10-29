@@ -1,10 +1,8 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextRequest } from "next/server";
 
-// Initialize Anthropic client
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY || "",
-});
+// Initialize Gemini client
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 // Grade level specific prompts
 const gradeLevelPrompts: Record<string, string> = {
@@ -33,7 +31,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if API key is configured
-    if (!process.env.ANTHROPIC_API_KEY) {
+    if (!process.env.GEMINI_API_KEY) {
       const encoder = new TextEncoder();
       const errorStream = new ReadableStream({
         start(controller) {
@@ -84,43 +82,43 @@ export async function POST(req: NextRequest) {
 - 학생의 수준을 고려하여 적절한 난이도로 설명합니다
 - 실수를 하더라도 긍정적으로 격려하며 올바른 방향을 제시합니다`;
 
-    // Prepare messages for Claude API
-    const messages: Anthropic.MessageParam[] = [];
+    // Prepare conversation for Gemini API
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 
-    // Add conversation history (limit to last 10 messages for context)
+    // Build conversation history for Gemini
+    const chatHistory = [];
     const recentHistory = conversationHistory?.slice(-10) || [];
+
     for (const msg of recentHistory) {
-      messages.push({
-        role: msg.role === "user" ? "user" : "assistant",
-        content: msg.content,
+      chatHistory.push({
+        role: msg.role === "user" ? "user" : "model",
+        parts: [{ text: msg.content }],
       });
     }
-
-    // Add current message
-    messages.push({
-      role: "user",
-      content: message,
-    });
 
     // Create streaming response with better error handling
     const encoder = new TextEncoder();
 
     try {
-      const stream = await anthropic.messages.stream({
-        model: "claude-sonnet-4-5-20250929",
-        max_tokens: 2048,
-        system: systemPrompt,
-        messages: messages,
+      // Start chat with history
+      const chat = model.startChat({
+        history: chatHistory,
+        generationConfig: {
+          maxOutputTokens: 2048,
+          temperature: 0.7,
+        },
       });
+
+      // Send message and get stream
+      const result = await chat.sendMessageStream(systemPrompt + "\n\nUser: " + message);
 
       // Create a readable stream for the response
       const readableStream = new ReadableStream({
         async start(controller) {
           try {
-            for await (const chunk of stream) {
-              if (chunk.type === "content_block_delta" &&
-                  chunk.delta.type === "text_delta") {
-                const text = chunk.delta.text;
+            for await (const chunk of result.stream) {
+              const text = chunk.text();
+              if (text) {
                 controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
               }
             }
@@ -141,17 +139,17 @@ export async function POST(req: NextRequest) {
         },
       });
     } catch (apiError: any) {
-      // Handle API-specific errors (credit issues, rate limits, etc.)
-      console.error("Anthropic API error:", apiError);
+      // Handle API-specific errors (quota issues, rate limits, etc.)
+      console.error("Gemini API error:", apiError);
 
-      // Check for credit balance error
-      const isCreditError =
-        apiError.message?.includes('credit balance') ||
-        apiError.message?.includes('insufficient') ||
-        apiError.status === 402;
+      // Check for quota/rate limit error
+      const isQuotaError =
+        apiError.message?.includes('quota') ||
+        apiError.message?.includes('rate limit') ||
+        apiError.status === 429;
 
-      const errorMsg = isCreditError
-        ? "💳 Claude API 크레딧이 부족합니다.\n\n관리자에게 크레딧 충전을 요청해주세요.\n\nThe API credit balance is too low.\nPlease ask the administrator to add credits."
+      const errorMsg = isQuotaError
+        ? "⏱️ API 요청 한도에 도달했습니다.\n\n잠시 후 다시 시도해주세요.\n\nAPI rate limit reached.\nPlease try again in a moment."
         : "⏱️ 서비스가 일시적으로 응답하지 않습니다.\n\n잠시 후 다시 시도해주세요.\n\nA temporary error occurred.\nPlease try again in a moment.";
 
       const errorStream = new ReadableStream({
