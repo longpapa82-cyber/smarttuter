@@ -358,6 +358,7 @@ export const useVoiceTutor = create<VoiceTutorState>()(
     }),
     {
       name: 'voice-tutor-storage',
+      skipHydration: true,
       version: 2, // Increment version due to breaking changes
       partialize: (state) => ({
         sessions: state.sessions,
@@ -380,3 +381,8 @@ export const useVoiceTutor = create<VoiceTutorState>()(
     }
   )
 );
+
+// Hydrate on client-side only
+if (typeof window !== 'undefined') {
+  useVoiceTutor.persist.rehydrate();
+}

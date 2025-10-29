@@ -477,6 +477,7 @@ export const useAdaptiveLearning = create<AdaptiveLearningStore>()(
     }),
     {
       name: 'smarttuter-adaptive-learning',
+      skipHydration: true,
       storage: {
         getItem: (name) => {
           if (typeof window === 'undefined') return null;
@@ -495,3 +496,8 @@ export const useAdaptiveLearning = create<AdaptiveLearningStore>()(
     }
   )
 );
+
+// Hydrate on client-side only
+if (typeof window !== 'undefined') {
+  useAdaptiveLearning.persist.rehydrate();
+}

@@ -345,6 +345,7 @@ export const useInteractiveLearning = create<InteractiveLearningState>()(
     }),
     {
       name: 'interactive-learning-storage',
+      skipHydration: true,
       version: 1,
       storage: {
         getItem: (name) => {
@@ -364,3 +365,8 @@ export const useInteractiveLearning = create<InteractiveLearningState>()(
     }
   )
 );
+
+// Hydrate on client-side only
+if (typeof window !== 'undefined') {
+  useInteractiveLearning.persist.rehydrate();
+}

@@ -289,6 +289,7 @@ export const useUserStore = create<UserStore>()(
     }),
     {
       name: 'smarttuter-user-profile',
+      skipHydration: true, // Skip automatic hydration to prevent SSR mismatch
       storage: {
         getItem: (name) => {
           if (typeof window === 'undefined') return null;
@@ -307,3 +308,8 @@ export const useUserStore = create<UserStore>()(
     }
   )
 );
+
+// Hydrate on client-side only
+if (typeof window !== 'undefined') {
+  useUserStore.persist.rehydrate();
+}
