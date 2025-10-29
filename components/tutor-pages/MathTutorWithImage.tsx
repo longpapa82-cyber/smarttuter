@@ -31,30 +31,22 @@ export default function MathTutorWithImage() {
     setIsMounted(true);
   }, []);
 
-  // Properly handle Zustand hydration to avoid hydration mismatch
+  // Wait for Zustand automatic hydration (skipHydration is removed)
   useEffect(() => {
     if (!isMounted) return;
 
-    // Wait for next tick to ensure store is ready
-    const timer = setTimeout(() => {
-      // Manually hydrate the Zustand store
-      useUserStore.persist.rehydrate();
+    // Zustand hydrates automatically, just subscribe to changes
+    const unsubscribe = useUserStore.subscribe((state) => {
+      setProfile(state.profile);
+    });
 
-      // Subscribe to store changes
-      const unsubscribe = useUserStore.subscribe((state) => {
-        setProfile(state.profile);
-      });
+    // Get initial profile value after automatic hydration
+    setProfile(useUserStore.getState().profile);
 
-      // Get initial profile value
-      setProfile(useUserStore.getState().profile);
+    // Set hydration flag immediately
+    setIsHydrated(true);
 
-      // Set hydration flag after profile is loaded
-      setIsHydrated(true);
-
-      return () => unsubscribe();
-    }, 0);
-
-    return () => clearTimeout(timer);
+    return () => unsubscribe();
   }, [isMounted]);
 
   // Redirect to onboarding if no profile after hydration
