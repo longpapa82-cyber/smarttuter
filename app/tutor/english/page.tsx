@@ -1,7 +1,6 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useEffect, useState } from 'react';
 
 function LoadingSpinner() {
   return (
@@ -11,9 +10,18 @@ function LoadingSpinner() {
   );
 }
 
-// Dynamically import with SSR disabled - this prevents hydration errors
+// Dynamically import with SSR completely disabled
 const EnglishTutorClient = dynamic(
-  () => import('@/components/tutor-pages/EnglishTutorClientSimple'),
+  () => import('@/components/voice-tutor/VoiceTutorInterface').then(mod => {
+    // Wrapper component to pass props
+    return function EnglishTutorWrapper() {
+      return mod.default({
+        subject: "english" as const,
+        userId: "user-default",
+        gradeLevel: "elementary" as const
+      });
+    };
+  }),
   {
     ssr: false,
     loading: () => <LoadingSpinner />
@@ -21,15 +29,5 @@ const EnglishTutorClient = dynamic(
 );
 
 export default function EnglishTutorPage() {
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  if (!isMounted) {
-    return <LoadingSpinner />;
-  }
-
   return <EnglishTutorClient />;
 }
