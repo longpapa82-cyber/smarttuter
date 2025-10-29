@@ -8,11 +8,12 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
   const [showConfetti, setShowConfetti] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
-    // Client-side only
-    if (typeof window === 'undefined') return;
+    // Set mounted state first
+    setIsMounted(true);
 
     // Set window dimensions
     setDimensions({
@@ -99,16 +100,18 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     <>
       {children}
       <Toaster />
-      <AnimatePresence>
-        {showConfetti && (
-          <Confetti
-            width={dimensions.width}
-            height={dimensions.height}
-            recycle={false}
-            numberOfPieces={500}
-          />
-        )}
-      </AnimatePresence>
+      {isMounted && (
+        <AnimatePresence>
+          {showConfetti && (
+            <Confetti
+              width={dimensions.width}
+              height={dimensions.height}
+              recycle={false}
+              numberOfPieces={500}
+            />
+          )}
+        </AnimatePresence>
+      )}
     </>
   );
 }
