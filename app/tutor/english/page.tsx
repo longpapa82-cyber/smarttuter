@@ -12,16 +12,7 @@ function LoadingSpinner() {
 
 // Dynamically import with SSR completely disabled
 const EnglishTutorClient = dynamic(
-  () => import('@/components/voice-tutor/VoiceTutorInterface').then(mod => {
-    // Wrapper component to pass props
-    return function EnglishTutorWrapper() {
-      return mod.default({
-        subject: "english" as const,
-        userId: "user-default",
-        gradeLevel: "elementary" as const
-      });
-    };
-  }),
+  () => import('@/components/tutor-pages/EnglishTutorClient'),
   {
     ssr: false,
     loading: () => <LoadingSpinner />
