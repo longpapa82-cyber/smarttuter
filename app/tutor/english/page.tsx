@@ -13,7 +13,7 @@ function LoadingSpinner() {
 
 // Dynamically import with SSR disabled - this prevents hydration errors
 const EnglishTutorClient = dynamic(
-  () => import('@/components/tutor-pages/EnglishTutorClient'),
+  () => import('@/components/tutor-pages/EnglishTutorClientSimple'),
   {
     ssr: false,
     loading: () => <LoadingSpinner />
