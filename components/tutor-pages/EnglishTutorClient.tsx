@@ -15,18 +15,27 @@ function LoadingSpinner() {
 
 export default function EnglishTutorClient() {
   const router = useRouter();
+  const [isMounted, setIsMounted] = useState(false);
   const hydrated = useUserStoreHydration();
-  const profile = useUserStore((state) => state.profile);
+
+  // Always call the hook, but only use the value if mounted
+  const storeProfile = useUserStore((state) => state.profile);
+  const profile = isMounted ? storeProfile : null;
+
+  // Set mounted flag
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Redirect to onboarding if no profile after hydration
   useEffect(() => {
-    if (hydrated && !profile) {
+    if (isMounted && hydrated && !profile) {
       router.push('/onboarding');
     }
-  }, [hydrated, profile, router]);
+  }, [isMounted, hydrated, profile, router]);
 
-  // Show loading spinner until hydrated and profile is available
-  if (!hydrated || !profile) {
+  // Show loading spinner until mounted, hydrated and profile is available
+  if (!isMounted || !hydrated || !profile) {
     return <LoadingSpinner />;
   }
 
