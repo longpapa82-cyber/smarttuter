@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUserStore, userStoreRehydrated } from '@/lib/gamification/store';
+import { useUserStore, useUserStoreHydration } from '@/lib/gamification/store';
 import MathTutorWithImage from './MathTutorWithImage';
 
 function LoadingSpinner() {
@@ -15,56 +15,18 @@ function LoadingSpinner() {
 
 export default function MathTutorClient() {
   const router = useRouter();
-  const [isMounted, setIsMounted] = useState(false);
-  const [isHydrated, setIsHydrated] = useState(false);
-  const [profile, setProfile] = useState<ReturnType<typeof useUserStore.getState>['profile']>(null);
-
-  // Wait for client-side mount to prevent hydration mismatch
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  // Wait for store hydration promise to resolve
-  useEffect(() => {
-    if (!isMounted) return;
-
-    let mounted = true;
-
-    // Wait for rehydration to complete
-    userStoreRehydrated.then(() => {
-      if (!mounted) return;
-
-      // Get profile after rehydration is complete
-      const currentProfile = useUserStore.getState().profile;
-      setProfile(currentProfile);
-      setIsHydrated(true);
-
-      // Subscribe to future changes
-      const unsubscribe = useUserStore.subscribe((state) => {
-        if (mounted) {
-          setProfile(state.profile);
-        }
-      });
-
-      return () => {
-        unsubscribe();
-      };
-    });
-
-    return () => {
-      mounted = false;
-    };
-  }, [isMounted]);
+  const hydrated = useUserStoreHydration();
+  const profile = useUserStore((state) => state.profile);
 
   // Redirect to onboarding if no profile after hydration
   useEffect(() => {
-    if (isHydrated && !profile) {
+    if (hydrated && !profile) {
       router.push('/onboarding');
     }
-  }, [isHydrated, profile, router]);
+  }, [hydrated, profile, router]);
 
-  // Always show loading spinner until fully mounted and hydrated
-  if (!isMounted || !isHydrated || !profile) {
+  // Show loading spinner until hydrated and profile is available
+  if (!hydrated || !profile) {
     return <LoadingSpinner />;
   }
 

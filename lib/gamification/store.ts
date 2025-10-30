@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { useState, useEffect } from 'react';
 import {
   UserProfile,
   SessionRecord,
@@ -289,7 +290,6 @@ export const useUserStore = create<UserStore>()(
     }),
     {
       name: 'smarttuter-user-profile',
-      skipHydration: true, // Skip automatic hydration to prevent SSR mismatch
       storage: {
         getItem: (name) => {
           if (typeof window === 'undefined') return null;
@@ -305,11 +305,51 @@ export const useUserStore = create<UserStore>()(
           localStorage.removeItem(name);
         },
       },
+      onRehydrateStorage: () => (state) => {
+        // Rehydration complete callback
+        if (typeof window !== 'undefined') {
+          userStoreHydrated = true;
+        }
+      },
     }
   )
 );
 
-// Hydrate on client-side only and export promise for components to wait
-export const userStoreRehydrated = typeof window !== 'undefined'
-  ? Promise.resolve(useUserStore.persist.rehydrate())
-  : Promise.resolve();
+// Track hydration status
+let userStoreHydrated = false;
+
+export const isUserStoreHydrated = () => userStoreHydrated;
+
+// Helper hook for components to wait for hydration
+export const useUserStoreHydration = () => {
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    // Check if already hydrated
+    if (userStoreHydrated) {
+      setHydrated(true);
+      return;
+    }
+
+    // Wait for hydration by polling
+    const checkHydration = setInterval(() => {
+      if (userStoreHydrated) {
+        setHydrated(true);
+        clearInterval(checkHydration);
+      }
+    }, 50);
+
+    // Timeout after 2 seconds
+    const timeout = setTimeout(() => {
+      clearInterval(checkHydration);
+      setHydrated(true); // Proceed anyway
+    }, 2000);
+
+    return () => {
+      clearInterval(checkHydration);
+      clearTimeout(timeout);
+    };
+  }, []);
+
+  return hydrated;
+};
