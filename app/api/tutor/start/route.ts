@@ -11,7 +11,8 @@ export async function POST(request: NextRequest) {
   let requestBody: any = null;
 
   try {
-    if (!process.env.ANTHROPIC_API_KEY) {
+    // Check if at least one LLM provider is configured
+    if (!process.env.GEMINI_API_KEY && !process.env.ANTHROPIC_API_KEY && !process.env.OPENAI_API_KEY) {
       return NextResponse.json(
         { error: '⚠️ API 설정 오류: 관리자에게 문의하여 API 키를 설정해주세요.' },
         { status: 503 }

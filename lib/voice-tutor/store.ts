@@ -382,7 +382,7 @@ export const useVoiceTutor = create<VoiceTutorState>()(
   )
 );
 
-// Hydrate on client-side only
-if (typeof window !== 'undefined') {
-  useVoiceTutor.persist.rehydrate();
-}
+// Hydrate on client-side only and export promise for components to wait
+export const voiceTutorRehydrated = typeof window !== 'undefined'
+  ? Promise.resolve(useVoiceTutor.persist.rehydrate())
+  : Promise.resolve();

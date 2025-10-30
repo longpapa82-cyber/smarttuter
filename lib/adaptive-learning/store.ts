@@ -497,7 +497,7 @@ export const useAdaptiveLearning = create<AdaptiveLearningStore>()(
   )
 );
 
-// Hydrate on client-side only
-if (typeof window !== 'undefined') {
-  useAdaptiveLearning.persist.rehydrate();
-}
+// Hydrate on client-side only and export promise for components to wait
+export const adaptiveLearningRehydrated = typeof window !== 'undefined'
+  ? Promise.resolve(useAdaptiveLearning.persist.rehydrate())
+  : Promise.resolve();

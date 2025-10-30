@@ -11,9 +11,10 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
-    if (!process.env.ANTHROPIC_API_KEY) {
+    // Check if at least one LLM provider is configured
+    if (!process.env.GEMINI_API_KEY && !process.env.ANTHROPIC_API_KEY && !process.env.OPENAI_API_KEY) {
       return NextResponse.json(
-        { error: 'Service unavailable: ANTHROPIC_API_KEY is not configured' },
+        { error: 'Service unavailable: No LLM provider is configured' },
         { status: 503 }
       );
     }

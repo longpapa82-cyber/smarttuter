@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUserStore } from '@/lib/gamification/store';
+import { useUserStore, userStoreRehydrated } from '@/lib/gamification/store';
 import VoiceTutorInterface from '@/components/voice-tutor/VoiceTutorInterface';
 
 function LoadingSpinner() {
@@ -24,22 +24,36 @@ export default function EnglishTutorClient() {
     setIsMounted(true);
   }, []);
 
-  // Wait for Zustand automatic hydration (skipHydration is removed)
+  // Wait for store hydration promise to resolve
   useEffect(() => {
     if (!isMounted) return;
 
-    // Zustand hydrates automatically, just subscribe to changes
-    const unsubscribe = useUserStore.subscribe((state) => {
-      setProfile(state.profile);
+    let mounted = true;
+
+    // Wait for rehydration to complete
+    userStoreRehydrated.then(() => {
+      if (!mounted) return;
+
+      // Get profile after rehydration is complete
+      const currentProfile = useUserStore.getState().profile;
+      setProfile(currentProfile);
+      setIsHydrated(true);
+
+      // Subscribe to future changes
+      const unsubscribe = useUserStore.subscribe((state) => {
+        if (mounted) {
+          setProfile(state.profile);
+        }
+      });
+
+      return () => {
+        unsubscribe();
+      };
     });
 
-    // Get initial profile value after automatic hydration
-    setProfile(useUserStore.getState().profile);
-
-    // Set hydration flag immediately
-    setIsHydrated(true);
-
-    return () => unsubscribe();
+    return () => {
+      mounted = false;
+    };
   }, [isMounted]);
 
   // Redirect to onboarding if no profile after hydration

@@ -309,7 +309,7 @@ export const useUserStore = create<UserStore>()(
   )
 );
 
-// Hydrate on client-side only
-if (typeof window !== 'undefined') {
-  useUserStore.persist.rehydrate();
-}
+// Hydrate on client-side only and export promise for components to wait
+export const userStoreRehydrated = typeof window !== 'undefined'
+  ? Promise.resolve(useUserStore.persist.rehydrate())
+  : Promise.resolve();
