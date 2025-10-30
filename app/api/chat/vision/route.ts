@@ -1,10 +1,54 @@
-import Anthropic from "@anthropic-ai/sdk";
+// ⚠️ VISION API TEMPORARILY DISABLED
+// This endpoint has been disabled to debug 500 errors in production
+// Root cause: Anthropic API authentication/credit issues causing server errors
+//
+// To re-enable: Uncomment the code below and ensure ANTHROPIC_API_KEY is properly configured
+
 import { NextRequest } from "next/server";
 
-// Initialize Anthropic client
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY || "",
-});
+export async function POST(req: NextRequest) {
+  try {
+    const { imageData } = await req.json();
+
+    if (!imageData) {
+      return new Response(
+        JSON.stringify({ error: "Image data is required" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    // Return user-friendly message instead of 500 error
+    return new Response(
+      JSON.stringify({
+        message: "🔧 이미지 인식 기능은 현재 점검 중입니다.\n\n텍스트로 문제를 입력해주세요.",
+      }),
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    );
+  } catch (error: unknown) {
+    console.error("Error in vision chat API:", error);
+
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+
+    return new Response(
+      JSON.stringify({
+        error: "Failed to process image",
+        details: errorMessage,
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
+}
+
+/* ============================================================================
+   ORIGINAL CODE - COMMENTED OUT DUE TO 500 ERRORS
+   ============================================================================
+
+import Anthropic from "@anthropic-ai/sdk";
+import { NextRequest } from "next/server";
 
 // Grade level specific prompts
 const gradeLevelPrompts: Record<string, string> = {
@@ -40,6 +84,19 @@ export async function POST(req: NextRequest) {
             "API 키가 설정되지 않았습니다.\n\n.env.local 파일에 ANTHROPIC_API_KEY를 추가해주세요.",
         }),
         { status: 200, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    // Lazy, server-only Anthropic client initialization
+    const anthropic =
+      typeof window === "undefined"
+        ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY || "" })
+        : null;
+
+    if (!anthropic) {
+      return new Response(
+        JSON.stringify({ error: "이 엔드포인트는 서버에서만 사용할 수 있습니다." }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
       );
     }
 
@@ -179,3 +236,5 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+============================================================================ */

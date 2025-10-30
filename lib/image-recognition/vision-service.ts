@@ -1,4 +1,8 @@
-import Anthropic from '@anthropic-ai/sdk';
+// ⚠️ VISION SERVICE TEMPORARILY DISABLED
+// This service has been disabled to debug 500 errors in production
+// Root cause: Anthropic API authentication/credit issues
+//
+// To re-enable: Uncomment the code below and ensure ANTHROPIC_API_KEY is configured
 
 export interface MathProblemRecognition {
   success: boolean;
@@ -14,20 +18,79 @@ export interface MathProblemRecognition {
 }
 
 export class VisionService {
-  private client: Anthropic;
-
   constructor(apiKey?: string) {
-    this.client = new Anthropic({
-      apiKey: apiKey || process.env.ANTHROPIC_API_KEY,
-    });
+    console.warn('VisionService is temporarily disabled');
   }
 
-  /**
-   * Analyze a math problem image using Claude Vision API
-   * @param imageBase64 - Base64 encoded image data
-   * @param gradeLevel - Student's grade level for appropriate explanation
-   * @returns Recognized math problem with analysis
-   */
+  async recognizeMathProblem(
+    imageBase64: string,
+    gradeLevel: 'elementary' | 'middle' | 'high' | 'university'
+  ): Promise<MathProblemRecognition> {
+    return {
+      success: false,
+      error: '🔧 이미지 인식 기능은 현재 점검 중입니다.',
+      confidence: 0,
+    };
+  }
+
+  async recognizeHandwrittenMath(
+    imageBase64: string,
+    gradeLevel: 'elementary' | 'middle' | 'high' | 'university'
+  ): Promise<MathProblemRecognition> {
+    return {
+      success: false,
+      error: '🔧 손글씨 인식 기능은 현재 점검 중입니다.',
+      confidence: 0,
+    };
+  }
+
+  async verifyMathContent(imageBase64: string): Promise<boolean> {
+    return false;
+  }
+}
+
+// Singleton instance for server-side usage
+let visionServiceInstance: VisionService | null = null;
+
+export function getVisionService(): VisionService {
+  if (!visionServiceInstance) {
+    visionServiceInstance = new VisionService();
+  }
+  return visionServiceInstance;
+}
+
+/* ============================================================================
+   ORIGINAL CODE - COMMENTED OUT DUE TO 500 ERRORS
+   ============================================================================
+
+import Anthropic from '@anthropic-ai/sdk';
+
+const isServer = typeof window === 'undefined';
+
+export interface MathProblemRecognition {
+  success: boolean;
+  problem?: {
+    text: string;
+    equation?: string;
+    topic?: string;
+    difficulty?: 'easy' | 'medium' | 'hard';
+    steps?: string[];
+  };
+  error?: string;
+  confidence: number;
+}
+
+export class VisionService {
+  private client: Anthropic | null = null;
+
+  constructor(apiKey?: string) {
+    if (isServer && (apiKey || process.env.ANTHROPIC_API_KEY)) {
+      this.client = new Anthropic({
+        apiKey: apiKey || process.env.ANTHROPIC_API_KEY,
+      });
+    }
+  }
+
   async recognizeMathProblem(
     imageBase64: string,
     gradeLevel: 'elementary' | 'middle' | 'high' | 'university'
@@ -42,6 +105,16 @@ export class VisionService {
         high: '고등학생 수준의 수학 문제로, 심화 개념을 포함하여 설명해주세요.',
         university: '대학생 수준의 수학 문제로, 전문적이고 깊이 있게 설명해주세요.',
       };
+
+      if (!isServer) {
+        throw new Error('Vision recognition is only available server-side');
+      }
+      if (!this.client) {
+        if (!process.env.ANTHROPIC_API_KEY) {
+          throw new Error('Anthropic API key is not configured');
+        }
+        this.client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+      }
 
       const response = await this.client.messages.create({
         model: 'claude-3-5-sonnet-20241022',
@@ -142,16 +215,22 @@ export class VisionService {
     }
   }
 
-  /**
-   * Recognize handwritten math problem
-   * Optimized for handwriting recognition with specific instructions
-   */
   async recognizeHandwrittenMath(
     imageBase64: string,
     gradeLevel: 'elementary' | 'middle' | 'high' | 'university'
   ): Promise<MathProblemRecognition> {
     try {
       const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
+
+      if (!isServer) {
+        throw new Error('Vision recognition is only available server-side');
+      }
+      if (!this.client) {
+        if (!process.env.ANTHROPIC_API_KEY) {
+          throw new Error('Anthropic API key is not configured');
+        }
+        this.client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+      }
 
       const response = await this.client.messages.create({
         model: 'claude-3-5-sonnet-20241022',
@@ -241,13 +320,19 @@ export class VisionService {
     }
   }
 
-  /**
-   * Quick verification if image contains math content
-   * Fast pre-check before full recognition
-   */
   async verifyMathContent(imageBase64: string): Promise<boolean> {
     try {
       const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
+
+      if (!isServer) {
+        return false;
+      }
+      if (!this.client) {
+        if (!process.env.ANTHROPIC_API_KEY) {
+          return false;
+        }
+        this.client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+      }
 
       const response = await this.client.messages.create({
         model: 'claude-3-5-sonnet-20241022',
@@ -290,8 +375,13 @@ export class VisionService {
 let visionServiceInstance: VisionService | null = null;
 
 export function getVisionService(): VisionService {
+  if (!isServer) {
+    throw new Error('getVisionService can only be used on the server');
+  }
   if (!visionServiceInstance) {
     visionServiceInstance = new VisionService();
   }
   return visionServiceInstance;
 }
+
+============================================================================ */

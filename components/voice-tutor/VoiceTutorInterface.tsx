@@ -253,7 +253,9 @@ export default function VoiceTutorInterface({
     }
   };
 
-  const messages = currentSession?.messages || [];
+  const messages: TutorMessage[] = Array.isArray(currentSession?.messages)
+    ? (currentSession!.messages as TutorMessage[])
+    : [];
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800">

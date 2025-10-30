@@ -35,7 +35,12 @@ export default function EnglishTutorClient() {
   }, [isMounted, hydrated, profile, router]);
 
   // Show loading spinner until mounted, hydrated and profile is available
-  if (!isMounted || !hydrated || !profile) {
+  if (!isMounted || !hydrated) {
+    return <LoadingSpinner />;
+  }
+
+  // Extra defensive guard: if profile missing after hydration, avoid rendering child
+  if (!profile) {
     return <LoadingSpinner />;
   }
 
