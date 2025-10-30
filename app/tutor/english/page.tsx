@@ -1,8 +1,31 @@
-// Server Component wrapper to force dynamic rendering
-export const dynamic = 'force-dynamic';
+'use client';
 
-import EnglishTutorPage from './page.client';
+import dynamic from 'next/dynamic';
+import { Suspense } from 'react';
 
-export default function ServerWrapper() {
-  return <EnglishTutorPage />;
+export const runtime = 'edge';
+
+function LoadingSpinner() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
+      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+    </div>
+  );
+}
+
+// Completely disable SSR for this component
+const EnglishTutorClient = dynamic(
+  () => import('@/components/tutor-pages/EnglishTutorClient'),
+  {
+    ssr: false,
+    loading: () => <LoadingSpinner />
+  }
+);
+
+export default function EnglishTutorPage() {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <EnglishTutorClient />
+    </Suspense>
+  );
 }
