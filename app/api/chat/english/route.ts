@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextRequest } from "next/server";
+import { generateCacheKey, getCachedResponse, setCachedResponse } from "@/lib/cache/redis";
 
 // Initialize Gemini client
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
@@ -77,6 +78,36 @@ export async function POST(req: NextRequest) {
     const gradeLevelKey = gradeLevelMap[gradeLevel] || "elementary";
     const gradeLevelInstruction = gradeLevelPrompts[gradeLevelKey];
 
+    // Generate cache key
+    const cacheKey = generateCacheKey(
+      'english',
+      message,
+      gradeLevel,
+      conversationHistory || []
+    );
+
+    // Try to get cached response
+    const cachedResponse = await getCachedResponse(cacheKey);
+    if (cachedResponse) {
+      // Return cached response as stream
+      const encoder = new TextEncoder();
+      const cachedStream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: cachedResponse })}\n\n`));
+          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+          controller.close();
+        },
+      });
+      return new Response(cachedStream, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          "Connection": "keep-alive",
+          "X-Cache-Hit": "true",
+        },
+      });
+    }
+
     // Enhanced system prompt for English tutor
     const systemPrompt = `You are a friendly, encouraging, and professional English tutor. 🌟
 
@@ -151,17 +182,26 @@ Important:
       const result = await chat.sendMessageStream(message);
 
       // Create a readable stream for the response
+      let fullResponse = ''; // Collect full response for caching
       const readableStream = new ReadableStream({
         async start(controller) {
           try {
             for await (const chunk of result.stream) {
               const text = chunk.text();
               if (text) {
+                fullResponse += text; // Accumulate for caching
                 controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
               }
             }
             controller.enqueue(encoder.encode("data: [DONE]\n\n"));
             controller.close();
+
+            // Cache the complete response (fire and forget)
+            if (fullResponse.trim()) {
+              setCachedResponse(cacheKey, fullResponse, 3600).catch(err => {
+                console.error('Failed to cache response:', err);
+              });
+            }
           } catch (error) {
             console.error("Streaming error:", error);
             controller.error(error);
