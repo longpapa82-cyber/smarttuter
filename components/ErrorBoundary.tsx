@@ -45,10 +45,30 @@ export class ErrorBoundary extends Component<Props, State> {
                 앗! 문제가 발생했습니다
               </h1>
 
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-600 mb-4">
                 일시적인 오류가 발생했습니다.<br />
-                페이지를 새로고침하거나 다시 시도해주세요.
+                아래 방법으로 해결할 수 있습니다.
               </p>
+
+              <div className="w-full bg-blue-50 rounded-xl p-4 mb-6 text-left">
+                <h3 className="font-semibold text-blue-900 mb-3 text-sm">
+                  💡 해결 방법
+                </h3>
+                <ul className="space-y-2 text-sm text-blue-800">
+                  <li className="flex items-start gap-2">
+                    <span className="font-bold">1.</span>
+                    <span>페이지 새로고침 버튼을 클릭해주세요</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="font-bold">2.</span>
+                    <span>브라우저 캐시를 삭제하고 다시 시도해주세요</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="font-bold">3.</span>
+                    <span>문제가 계속되면 홈 버튼으로 돌아가주세요</span>
+                  </li>
+                </ul>
+              </div>
 
               {this.state.error && (
                 <details className="w-full mb-6 text-left">

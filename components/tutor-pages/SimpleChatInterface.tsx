@@ -92,11 +92,34 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
       }
     } catch (error) {
       console.error('Chat error:', error);
+
+      // 사용자에게 구체적인 안내 메시지 제공
+      const errorMessage = `⚠️ 일시적인 오류가 발생했습니다.
+
+💡 다음 방법을 시도해주세요:
+
+1️⃣ **네트워크 연결 확인**
+   - 인터넷 연결이 안정적인지 확인해주세요
+   - Wi-Fi 또는 데이터 연결 상태를 체크해주세요
+
+2️⃣ **잠시 후 다시 시도**
+   - 서버가 일시적으로 바쁠 수 있습니다
+   - 30초 정도 기다린 후 다시 메시지를 보내주세요
+
+3️⃣ **페이지 새로고침**
+   - 브라우저 새로고침(F5 또는 Ctrl+R)을 해주세요
+
+4️⃣ **문제가 계속되면**
+   - 브라우저 캐시를 삭제해주세요
+   - 다른 브라우저에서 시도해주세요
+
+📝 참고: 현재 AI 서비스가 점검 중이거나 일시적으로 사용할 수 없는 상태일 수 있습니다.`;
+
       setMessages(prev => [
         ...prev,
         {
           role: 'assistant',
-          content: '죄송합니다. 일시적인 오류가 발생했습니다. 다시 시도해주세요.',
+          content: errorMessage,
         },
       ]);
     } finally {

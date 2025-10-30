@@ -35,7 +35,30 @@ export async function POST(req: NextRequest) {
       const encoder = new TextEncoder();
       const errorStream = new ReadableStream({
         start(controller) {
-          const errorMsg = "⚠️ API 설정 오류\n\n관리자에게 문의하여 API 키를 설정해주세요.";
+          const errorMsg = `⚠️ API 키가 설정되지 않았습니다
+
+💡 **해결 방법:**
+
+**학생/일반 사용자:**
+- 관리자에게 문의하여 API 키를 설정해달라고 요청해주세요
+
+**관리자/개발자:**
+
+1️⃣ **Google AI Studio에서 API 키 발급**
+   - https://aistudio.google.com/apikey 접속
+   - "Create API Key" 클릭
+   - 생성된 키 복사
+
+2️⃣ **환경 변수 설정**
+   - 프로젝트 루트에 .env.local 파일 생성
+   - GEMINI_API_KEY=your_api_key_here 추가
+
+3️⃣ **Vercel 배포 시 환경 변수 설정**
+   - Vercel 대시보드 접속
+   - Project Settings → Environment Variables
+   - GEMINI_API_KEY 추가 및 배포
+
+📝 Gemini API는 무료 tier에서도 충분한 할당량을 제공합니다!`;
           controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: errorMsg })}\n\n`));
           controller.enqueue(encoder.encode("data: [DONE]\n\n"));
           controller.close();
@@ -149,8 +172,42 @@ export async function POST(req: NextRequest) {
         apiError.status === 429;
 
       const errorMsg = isQuotaError
-        ? "⏱️ API 요청 한도에 도달했습니다.\n\n잠시 후 다시 시도해주세요.\n\nAPI rate limit reached.\nPlease try again in a moment."
-        : "⏱️ 서비스가 일시적으로 응답하지 않습니다.\n\n잠시 후 다시 시도해주세요.\n\nA temporary error occurred.\nPlease try again in a moment.";
+        ? `⏱️ API 요청 한도에 도달했습니다
+
+💡 **해결 방법:**
+
+1️⃣ **잠시 기다렸다가 다시 시도**
+   - 약 1분 정도 기다린 후 다시 질문해주세요
+   - Rate limit은 보통 몇 분 후 자동으로 해제됩니다
+
+2️⃣ **관리자에게 문의**
+   - API 할당량이 소진되었을 수 있습니다
+   - 관리자에게 API 키 업그레이드를 요청해주세요
+
+3️⃣ **나중에 다시 시도**
+   - 일시적으로 요청이 많은 시간대일 수 있습니다
+   - 잠시 후 다시 이용해주세요
+
+📝 불편을 드려 죄송합니다. 곧 다시 이용하실 수 있습니다!`
+        : `⚠️ 일시적인 오류가 발생했습니다
+
+💡 **해결 방법:**
+
+1️⃣ **네트워크 연결 확인**
+   - 인터넷 연결이 안정적인지 확인해주세요
+
+2️⃣ **다시 시도**
+   - 같은 질문을 다시 입력해주세요
+   - 대부분의 일시적 오류는 재시도로 해결됩니다
+
+3️⃣ **페이지 새로고침**
+   - F5 또는 새로고침 버튼을 눌러주세요
+
+4️⃣ **문제가 계속되면**
+   - 관리자에게 문의해주세요
+   - 로그를 확인하여 정확한 원인을 파악할 수 있습니다
+
+📝 잠시 후 다시 시도해주세요!`;
 
       const errorStream = new ReadableStream({
         start(controller) {

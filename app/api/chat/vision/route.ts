@@ -17,10 +17,42 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Return user-friendly message instead of 500 error
+    // Return user-friendly message with setup instructions
+    const setupGuideMessage = `🔧 이미지 인식 기능이 현재 비활성화되어 있습니다.
+
+💡 **대안 방법:**
+
+1️⃣ **텍스트로 문제 입력**
+   - 수학 문제를 직접 타이핑해서 질문해주세요
+   - 예: "2차 방정식 x² - 5x + 6 = 0을 풀어주세요"
+
+2️⃣ **문제 내용 설명**
+   - 이미지 속 내용을 텍스트로 설명해주세요
+   - 예: "삼각형 ABC에서 각 A가 60도..."
+
+📋 **관리자용 - 이미지 인식 기능 활성화 방법:**
+
+1. Anthropic API 키 발급
+   - https://console.anthropic.com 접속
+   - API Keys 메뉴에서 키 생성
+
+2. 환경 변수 설정
+   - 프로젝트 루트에 .env.local 파일 생성
+   - ANTHROPIC_API_KEY=your_api_key_here 추가
+
+3. API 코드 활성화
+   - app/api/chat/vision/route.ts 파일 확인
+   - 주석 처리된 원본 코드 활성화
+
+4. 재배포
+   - Vercel 환경 변수에도 동일하게 설정
+   - vercel --prod 명령으로 재배포
+
+📝 현재는 텍스트 기반 질문을 이용해주세요!`;
+
     return new Response(
       JSON.stringify({
-        message: "🔧 이미지 인식 기능은 현재 점검 중입니다.\n\n텍스트로 문제를 입력해주세요.",
+        message: setupGuideMessage,
       }),
       { status: 200, headers: { "Content-Type": "application/json" } }
     );
