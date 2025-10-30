@@ -33,7 +33,10 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
 
     const userMessage = input.trim();
     setInput('');
-    setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+
+    // 새 사용자 메시지를 추가한 업데이트된 히스토리 생성
+    const updatedMessages: Message[] = [...messages, { role: 'user' as const, content: userMessage }];
+    setMessages(updatedMessages);
     setIsLoading(true);
 
     try {
@@ -43,6 +46,7 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
         body: JSON.stringify({
           message: userMessage,
           gradeLevel,
+          // 새 메시지를 포함한 히스토리 전송 (단, 마지막 유저 메시지는 제외)
           conversationHistory: messages.slice(-10),
         }),
       });

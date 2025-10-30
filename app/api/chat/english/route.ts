@@ -117,8 +117,11 @@ Important:
 - Focus on practical, real-world English usage that students can apply immediately
 - Celebrate small wins and progress to build confidence`;
 
-    // Prepare conversation for Gemini API
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+    // Prepare conversation for Gemini API with system instruction
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.0-flash-exp",
+      systemInstruction: systemPrompt,  // System prompt는 여기서 한 번만 설정
+    });
 
     // Build conversation history for Gemini
     const chatHistory = [];
@@ -144,8 +147,8 @@ Important:
         },
       });
 
-      // Send message and get stream
-      const result = await chat.sendMessageStream(systemPrompt + "\n\nUser: " + message);
+      // Send message and get stream (system prompt는 이미 모델에 설정됨)
+      const result = await chat.sendMessageStream(message);
 
       // Create a readable stream for the response
       const readableStream = new ReadableStream({

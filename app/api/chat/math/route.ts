@@ -105,8 +105,11 @@ export async function POST(req: NextRequest) {
 - 학생의 수준을 고려하여 적절한 난이도로 설명합니다
 - 실수를 하더라도 긍정적으로 격려하며 올바른 방향을 제시합니다`;
 
-    // Prepare conversation for Gemini API
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+    // Prepare conversation for Gemini API with system instruction
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.0-flash-exp",
+      systemInstruction: systemPrompt,  // System prompt는 여기서 한 번만 설정
+    });
 
     // Build conversation history for Gemini
     const chatHistory = [];
@@ -132,8 +135,8 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // Send message and get stream
-      const result = await chat.sendMessageStream(systemPrompt + "\n\nUser: " + message);
+      // Send message and get stream (system prompt는 이미 모델에 설정됨)
+      const result = await chat.sendMessageStream(message);
 
       // Create a readable stream for the response
       const readableStream = new ReadableStream({
