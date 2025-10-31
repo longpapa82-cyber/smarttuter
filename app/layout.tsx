@@ -4,6 +4,7 @@ import "./globals.css";
 import { StoreProvider } from "@/components/providers/StoreProvider";
 import { NotificationProvider } from "@/components/gamification/NotificationProvider";
 import { ServiceWorkerProvider } from "@/components/providers/ServiceWorkerProvider";
+import { NavigationProvider } from "@/components/providers/NavigationProvider";
 import { WebVitalsReporter } from "@/components/WebVitalsReporter";
 
 const inter = Inter({
@@ -92,7 +93,9 @@ export default function RootLayout({
         <StoreProvider>
           <NotificationProvider>
             <ServiceWorkerProvider>
-              {children}
+              <NavigationProvider>
+                {children}
+              </NavigationProvider>
             </ServiceWorkerProvider>
           </NotificationProvider>
         </StoreProvider>
