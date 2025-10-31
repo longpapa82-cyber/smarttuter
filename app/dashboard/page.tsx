@@ -13,6 +13,12 @@ import { LevelProgress } from "@/components/gamification/LevelProgress";
 import { StreakDisplay } from "@/components/gamification/StreakDisplay";
 import { WeeklyStats } from "@/components/gamification/WeeklyStats";
 import { AchievementBadges } from "@/components/gamification/AchievementBadges";
+import {
+  LearningProgressOverview,
+  CEFRLevelBadge,
+  MathTopicProgress,
+  WeaknessAnalysis
+} from "@/components/dashboard";
 
 function LoadingSpinner() {
   return (
@@ -103,6 +109,81 @@ function DashboardContent() {
 
           {/* Achievement Badges */}
           <AchievementBadges />
+
+          {/* Phase 7: Learning Progress Visualization */}
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-900">
+                학습 진행도
+              </h2>
+              <div className="px-3 py-1 bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-full text-xs font-bold">
+                Phase 7 ✨
+              </div>
+            </div>
+
+            {/* Learning Progress Overview */}
+            <LearningProgressOverview
+              progressData={{
+                userId: profile.username || 'user',
+                gradeLevel: (profile.gradeLevel as any) || 'elementary',
+                subjects: {
+                  math: {
+                    subject: 'math',
+                    totalConcepts: 30,
+                    conceptsByMastery: {
+                      not_started: 10,
+                      struggling: 3,
+                      learning: 5,
+                      proficient: 7,
+                      mastered: 5
+                    },
+                    averageMastery: 0.65,
+                    studyTime: 3600,
+                    totalAttempts: 150,
+                    successRate: 0.72,
+                    currentDifficulty: 'medium',
+                    recommendedNextConcepts: [],
+                    strongAreas: [],
+                    weakAreas: []
+                  },
+                  english: {
+                    subject: 'english',
+                    totalConcepts: 25,
+                    conceptsByMastery: {
+                      not_started: 9,
+                      struggling: 2,
+                      learning: 4,
+                      proficient: 7,
+                      mastered: 3
+                    },
+                    averageMastery: 0.58,
+                    studyTime: 2800,
+                    totalAttempts: 120,
+                    successRate: 0.68,
+                    currentDifficulty: 'medium',
+                    recommendedNextConcepts: [],
+                    strongAreas: [],
+                    weakAreas: []
+                  }
+                },
+                overallProgress: 0.62,
+                totalStudyTime: 6400,
+                totalConcepts: 55,
+                masteredConcepts: 8,
+                weaknesses: [],
+                lastUpdated: new Date()
+              }}
+            />
+
+            {/* Math Topic Progress */}
+            <MathTopicProgress gradeLevel={(profile.gradeLevel as any) || 'elementary'} />
+
+            {/* Weakness Analysis */}
+            <WeaknessAnalysis
+              weaknesses={[]}
+              gradeLevel={(profile.gradeLevel as any) || 'elementary'}
+            />
+          </div>
 
           {/* Analytics Link - Extra spacing wrapper */}
           <div className="pt-4">
