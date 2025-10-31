@@ -249,7 +249,7 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
       </div>
 
       {/* Input */}
-      <div className="bg-white/80 backdrop-blur-md border-t border-gray-200 p-4">
+      <div className="bg-white/80 backdrop-blur-md border-t border-gray-200 p-4 mb-5">
         <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
           <div className="flex gap-2 items-end">
             {/* Voice Input Button */}

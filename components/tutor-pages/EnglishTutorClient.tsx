@@ -7,14 +7,8 @@ import SimpleChatInterface from './SimpleChatInterface';
 
 function LoadingSpinner() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
       <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
-      <div className="mt-8 text-3xl font-bold text-red-600 animate-pulse">
-        🚨 DEPLOYMENT TEST - IF YOU SEE THIS, DEPLOYMENT IS WORKING! 🚨
-      </div>
-      <div className="mt-4 text-xl text-gray-700">
-        배포 테스트 중 - 이 메시지가 보이면 배포가 작동하는 것입니다
-      </div>
     </div>
   );
 }
