@@ -18,7 +18,7 @@ export interface VoiceSettingsConfig {
   voiceVolume: number // 0.0 - 1.0
 
   // Advanced
-  noiseSuppr ession: boolean
+  noiseSuppression: boolean
   echoCancellation: boolean
 }
 

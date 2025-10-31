@@ -16,7 +16,7 @@ export class AudioAnalyzer {
   private audioContext: AudioContext | null = null
   private analyser: AnalyserNode | null = null
   private microphone: MediaStreamAudioSourceNode | null = null
-  private dataArray: Uint8Array | null = null
+  private dataArray: Uint8Array<ArrayBuffer> | null = null
   private animationFrame: number | null = null
 
   constructor(private fftSize: number = 256) {}

@@ -29,7 +29,7 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
   const [isTTSEnabled, setIsTTSEnabled] = useState(true);
 
   // Speech synthesis hook
-  const { speak, cancel, isSpeaking, isSupported: isTTSSupported } = useSpeechSynthesis({
+  const { speak, stop, isSpeaking, isSupported: isTTSSupported } = useSpeechSynthesis({
     lang: voiceSettings.outputLanguage,
     rate: voiceSettings.voiceSpeed,
     volume: voiceSettings.voiceVolume,
@@ -63,7 +63,7 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
     setInput('');
 
     // Stop any ongoing TTS
-    cancel();
+    stop();
 
     // 새 사용자 메시지를 추가한 업데이트된 히스토리 생성
     const updatedMessages: Message[] = [...messages, { role: 'user' as const, content: userMessage }];
@@ -180,7 +180,7 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
               <button
                 onClick={() => {
                   setIsTTSEnabled(!isTTSEnabled);
-                  if (isTTSEnabled) cancel();
+                  if (isTTSEnabled) stop();
                 }}
                 className={`p-2 rounded-lg transition-colors ${
                   isTTSEnabled

@@ -28,7 +28,7 @@ export function VoiceWaveform({
   className = '',
 }: VoiceWaveformProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const animationRef = useRef<number>()
+  const animationRef = useRef<number | undefined>(undefined)
   const barsDataRef = useRef<number[]>(new Array(bars).fill(0))
 
   // Color gradients
@@ -167,7 +167,7 @@ export function VoiceWaveformCircular({
   className?: string
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const animationRef = useRef<number>()
+  const animationRef = useRef<number | undefined>(undefined)
   const barsDataRef = useRef<number[]>(new Array(40).fill(0))
 
   useEffect(() => {

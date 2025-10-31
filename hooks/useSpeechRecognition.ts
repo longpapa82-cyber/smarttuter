@@ -11,6 +11,11 @@ import {
   type SpeechRecognitionResult,
 } from '@/lib/voice/speech-recognition'
 
+// SpeechRecognition types from Web Speech API
+type SpeechRecognition = any
+type SpeechRecognitionEvent = any
+type SpeechRecognitionErrorEvent = any
+
 export interface UseSpeechRecognitionOptions extends SpeechRecognitionConfig {
   onResult?: (result: SpeechRecognitionResult) => void
   onError?: (error: string) => void

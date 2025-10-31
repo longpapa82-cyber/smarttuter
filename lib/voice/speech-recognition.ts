@@ -21,10 +21,10 @@ export function isSpeechRecognitionSupported(): boolean {
 }
 
 // Get SpeechRecognition constructor (with webkit prefix fallback)
-export function getSpeechRecognition(): typeof SpeechRecognition | null {
+export function getSpeechRecognition(): any {
   if (typeof window === 'undefined') return null
 
-  return (window.SpeechRecognition || (window as any).webkitSpeechRecognition) || null
+  return ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition) || null
 }
 
 export interface SpeechRecognitionConfig {
@@ -51,7 +51,7 @@ export interface SpeechRecognitionError {
  */
 export function createSpeechRecognition(
   config: SpeechRecognitionConfig = {}
-): SpeechRecognition | null {
+): any {
   const SpeechRecognitionConstructor = getSpeechRecognition()
 
   if (!SpeechRecognitionConstructor) {
