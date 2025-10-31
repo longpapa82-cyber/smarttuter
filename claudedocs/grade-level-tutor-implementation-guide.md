@@ -4,7 +4,7 @@
 
 SmartTuter의 학교급별 맞춤형 AI 튜터링 시스템이 구현되었습니다. 이 시스템은 초등학교부터 대학교까지 각 학교급에 맞는 수준의 학습 콘텐츠를 제공하고, 수준을 벗어난 질문은 자연스럽게 차단합니다.
 
-## 구현 완료 항목 (Phase 1-4)
+## 구현 완료 항목 (Phase 1-5)
 
 ### Phase 1: 기초 데이터 구조 (7개 파일)
 - `types/tutor.ts` - TypeScript 타입 시스템
@@ -25,6 +25,13 @@ SmartTuter의 학교급별 맞춤형 AI 튜터링 시스템이 구현되었습�
 
 ### Phase 4: 영어 API 통합 (1개 파일)
 - `app/api/chat/english/route.ts` - 영어 튜터 API 가드레일 적용
+
+### Phase 5: 온보딩 UI 확장 (1개 파일)
+- `app/onboarding/page.tsx` - 세부 학년 선택 드롭다운 추가
+  - 학교급별 세부 학년 선택 (초등: 3-4/5-6, 중: 1/2/3, 고: 1/2/3, 대: 1/2/3/4+)
+  - createProfileFromOnboarding 통합으로 완전한 프로필 생성
+  - GradeLevelDetail 객체 생성 및 저장
+  - 향상된 localStorage 관리
 
 ## 시스템 작동 방식
 
@@ -126,12 +133,6 @@ SmartTuter의 학교급별 맞춤형 AI 튜터링 시스템이 구현되었습�
 
 ## 다음 구현 단계 (TODO)
 
-### Phase 5: 온보딩 UI
-- [ ] app/onboarding/page.tsx 확장
-- [ ] 학교급 선택 카드 컴포넌트
-- [ ] 세부 학년 선택 드롭다운
-- [ ] 프로필 저장 및 검증
-
 ### Phase 6: 학습 진행 추적
 - [ ] Redis 기반 세션 추적
 - [ ] 개념 마스터리 레벨 계산
@@ -165,10 +166,12 @@ SmartTuter의 학교급별 맞춤형 AI 튜터링 시스템이 구현되었습�
 - `6c432b9` - Phase 3: Math API 가드레일 통합
 - `6e707f9` - 구현 가이드 문서 작성
 - `40105e9` - Phase 4: English API 가드레일 통합
+- `a916d16` - Phase 4 문서 업데이트
+- `0bbb55d` - Phase 5: 온보딩 UI 세부 학년 선택 기능 추가
 
 ---
 
 **작성일**: 2025-01-31
 **최종 업데이트**: 2025-01-31
-**상태**: Phase 4 완료 (Math & English API 통합 완료)
-**다음**: Phase 5 (온보딩 UI 구현)
+**상태**: Phase 5 완료 (온보딩 UI 확장 완료)
+**다음**: Phase 6 (학습 진행 추적)
