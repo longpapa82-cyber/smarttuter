@@ -33,6 +33,23 @@ SmartTuter의 학교급별 맞춤형 AI 튜터링 시스템이 구현되었습�
   - GradeLevelDetail 객체 생성 및 저장
   - 향상된 localStorage 관리
 
+### Phase 6: 학습 진행 추적 시스템 (6개 파일)
+- `lib/learning-progress/types.ts` - 타입 시스템 (마스터리, 약점, 난이도, 진행 요약)
+- `lib/learning-progress/mastery-calculator.ts` - 개념 마스터리 계산 및 업데이트
+  - 5단계 마스터리 분류 (not_started → mastered)
+  - 신뢰도 점수 계산 (최근 70%, 전체 30% 가중치)
+  - 선행 개념 gap 식별
+- `lib/learning-progress/weakness-detector.ts` - 약점 자동 감지 및 추천
+  - 5가지 지표 (성공률, 힌트, 응답시간, 반복오류, 개념gap)
+  - 4단계 심각도 (low/medium/high/critical)
+  - 맞춤형 학습 조언 생성
+- `lib/learning-progress/difficulty-adjuster.ts` - 적응형 난이도 조정
+  - 5요인 분석 (성공률35%, 마스터리25%, 힌트15%, 시간15%, 약점10%)
+  - 교육심리학 기반 (ZPD, Flow Theory, Bloom)
+  - 5단계 난이도 배수 (0.5x - 2.0x)
+- `lib/learning-progress/progress-tracker.ts` - 진행 추적 인터페이스 (stub)
+- `lib/learning-progress/index.ts` - 통합 export
+
 ## 시스템 작동 방식
 
 ```
@@ -133,12 +150,6 @@ SmartTuter의 학교급별 맞춤형 AI 튜터링 시스템이 구현되었습�
 
 ## 다음 구현 단계 (TODO)
 
-### Phase 6: 학습 진행 추적
-- [ ] Redis 기반 세션 추적
-- [ ] 개념 마스터리 레벨 계산
-- [ ] 약점 영역 자동 감지
-- [ ] 적응형 난이도 조정
-
 ### Phase 7: 대시보드 확장
 - [ ] 학교급별 진행도 표시
 - [ ] 현재 CEFR 레벨 (영어)
@@ -168,10 +179,12 @@ SmartTuter의 학교급별 맞춤형 AI 튜터링 시스템이 구현되었습�
 - `40105e9` - Phase 4: English API 가드레일 통합
 - `a916d16` - Phase 4 문서 업데이트
 - `0bbb55d` - Phase 5: 온보딩 UI 세부 학년 선택 기능 추가
+- `27fce0f` - Phase 5 문서 업데이트
+- `15eba56` - Phase 6: 학습 진행 추적 시스템 (마스터리, 약점, 난이도)
 
 ---
 
 **작성일**: 2025-01-31
 **최종 업데이트**: 2025-01-31
-**상태**: Phase 5 완료 (온보딩 UI 확장 완료)
-**다음**: Phase 6 (학습 진행 추적)
+**상태**: Phase 6 완료 (학습 진행 추적 시스템 완료)
+**다음**: Phase 7 (대시보드 확장)
