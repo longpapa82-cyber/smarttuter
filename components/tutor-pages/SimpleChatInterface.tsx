@@ -1,7 +1,10 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send } from 'lucide-react';
+import { Send, Volume2, VolumeX, Settings as SettingsIcon } from 'lucide-react';
+import { VoiceButton } from '@/components/voice/VoiceButton';
+import { VoiceSettings, VoiceSettingsConfig, DEFAULT_VOICE_SETTINGS } from '@/components/voice/VoiceSettings';
+import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -19,6 +22,18 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Voice settings
+  const [voiceSettings, setVoiceSettings] = useState<VoiceSettingsConfig>(DEFAULT_VOICE_SETTINGS);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isTTSEnabled, setIsTTSEnabled] = useState(true);
+
+  // Speech synthesis hook
+  const { speak, cancel, isSpeaking, isSupported: isTTSSupported } = useSpeechSynthesis({
+    lang: voiceSettings.outputLanguage,
+    rate: voiceSettings.voiceSpeed,
+    volume: voiceSettings.voiceVolume,
+  });
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -27,12 +42,27 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
     scrollToBottom();
   }, [messages]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading) return;
+  // Auto-play TTS for assistant responses
+  useEffect(() => {
+    if (!voiceSettings.autoPlayResponses || !isTTSEnabled || !isTTSSupported) return;
 
-    const userMessage = input.trim();
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage && lastMessage.role === 'assistant' && !isLoading) {
+      // Speak the last assistant message
+      speak(lastMessage.content);
+    }
+  }, [messages, isLoading, voiceSettings.autoPlayResponses, isTTSEnabled, isTTSSupported, speak]);
+
+  const handleSubmit = async (e?: React.FormEvent, messageText?: string) => {
+    e?.preventDefault();
+
+    const userMessage = messageText || input.trim();
+    if (!userMessage || isLoading) return;
+
     setInput('');
+
+    // Stop any ongoing TTS
+    cancel();
 
     // 새 사용자 메시지를 추가한 업데이트된 히스토리 생성
     const updatedMessages: Message[] = [...messages, { role: 'user' as const, content: userMessage }];
@@ -135,11 +165,43 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
     <div className="flex flex-col h-screen bg-gradient-to-br from-blue-50 to-purple-50">
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-md border-b border-gray-200 p-4">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-2xl font-bold text-gray-900">
-            {subject === 'english' ? '영어' : '수학'} 튜터
-          </h1>
-          <p className="text-sm text-gray-600">학년: {gradeLevel}</p>
+        <div className="max-w-4xl mx-auto flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              {subject === 'english' ? '영어' : '수학'} 튜터
+            </h1>
+            <p className="text-sm text-gray-600">학년: {gradeLevel}</p>
+          </div>
+
+          {/* Voice Controls */}
+          <div className="flex items-center gap-2">
+            {isTTSSupported && (
+              <button
+                onClick={() => {
+                  setIsTTSEnabled(!isTTSEnabled);
+                  if (isTTSEnabled) cancel();
+                }}
+                className={`p-2 rounded-lg transition-colors ${
+                  isTTSEnabled
+                    ? 'bg-blue-100 text-blue-600 hover:bg-blue-200'
+                    : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                }`}
+                title={isTTSEnabled ? 'TTS 끄기' : 'TTS 켜기'}
+                aria-label={isTTSEnabled ? 'Disable text-to-speech' : 'Enable text-to-speech'}
+              >
+                {isTTSEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
+              </button>
+            )}
+
+            <button
+              onClick={() => setIsSettingsOpen(true)}
+              className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"
+              title="음성 설정"
+              aria-label="Open voice settings"
+            >
+              <SettingsIcon className="w-5 h-5" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -189,15 +251,42 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
       {/* Input */}
       <div className="bg-white/80 backdrop-blur-md border-t border-gray-200 p-4">
         <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-end">
+            {/* Voice Input Button */}
+            {voiceSettings.inputMode !== 'disabled' && (
+              <div className="shrink-0">
+                <VoiceButton
+                  onTranscript={(transcript) => {
+                    // Optionally read back the input
+                    if (voiceSettings.repeatUserInput && isTTSSupported) {
+                      speak(transcript);
+                    }
+                    // Send the voice input as a message
+                    handleSubmit(undefined, transcript);
+                  }}
+                  onError={(error) => {
+                    console.error('Voice input error:', error);
+                  }}
+                  language={voiceSettings.inputLanguage}
+                  disabled={isLoading}
+                  size="md"
+                  variant="circle"
+                  showLabel={false}
+                />
+              </div>
+            )}
+
+            {/* Text Input */}
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="메시지를 입력하세요..."
+              placeholder="메시지를 입력하거나 음성으로 말하세요..."
               className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-400"
               disabled={isLoading}
             />
+
+            {/* Send Button */}
             <button
               type="submit"
               disabled={isLoading || !input.trim()}
@@ -208,6 +297,14 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
           </div>
         </form>
       </div>
+
+      {/* Voice Settings Panel */}
+      <VoiceSettings
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        settings={voiceSettings}
+        onSettingsChange={setVoiceSettings}
+      />
     </div>
   );
 }
