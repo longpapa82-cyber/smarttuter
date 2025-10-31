@@ -1,0 +1,78 @@
+name: Production Health Check
+
+on:
+  deployment_status:
+  schedule:
+    # Run every 15 minutes
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    if: github.event.deployment_status.state == 'success' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Wait for deployment to stabilize
+        if: github.event_name == 'deployment_status'
+        run: sleep 30
+
+      - name: Check production health
+        id: health
+        run: |
+          RESPONSE=$(curl -s -w "\n%{http_code}" https://smarttuter.vercel.app/api/health)
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+
+          echo "HTTP Status: $HTTP_CODE"
+          echo "$BODY" | jq '.'
+
+          if [ "$HTTP_CODE" -ne 200 ]; then
+            echo "Health check failed with status $HTTP_CODE"
+            echo "::set-output name=status::failed"
+            exit 1
+          fi
+
+          STATUS=$(echo "$BODY" | jq -r '.status')
+          if [ "$STATUS" != "healthy" ]; then
+            echo "Service is degraded: $STATUS"
+            echo "::set-output name=status::degraded"
+            exit 1
+          fi
+
+          echo "::set-output name=status::healthy"
+
+      - name: Trigger rollback on failure
+        if: failure() && github.event_name == 'deployment_status'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // Get previous successful deployment
+            const deployments = await github.rest.repos.listDeployments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              environment: 'production',
+              per_page: 10
+            });
+
+            const previousDeployment = deployments.data.find(d =>
+              d.sha !== context.payload.deployment.sha
+            );
+
+            if (previousDeployment) {
+              console.log(`Rolling back to ${previousDeployment.sha}`);
+              // Create rollback comment
+              await github.rest.repos.createCommitComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                commit_sha: context.payload.deployment.sha,
+                body: `⚠️ Automatic rollback triggered due to failed health check. Previous deployment: ${previousDeployment.sha}`
+              });
+            }
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "🚨 Production health check failed!"
+          echo "Please check https://smarttuter.vercel.app/api/health"

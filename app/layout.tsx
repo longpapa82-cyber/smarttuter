@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { StoreProvider } from "@/components/providers/StoreProvider";
 import { NotificationProvider } from "@/components/gamification/NotificationProvider";
+import { ServiceWorkerProvider } from "@/components/providers/ServiceWorkerProvider";
 import { WebVitalsReporter } from "@/components/WebVitalsReporter";
 
 const inter = Inter({
@@ -90,7 +91,9 @@ export default function RootLayout({
       <body className="antialiased">
         <StoreProvider>
           <NotificationProvider>
-            {children}
+            <ServiceWorkerProvider>
+              {children}
+            </ServiceWorkerProvider>
           </NotificationProvider>
         </StoreProvider>
         <WebVitalsReporter />
