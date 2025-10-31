@@ -149,18 +149,22 @@ export async function trackLearningEvent(event: LearningEvent): Promise<void> {
     console.log(`Event tracked: ${event.eventType} for concept ${event.conceptId || 'N/A'}`);
 
     // 5. Update concept mastery if this is a concept-specific event
-    if (event.conceptId && (event.eventType === 'answer_received' || event.eventType === 'question_asked')) {
+    const trackingEventTypes = ['answer_received', 'question_asked', 'question_attempt', 'conversation_turn'];
+    if (event.conceptId && trackingEventTypes.includes(event.eventType)) {
       await updateConceptMasteryFromEvent(event);
     }
 
     // 6. Trigger weakness detection every 10 events
     const eventCount = incrementEventCounter(event.userId, event.subject);
     if (eventCount % 10 === 0) {
+      console.log(`[Auto-Detection] Triggering weakness detection for ${event.userId} (${event.subject}) at event #${eventCount}`);
       await triggerWeaknessDetection(event.userId, event.subject);
     }
 
     // 7. Check difficulty adjustment every 5 attempts
-    if (event.eventType === 'answer_received' && eventCount % 5 === 0) {
+    const difficultyEventTypes = ['answer_received', 'question_attempt', 'conversation_turn'];
+    if (difficultyEventTypes.includes(event.eventType) && eventCount % 5 === 0) {
+      console.log(`[Auto-Detection] Checking difficulty adjustment for ${event.userId} (${event.subject}) at event #${eventCount}`);
       await checkDifficultyAdjustment(event.userId, event.subject);
     }
 

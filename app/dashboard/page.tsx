@@ -17,7 +17,8 @@ import {
   LearningProgressOverview,
   CEFRLevelBadge,
   MathTopicProgress,
-  WeaknessAnalysis
+  WeaknessAnalysis,
+  DifficultyIndicator
 } from "@/components/dashboard";
 import type { LearningProgressSummary } from "@/lib/learning-progress/types";
 
@@ -192,6 +193,12 @@ function DashboardContent() {
               <>
                 {/* Learning Progress Overview */}
                 <LearningProgressOverview progressData={progressData} />
+
+                {/* Adaptive Difficulty Indicators - Phase 8 Auto-Adjustment */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <DifficultyIndicator userId={profile.username} subject="math" />
+                  <DifficultyIndicator userId={profile.username} subject="english" />
+                </div>
 
                 {/* Math Topic Progress */}
                 <MathTopicProgress gradeLevel={(profile.gradeLevel as any) || 'elementary'} />
