@@ -1,6 +1,10 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextRequest } from "next/server";
 import { generateCacheKey, getCachedResponse, setCachedResponse } from "@/lib/cache/redis";
+import { getUserProfile } from "@/lib/user-profile";
+import { generateSystemPrompt } from "@/lib/tutor/system-prompt-generator";
+import { contentLevelDetector } from "@/lib/tutor/content-level-detector";
+import { getRandomGuidanceMessage } from "@/lib/tutor/guidance-messages";
 
 // Initialize Gemini client
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
@@ -22,13 +26,61 @@ const gradeLevelMap: Record<string, string> = {
 
 export async function POST(req: NextRequest) {
   try {
-    const { message, gradeLevel, conversationHistory } = await req.json();
+    const { message, gradeLevel, conversationHistory, userId = 'default' } = await req.json();
 
     if (!message) {
       return new Response(
         JSON.stringify({ error: "Message is required" }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
+    }
+
+    // Load user profile for grade-level guardrails
+    const userProfile = await getUserProfile(userId);
+    if (!userProfile) {
+      return new Response(
+        JSON.stringify({ error: "User profile not found. Please complete onboarding." }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    // Content level detection
+    const levelCheck = await contentLevelDetector.detect(
+      message,
+      userProfile.gradeLevel,
+      'english',
+      userProfile.gradeLevelDetail
+    );
+
+    // If out of scope, return guidance message
+    if (levelCheck.outOfScope && levelCheck.confidence > 0.7) {
+      const guidanceMsg = getRandomGuidanceMessage(
+        userProfile.gradeLevel,
+        'english',
+        {
+          '학생 이름': userId,
+          'current appropriate topic': 'current level topics',
+          'simpler related topic': 'basic concepts',
+        }
+      );
+
+      const encoder = new TextEncoder();
+      const guidanceStream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: guidanceMsg })}\n\n`));
+          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+          controller.close();
+        },
+      });
+
+      return new Response(guidanceStream, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          "Connection": "keep-alive",
+          "X-Out-Of-Scope": "true",
+        },
+      });
     }
 
     // Check if API key is configured
@@ -108,45 +160,47 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Enhanced system prompt for English tutor
-    const systemPrompt = `You are a friendly, encouraging, and professional English tutor. 🌟
+    // Generate grade-level specific system prompt with guardrails
+    const systemPrompt = generateSystemPrompt(userProfile, 'english');
 
-Your Role and Principles:
-1. Teach English ${gradeLevelInstruction}
-2. Use the Socratic method - guide students to discover answers rather than giving them directly
-3. Encourage natural conversation in English as much as possible
-4. Provide explanations in both English and Korean when needed for clarity
-5. Correct mistakes gently and constructively, celebrating progress
-6. Give pronunciation guidance when asked (using phonetic descriptions)
-7. Offer praise and encouragement frequently
-8. If students ask off-topic questions, politely redirect them to English learning
-9. Use emojis naturally to create a warm, friendly atmosphere (📚, 💡, ✅, 🎯, 👏)
 
-Response Style:
-- Use encouraging phrases (e.g., "Great question!", "You're doing well!", "Nice try!")
-- Incorporate relevant emojis to make learning fun and engaging
-- Provide real-world examples and practical usage scenarios
-- Break down complex concepts into digestible pieces
 
-Response Format:
-- For grammar questions: Explanation (with examples) → Practice suggestion → Encouragement
-- For vocabulary: Definition → Usage examples → Related words → Fun tip
-- For conversation: Engage naturally, ask follow-up questions, correct gently
-- Always maintain a warm, supportive tone
 
-Language Guidelines:
-- If the student writes in English, respond primarily in English with Korean support when needed
-- If the student writes in Korean, help them practice by encouraging English responses
-- Adapt your English level to match the student's proficiency
-- Use formatting (bold, bullets) to highlight key vocabulary or grammar points
-- Provide Korean translations for difficult words or concepts
 
-Important:
-- Only provide factual information about English language and usage
-- Admit when you don't know something and guide students to reliable resources
-- Be culturally sensitive and inclusive in examples and discussions
-- Focus on practical, real-world English usage that students can apply immediately
-- Celebrate small wins and progress to build confidence`;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     // Prepare conversation for Gemini API with system instruction
     const model = genAI.getGenerativeModel({
