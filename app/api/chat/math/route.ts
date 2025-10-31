@@ -1,6 +1,10 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextRequest } from "next/server";
 import { generateCacheKey, getCachedResponse, setCachedResponse } from "@/lib/cache/redis";
+import { getUserProfile } from "@/lib/user-profile";
+import { generateSystemPrompt } from "@/lib/tutor/system-prompt-generator";
+import { contentLevelDetector } from "@/lib/tutor/content-level-detector";
+import { getRandomGuidanceMessage } from "@/lib/tutor/guidance-messages";
 
 // Initialize Gemini client
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
@@ -22,13 +26,61 @@ const gradeLevelMap: Record<string, string> = {
 
 export async function POST(req: NextRequest) {
   try {
-    const { message, gradeLevel, conversationHistory } = await req.json();
+    const { message, gradeLevel, conversationHistory, userId = 'default' } = await req.json();
 
     if (!message) {
       return new Response(
         JSON.stringify({ error: "Message is required" }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
+    }
+
+    // Load user profile for grade-level guardrails
+    const userProfile = await getUserProfile(userId);
+    if (!userProfile) {
+      return new Response(
+        JSON.stringify({ error: "User profile not found. Please complete onboarding." }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    // Content level detection
+    const levelCheck = await contentLevelDetector.detect(
+      message,
+      userProfile.gradeLevel,
+      'math',
+      userProfile.gradeLevelDetail
+    );
+
+    // If out of scope, return guidance message
+    if (levelCheck.outOfScope && levelCheck.confidence > 0.7) {
+      const guidanceMsg = getRandomGuidanceMessage(
+        userProfile.gradeLevel,
+        'math',
+        {
+          '학생 이름': userId,
+          '현재 학년 적절한 개념': '현재 배우고 있는 내용',
+          '관련된 기초 개념': '기초 개념',
+        }
+      );
+
+      const encoder = new TextEncoder();
+      const guidanceStream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: guidanceMsg })}\n\n`));
+          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+          controller.close();
+        },
+      });
+
+      return new Response(guidanceStream, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          "Connection": "keep-alive",
+          "X-Out-Of-Scope": "true",
+        },
+      });
     }
 
     // Check if API key is configured
@@ -108,33 +160,8 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Enhanced system prompt for math tutor
-    const systemPrompt = `당신은 친절하고 전문적인 수학 튜터입니다.
-
-역할과 원칙:
-1. ${gradeLevelInstruction} 설명합니다
-2. 소크라테스식 교수법을 사용하여 답을 직접 주기보다는 학생이 스스로 생각하도록 질문합니다
-3. 단계별로 차근차근 설명하며, 각 단계의 이유를 명확히 합니다
-4. 수식이나 계산이 필요한 경우 명확하게 표기합니다
-5. 학생이 이해했는지 확인하고, 이해하지 못했다면 다른 방식으로 설명합니다
-6. 격려와 칭찬을 아끼지 않습니다
-7. 학습과 무관한 질문에는 정중하게 수학 학습으로 유도합니다
-
-응답 스타일:
-- 친근하고 격려하는 톤 사용 (예: "좋은 질문이에요!", "잘 하고 있어요!")
-- 이모지를 적절히 사용하여 친근감 표현 (📐, 📊, ✅, 💡 등)
-- 복잡한 개념은 실생활 예시로 설명
-
-응답 형식:
-- 개념 설명 시: 정의 → 예시 → 연습 문제 제안
-- 문제 풀이 시: 문제 이해 → 단계별 풀이 → 검증 → 유사 문제 제안
-- 항상 친근하고 격려하는 톤을 유지합니다
-
-주의사항:
-- 팩트가 아닌 내용은 절대 답변하지 않습니다
-- 모르는 내용은 솔직하게 인정하고 올바른 방향을 안내합니다
-- 학생의 수준을 고려하여 적절한 난이도로 설명합니다
-- 실수를 하더라도 긍정적으로 격려하며 올바른 방향을 제시합니다`;
+    // Generate grade-level specific system prompt with guardrails
+    const systemPrompt = generateSystemPrompt(userProfile, 'math');
 
     // Prepare conversation for Gemini API with system instruction
     const model = genAI.getGenerativeModel({
