@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from 'next/dynamic';
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -19,6 +19,7 @@ import {
   MathTopicProgress,
   WeaknessAnalysis
 } from "@/components/dashboard";
+import type { LearningProgressSummary } from "@/lib/learning-progress/types";
 
 function LoadingSpinner() {
   return (
@@ -34,6 +35,11 @@ function DashboardContent() {
   const initializeProfile = useUserStore((state) => state.initializeProfile);
   const initializeAdaptiveProfile = useAdaptiveLearning((state) => state.initializeProfile);
   const initializeInteractiveProfile = useInteractiveLearning((state) => state.initializeProfile);
+
+  // Phase 8: Real-time progress data loading
+  const [progressData, setProgressData] = useState<LearningProgressSummary | null>(null);
+  const [progressLoading, setProgressLoading] = useState(true);
+  const [progressError, setProgressError] = useState<string | null>(null);
 
   // Initialize stores from onboarding data if available
   useEffect(() => {
@@ -61,6 +67,43 @@ function DashboardContent() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile]);
+
+  // Phase 8: Load learning progress data from API
+  useEffect(() => {
+    async function loadProgressData() {
+      if (!profile?.username) return;
+
+      try {
+        setProgressLoading(true);
+        setProgressError(null);
+
+        const response = await fetch(`/api/progress/summary?userId=${encodeURIComponent(profile.username)}`);
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to load progress data');
+        }
+
+        if (result.hasData) {
+          setProgressData(result.data);
+        } else {
+          // No data yet - use null to show empty state
+          setProgressData(null);
+        }
+      } catch (error) {
+        console.error('Error loading progress data:', error);
+        setProgressError(error instanceof Error ? error.message : 'Unknown error');
+      } finally {
+        setProgressLoading(false);
+      }
+    }
+
+    loadProgressData();
+
+    // Auto-refresh every 30 seconds
+    const interval = setInterval(loadProgressData, 30000);
+    return () => clearInterval(interval);
+  }, [profile?.username]);
 
   if (!profile) {
     return <LoadingSpinner />;
@@ -110,79 +153,56 @@ function DashboardContent() {
           {/* Achievement Badges */}
           <AchievementBadges />
 
-          {/* Phase 7: Learning Progress Visualization */}
+          {/* Phase 7 & 8: Learning Progress Visualization (Real-time Data) */}
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold text-gray-900">
                 학습 진행도
               </h2>
-              <div className="px-3 py-1 bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-full text-xs font-bold">
-                Phase 7 ✨
+              <div className="flex items-center gap-2">
+                {progressLoading && (
+                  <div className="w-4 h-4 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+                )}
+                <div className="px-3 py-1 bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-full text-xs font-bold">
+                  Phase 8 🔥
+                </div>
               </div>
             </div>
 
-            {/* Learning Progress Overview */}
-            <LearningProgressOverview
-              progressData={{
-                userId: profile.username || 'user',
-                gradeLevel: (profile.gradeLevel as any) || 'elementary',
-                subjects: {
-                  math: {
-                    subject: 'math',
-                    totalConcepts: 30,
-                    conceptsByMastery: {
-                      not_started: 10,
-                      struggling: 3,
-                      learning: 5,
-                      proficient: 7,
-                      mastered: 5
-                    },
-                    averageMastery: 0.65,
-                    studyTime: 3600,
-                    totalAttempts: 150,
-                    successRate: 0.72,
-                    currentDifficulty: 'medium',
-                    recommendedNextConcepts: [],
-                    strongAreas: [],
-                    weakAreas: []
-                  },
-                  english: {
-                    subject: 'english',
-                    totalConcepts: 25,
-                    conceptsByMastery: {
-                      not_started: 9,
-                      struggling: 2,
-                      learning: 4,
-                      proficient: 7,
-                      mastered: 3
-                    },
-                    averageMastery: 0.58,
-                    studyTime: 2800,
-                    totalAttempts: 120,
-                    successRate: 0.68,
-                    currentDifficulty: 'medium',
-                    recommendedNextConcepts: [],
-                    strongAreas: [],
-                    weakAreas: []
-                  }
-                },
-                overallProgress: 0.62,
-                totalStudyTime: 6400,
-                totalConcepts: 55,
-                masteredConcepts: 8,
-                weaknesses: [],
-                lastUpdated: new Date()
-              }}
-            />
+            {progressError && (
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700">
+                <p className="font-semibold">데이터 로딩 오류</p>
+                <p className="text-sm mt-1">{progressError}</p>
+              </div>
+            )}
 
-            {/* Math Topic Progress */}
-            <MathTopicProgress gradeLevel={(profile.gradeLevel as any) || 'elementary'} />
+            {!progressLoading && !progressError && !progressData && (
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-8 text-center">
+                <div className="text-6xl mb-4">📚</div>
+                <h3 className="text-xl font-bold text-blue-900 mb-2">
+                  아직 학습 데이터가 없습니다
+                </h3>
+                <p className="text-blue-700">
+                  수학 또는 영어 튜터와 대화를 시작하면 학습 진행도가 표시됩니다!
+                </p>
+              </div>
+            )}
 
-            {/* Weakness Analysis */}
-            <WeaknessAnalysis
-              weaknesses={[]}
-              gradeLevel={(profile.gradeLevel as any) || 'elementary'}
-            />
+            {progressData && (
+              <>
+                {/* Learning Progress Overview */}
+                <LearningProgressOverview progressData={progressData} />
+
+                {/* Math Topic Progress */}
+                <MathTopicProgress gradeLevel={(profile.gradeLevel as any) || 'elementary'} />
+
+                {/* Weakness Analysis */}
+                <WeaknessAnalysis
+                  weaknesses={progressData.weaknesses || []}
+                  gradeLevel={(profile.gradeLevel as any) || 'elementary'}
+                />
+              </>
+            )}
           </div>
 
           {/* Analytics Link - Extra spacing wrapper */}
