@@ -105,7 +105,7 @@ function DashboardContent() {
           <AchievementBadges />
 
           {/* Analytics Link */}
-          <Link href="/analytics" className="mt-6">
+          <Link href="/analytics" className="mt-10">
             <motion.div
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
