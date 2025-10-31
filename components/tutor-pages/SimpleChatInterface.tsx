@@ -5,6 +5,7 @@ import { Send, Volume2, VolumeX, Settings as SettingsIcon } from 'lucide-react';
 import { VoiceButton } from '@/components/voice/VoiceButton';
 import { VoiceSettings, VoiceSettingsConfig, DEFAULT_VOICE_SETTINGS } from '@/components/voice/VoiceSettings';
 import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
+import { BottomNavigation } from '@/components/navigation/BottomNavigation';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -162,7 +163,7 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+    <div className="flex flex-col h-screen bg-gradient-to-br from-blue-50 to-purple-50 pb-20">
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-md border-b border-gray-200 p-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
@@ -305,6 +306,9 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
         settings={voiceSettings}
         onSettingsChange={setVoiceSettings}
       />
+
+      {/* Bottom Navigation */}
+      <BottomNavigation />
     </div>
   );
 }
