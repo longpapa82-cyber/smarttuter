@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUserStore, useUserStoreHydration } from '@/lib/gamification/store';
+import { useUserStore } from '@/lib/gamification/store';
 import SimpleChatInterface from './SimpleChatInterface';
 
 function LoadingSpinner() {
@@ -16,22 +16,27 @@ function LoadingSpinner() {
 export default function EnglishTutorClient() {
   const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
-  const hydrated = useUserStoreHydration();
+  const [isReady, setIsReady] = useState(false);
 
   const storeProfile = useUserStore((state) => state.profile);
   const profile = isMounted ? storeProfile : null;
 
   useEffect(() => {
     setIsMounted(true);
+    // Give store a moment to hydrate, then proceed regardless
+    const timer = setTimeout(() => {
+      setIsReady(true);
+    }, 100);
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
-    if (isMounted && hydrated && !profile) {
+    if (isMounted && isReady && !profile) {
       router.push('/onboarding');
     }
-  }, [isMounted, hydrated, profile, router]);
+  }, [isMounted, isReady, profile, router]);
 
-  if (!isMounted || !hydrated) {
+  if (!isMounted || !isReady) {
     return <LoadingSpinner />;
   }
 

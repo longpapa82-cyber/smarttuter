@@ -20,7 +20,7 @@ const nextConfig: NextConfig = {
   },
 
   // Output file tracing for smaller deployments
-  outputFileTracingRoot: undefined,
+  outputFileTracingRoot: __dirname,
 
   // Cache and security headers
   async headers() {
