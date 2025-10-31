@@ -105,7 +105,7 @@ function DashboardContent() {
           <AchievementBadges />
 
           {/* Analytics Link - Extra spacing wrapper */}
-          <div className="pt-16">
+          <div className="pt-8">
             <Link href="/analytics">
             <motion.div
               whileHover={{ scale: 1.02 }}
