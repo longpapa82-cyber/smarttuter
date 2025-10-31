@@ -104,8 +104,9 @@ function DashboardContent() {
           {/* Achievement Badges */}
           <AchievementBadges />
 
-          {/* Analytics Link */}
-          <Link href="/analytics" className="mt-16">
+          {/* Analytics Link - Extra spacing wrapper */}
+          <div className="pt-8">
+            <Link href="/analytics">
             <motion.div
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -131,7 +132,8 @@ function DashboardContent() {
                 </div>
               </div>
             </motion.div>
-          </Link>
+            </Link>
+          </div>
 
           {/* Quick Actions */}
           <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
