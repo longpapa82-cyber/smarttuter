@@ -1,488 +1,378 @@
-# Phase 15: Deployment Optimization
+# Vercel Deployment Configuration Investigation Report
+## smartTuter Web Application
 
-**Status**: ✅ Complete
-**Started**: 2025-10-31
-**Completed**: 2025-10-31
-**Priority**: 🔴 Urgent
+### Executive Summary
+The production build fails during Vercel deployment due to a **critical TypeScript compilation error** in the speech recognition utilities. Additionally, there are several configuration issues that could impact deployment reliability and component inclusion in the build.
 
-## Overview
+---
 
-Phase 15 focuses on production deployment optimization for the SmartTuter application. This includes Next.js performance optimization, Vercel deployment configuration, production Redis setup, and monitoring integration.
+## Critical Issues Found
 
-## Completed Tasks
+### 1. PRIMARY BUILD FAILURE: TypeScript Type Error (BLOCKING)
+**Status:** CRITICAL - Prevents production build  
+**Location:** `/lib/voice/speech-recognition.ts:131`  
+**Error:** Cannot find name 'SpeechRecognitionEvent'
 
-### 1. Environment Verification ✅
-
-**Checked**:
-- Production URL: https://smarttuter.vercel.app (Active ✅)
-- Redis configuration: UPSTASH_REDIS_REST_URL/TOKEN configured ✅
-- API keys: GEMINI_API_KEY, ANTHROPIC_API_KEY configured ✅
-- All environment variables encrypted and properly scoped ✅
-
-**Vercel Environment Variables**:
-```
-UPSTASH_REDIS_REST_URL      → Production
-UPSTASH_REDIS_REST_TOKEN    → Development, Preview, Production
-GEMINI_API_KEY              → Development, Preview, Production
-ANTHROPIC_API_KEY           → Development, Preview, Production
-```
-
-### 2. Production Redis Setup ✅
-
-**Provider**: Upstash Redis
-
-**Configuration**:
-- REST URL: Configured in Vercel environment
-- REST Token: Configured in Vercel environment
-- Regions: Auto-selected based on application region
-- TTL Strategy: Implemented in Phase 8
-
-**Performance**:
-- Cache hits: ~5-10ms
-- Cache misses: ~50-200ms
-- Expected hit rate: 80-90%
-
-### 3. Next.js Production Optimization ✅
-
-**File**: [next.config.ts](../next.config.ts)
-
-#### Production Enhancements
-
-**Compression**:
+**Details:**
 ```typescript
-compress: true,  // Enable gzip compression
-poweredByHeader: false,  // Remove X-Powered-By header (security)
+// Line 131 in lib/voice/speech-recognition.ts
+export function parseSpeechRecognitionResults(
+  event: SpeechRecognitionEvent  // ❌ Type not found
+): SpeechRecognitionResult {
 ```
 
-**Image Optimization**:
+**Root Cause:**
+- `SpeechRecognitionEvent` type is not defined in the file
+- In `hooks/useSpeechRecognition.ts` (line 16), it's defined as `type SpeechRecognitionEvent = any`
+- The `lib/voice/speech-recognition.ts` file tries to export a function with this type WITHOUT defining it
+- TypeScript cannot find this type because it's not in the same file and not imported
+
+**Impact:**
+- Build fails immediately during type checking phase
+- No components are compiled to production
+- Vercel deployment fails before generating artifact
+
+**Files Involved:**
+- `/lib/voice/speech-recognition.ts` - exports function using undefined type
+- `/hooks/useSpeechRecognition.ts` - defines the type but as `any`
+
+---
+
+## Configuration Issues
+
+### 2. OUTPUT FILE TRACING ROOT WARNING
+**Status:** WARNING - May cause deployment issues  
+**Location:** `next.config.ts:23`  
+
+**Current Configuration:**
 ```typescript
-images: {
-  formats: ['image/avif', 'image/webp'],  // Modern formats first
-  deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-  imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-  minimumCacheTTL: 60,  // Cache images for 60 seconds
-}
+outputFileTracingRoot: undefined
 ```
 
-**Package Import Optimization**:
+**Vercel Warning:**
+```
+Warning: Next.js inferred your workspace root, but it may not be correct.
+We detected multiple lockfiles and selected the directory of /Users/hoonjaepark/package-lock.json as the root directory.
+```
+
+**Issue:**
+- Multiple `package-lock.json` files detected:
+  - `/Users/hoonjaepark/package-lock.json` (parent directory)
+  - `/Users/hoonjaepark/projects/smartTuter/package-lock.json` (project directory)
+- Next.js is inferring the wrong root directory
+- Could cause components/dependencies to be excluded from the build
+
+**Files:**
+- `/Users/hoonjaepark/package-lock.json`
+- `/Users/hoonjaepark/projects/smartTuter/package-lock.json`
+
+---
+
+### 3. SENTRY DEPRECATION WARNING
+**Status:** WARNING - Will break with Turbopack  
+**Location:** Root directory Sentry config files  
+
+**Files:**
+- `sentry.client.config.ts` (deprecated)
+- `sentry.server.config.ts` (good)
+- `sentry.edge.config.ts` (good)
+- `instrumentation.ts` (recommended approach)
+
+**Issue:**
+```
+[@sentry/nextjs] DEPRECATION WARNING: It is recommended renaming your 
+`sentry.client.config.ts` file, or moving its content to `instrumentation-client.ts`. 
+When using Turbopack `sentry.client.config.ts` will no longer work.
+```
+
+**Impact:**
+- Sentry monitoring will fail when Next.js upgrades to Turbopack as default
+- Client-side error reporting currently working but configuration is deprecated
+
+---
+
+### 4. .VERCELIGNORE POTENTIAL ISSUE
+**Status:** WARNING - Component inclusion risk  
+**Location:** `.vercelignore`  
+
+**Current Contents:**
+```
+# Documentation
+docs/
+claudedocs/
+*.md
+!README.md
+
+# Development files
+.env.local.example
+.prettierrc
+.prettierignore
+
+# Testing
+tests/
+__tests__/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+playwright.config.ts
+playwright-report/
+test-results/
+
+# Git files
+.git/
+.gitignore
+.gitattributes
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+
+# Backup files
+*.backup
+*.bak
+```
+
+**Analysis:**
+- ✅ Correctly excludes test files
+- ✅ Correctly excludes documentation
+- ✅ Correctly excludes IDE config
+- ✅ Does not exclude `/components` or `/lib` directories
+- ✅ Does not exclude `/app` directory
+- ✓ Safe configuration - no production code is being excluded
+
+---
+
+## Build Process Configuration
+
+### 5. VERCEL.JSON CONFIGURATION
+**Status:** GOOD - Well configured
+
+**Key Settings:**
+- `buildCommand`: "npm run build" ✓
+- `framework`: "nextjs" ✓
+- `installCommand`: "npm install" ✓
+- `regions`: ["icn1"] (Seoul) ✓
+- Environment variables set correctly:
+  - `NEXT_PUBLIC_APP_URL`: https://smarttuter.vercel.app ✓
+  - `SENTRY_SUPPRESS_TURBOPACK_WARNING`: 1 ✓
+
+**Potential Issue:**
+- Sentry environment variables not visible in vercel.json
+- Check if `SENTRY_ORG` and `SENTRY_PROJECT` are set in Vercel dashboard
+
+---
+
+### 6. NEXT.CONFIG.TS CONFIGURATION
+**Status:** GOOD with optimization notes
+
+**Current Configuration:**
 ```typescript
 experimental: {
   optimizePackageImports: ['lucide-react', 'framer-motion'],
 }
 ```
 
-**Benefits**:
-- Better tree-shaking for lucide-react and framer-motion
-- Reduced bundle size (~10-15% smaller)
-- Faster initial page load
+**Issues:**
+- ✅ Image optimization configured
+- ✅ Cache headers configured appropriately
+- ✅ Security headers configured
+- ⚠️ `outputFileTracingRoot: undefined` - should be configured (see issue #2)
 
-#### Cache & Security Headers
+---
 
-**Dynamic Pages** (No Cache):
-- `/tutor/:path*` - Always fresh content
-- `/dashboard/:path*` - User-specific data
-- `/api/:path*` - Never cache API responses
+## ESLint/TypeScript Configuration
 
-**Static Assets** (1-year cache):
-- `/icons/:path*` - Immutable icons
-- `/images/:path*` - Immutable images
+### 7. TYPESCRIPT CONFIGURATION
+**Status:** GOOD - Strict mode enabled
 
-**Security Headers**:
-- `X-Content-Type-Options: nosniff`
-- `X-Frame-Options: DENY`
-- `X-XSS-Protection: 1; mode=block`
-
-### 4. Deployment Size Reduction ✅
-
-**File**: [.vercelignore](../.vercelignore)
-
-**Excluded from Deployment**:
-```
-# Documentation (no runtime need)
-docs/
-claudedocs/
-*.md (except README.md)
-
-# Testing (no runtime need)
-tests/
-__tests__/
-*.test.ts, *.test.tsx, *.spec.ts, *.spec.tsx
-playwright.config.ts
-test-results/
-
-# Development files
-.env.local.example
-.prettierrc, .prettierignore
-.vscode/, .idea/
-
-# Temporary files
-*.log, .DS_Store
-*.backup, *.bak
+**Current tsconfig.json:**
+```json
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "jsx": "preserve",
+    "paths": {
+      "@/*": ["./*"]
+    }
+  }
+}
 ```
 
-**Results**:
-- Deployment package reduced from ~800KB to ~600KB
-- ~30-40% smaller deployment
-- Faster upload and deployment times
+**Issues:**
+- ✅ Strict mode enabled
+- ✅ Path aliases configured
+- ❌ No "webworker" lib for Web Speech API types
+- ❌ Missing DOM event type definitions
 
-### 5. Build Configuration ✅
+---
 
-**Build Test Results**:
-```
-✓ Compiled successfully in 7.2s
-✓ Linting and checking validity of types
-✓ Collecting page data
-✓ Generating static pages (23/23)
-✓ Finalizing page optimization
-✓ Collecting build traces
+### 8. ESLINT CONFIGURATION  
+**Status:** ACCEPTABLE - Standard Next.js setup
 
-Total routes: 27 (23 static, 4 dynamic)
-First Load JS: 218 kB (shared)
+**Current .eslintrc.json:**
+```json
+{
+  "extends": "next/core-web-vitals"
+}
 ```
 
-**Route Analysis**:
-| Route | Type | Size | First Load JS |
-|-------|------|------|---------------|
-| / | Static | 348 B | 220 kB |
-| /dashboard | Static | 11.7 kB | 298 kB |
-| /analytics | Static | 12.5 kB | 276 kB |
-| /tutor/math | Dynamic | 1.69 kB | 219 kB |
-| /tutor/english | Dynamic | 1.69 kB | 219 kB |
-| /api/* | Dynamic | 360 B | 218 kB |
+**Build Warnings Generated:**
+1. React Hook dependency warning in `app/monitoring/page.tsx:50`
+2. `<img>` tag warnings in components (should use `next/image`)
 
-### 6. Monitoring Setup (Sentry) ✅
+---
 
-**Already Configured**:
-- Sentry Next.js integration active
-- Automatic error tracking enabled
-- React component annotation: enabled
-- Tunnel route: `/monitoring`
-- Vercel Cron Monitors: enabled
+## ESLint/Performance Warnings
 
-**Sentry Configuration**:
-```typescript
-// next.config.ts
-export default withSentryConfig(nextConfig, {
-  org: process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT,
-  silent: !process.env.CI,
-  widenClientFileUpload: true,
-  reactComponentAnnotation: { enabled: true },
-  tunnelRoute: "/monitoring",
-  automaticVercelMonitors: true,
-});
+### 9. IMAGE OPTIMIZATION WARNINGS
+**Status:** LOW PRIORITY - Performance optimization  
+**Files:**
+- `./components/chat/ImageUpload.tsx:85`
+- `./components/chat/ImageUploadWithRecognition.tsx:194`
+
+**Warning:**
+```
+Using `<img>` could result in slower LCP and higher bandwidth. 
+Consider using `<Image />` from `next/image`
 ```
 
-## Deployment Architecture
+**Impact:** Low priority - site still works but with suboptimal image loading
 
+---
+
+### 10. REACT HOOK DEPENDENCY WARNING
+**Status:** LOW PRIORITY - Code quality  
+**File:** `./app/monitoring/page.tsx:50`
+
+**Warning:**
 ```
-┌─────────────────────────────────────────────────────────┐
-│                   Vercel Edge Network                    │
-│  • Global CDN                                            │
-│  • Automatic HTTPS                                       │
-│  • DDoS protection                                       │
-└────────────────────┬────────────────────────────────────┘
-                     │
-                     ▼
-┌─────────────────────────────────────────────────────────┐
-│              Next.js 15 App (Production)                 │
-│  • SSR for dynamic pages                                 │
-│  • SSG for static pages                                  │
-│  • Edge runtime for APIs                                 │
-│  • ISR (Incremental Static Regeneration)                │
-└────────┬──────────────────────┬─────────────────────────┘
-         │                      │
-         ▼                      ▼
-┌────────────────────┐  ┌──────────────────────┐
-│   Upstash Redis    │  │   External APIs      │
-│  • REST interface  │  │  • Gemini API        │
-│  • Auto-scaling    │  │  • Anthropic API     │
-│  • Global regions  │  │  • Sentry            │
-└────────────────────┘  └──────────────────────┘
+React Hook useEffect has a missing dependency: 'fetchDashboardData'
 ```
 
-## Performance Optimizations
+**Impact:** Potential stale closure issues - should be fixed but doesn't block build
 
-### Build Time Optimizations
+---
 
-1. **Package Import Optimization**
-   - Tree-shaking for lucide-react, framer-motion
-   - Reduces bundle size by 10-15%
+## Environment Configuration
 
-2. **Image Optimization**
-   - Modern formats (AVIF → WebP → JPG/PNG)
-   - Responsive sizes (16px to 3840px)
-   - Lazy loading by default
+### 11. ENVIRONMENT VARIABLES
+**Files:**
+- `.env.example` - ✓ present
+- `.env.local` - ✓ present (git ignored)
+- `.env.vercel.production` - ✓ present
 
-3. **Code Splitting**
-   - Automatic route-based splitting
-   - Dynamic imports where applicable
-   - Shared chunk optimization
+**Analysis:**
+- Environment setup appears complete
+- Sentry variables likely need to be configured in Vercel dashboard
 
-### Runtime Performance
+---
 
-1. **Compression**
-   - Gzip enabled for all text responses
-   - ~70% size reduction for JS/CSS/HTML
+## Dependency Configuration
 
-2. **Caching Strategy**
-   - Static assets: 1-year cache
-   - API responses: No cache
-   - User pages: Private, no-store
+### 12. PACKAGE.JSON ANALYSIS
+**Status:** GOOD
 
-3. **Redis Caching**
-   - Progress summaries: 1-hour cache
-   - Weaknesses: 6-hour cache
-   - Concept mastery: Permanent
-
-### Network Optimizations
-
-1. **Vercel Edge Network**
-   - Global CDN with 100+ edge locations
-   - Automatic routing to nearest region
-   - Sub-100ms response times globally
-
-2. **HTTP/2 & HTTP/3**
-   - Multiplexing for parallel requests
-   - Header compression
-   - Server push (where applicable)
-
-## Security Enhancements
-
-### Headers
-
-```typescript
-// Security headers applied to all routes
-'X-Content-Type-Options': 'nosniff',
-'X-Frame-Options': 'DENY',
-'X-XSS-Protection': '1; mode=block',
-'X-Powered-By': removed  // Don't advertise server tech
+**Scripts:**
+```json
+"build": "next build",
+"dev": "next dev",
+"start": "next start"
 ```
 
-### Environment Variables
+**Dependencies:**
+- React 19 ✓
+- Next.js 15 ✓
+- Sentry integration ✓
+- UI libraries (Lucide, Framer Motion) ✓
+- Speech API support (no explicit types package)
 
-All sensitive data encrypted at rest:
-- API keys never exposed to client
-- Redis credentials server-side only
-- Vercel automatic encryption
+**Missing Type Packages:**
+- No `@types/web-speech-api` or similar
+- Web Speech API types rely on DOM lib types
 
-### Content Security
+---
 
-- HTTPS enforced automatically
-- DDoS protection by Vercel
-- Rate limiting on Edge functions
+## Deployment Impact Summary
 
-## Monitoring & Analytics
+### What Gets Built Successfully
+- ✅ App router and pages
+- ✅ Components (except those using speech-recognition.ts)
+- ✅ API routes
+- ✅ Styling (Tailwind CSS)
+- ✅ Fonts and images
 
-### Sentry Integration
+### What Fails
+- ❌ Any page using speech recognition utilities
+- ❌ Entire build process due to type error
 
-**Features**:
-- Automatic error tracking
-- Performance monitoring
-- Release tracking
-- User feedback collection
-- Session replay (optional)
+### Components Affected by Build Failure
+**These components cannot be deployed until fixed:**
+- Any component importing from `/lib/voice/speech-recognition.ts`
+- Pages/features using voice tutor functionality
+- Voice-based learning features
 
-**Configuration**:
-- Tunnel through Next.js route to bypass ad-blockers
-- Source maps uploaded automatically
-- React component names in error traces
+---
 
-### Vercel Analytics (Built-in)
+## Recommendations
 
-**Available Metrics**:
-- Real User Monitoring (RUM)
-- Core Web Vitals
-- Page load times
-- Route performance
-- Geographic distribution
+### CRITICAL (Must Fix Before Deployment)
+1. **Fix TypeScript error in speech-recognition.ts**
+   - Define `SpeechRecognitionEvent` type in the same file or import it
+   - Use proper Web Speech API types from `@types/web-speech-api` or define locally
+   - Current workaround in hooks using `type ... = any` is not good enough for exported functions
 
-### Custom Metrics (Phase 8)
+### HIGH (Should Fix Before Production)
+2. **Remove multiple lockfiles**
+   - Delete `/Users/hoonjaepark/package-lock.json` 
+   - Keep only `/Users/hoonjaepark/projects/smartTuter/package-lock.json`
+   - This will prevent workspace root inference issues
 
-**Learning Progress Metrics**:
-- Event tracking frequency
-- Redis cache hit rates
-- API response times
-- Auto-detection trigger counts
+3. **Configure outputFileTracingRoot**
+   - Set to proper project root in `next.config.ts`
+   - Ensures all components are included in deployment artifacts
 
-## Production URLs
+4. **Update Sentry configuration**
+   - Create `instrumentation-client.ts` 
+   - Migrate from deprecated `sentry.client.config.ts`
+   - Ensures Sentry compatibility with future Turbopack migration
 
-**Main Production URL**: https://smarttuter.vercel.app
+### MEDIUM (Should Fix Before Full Release)
+5. **Replace `<img>` with `<Image>`**
+   - `/components/chat/ImageUpload.tsx:85`
+   - `/components/chat/ImageUploadWithRecognition.tsx:194`
+   - Improves Core Web Vitals scores
 
-**Preview Deployments**:
-- Automatic for all PR branches
-- Format: `https://smarttuter-{hash}-{user}.vercel.app`
+6. **Fix React Hook dependencies**
+   - `app/monitoring/page.tsx:50`
+   - Add missing `fetchDashboardData` to dependency array
 
-**Deployment Dashboard**:
-https://vercel.com/090723s-projects/smarttuter
+### LOW (Nice to Have)
+7. **Add Web Speech API types package**
+   - Consider adding `@types/web-speech-api` to devDependencies
+   - Removes need for manual type definitions
 
-## Post-Deployment Checklist
+---
 
-### Functional Testing
-- [ ] Homepage loads correctly
-- [ ] Onboarding flow works
-- [ ] Math tutor functional
-- [ ] English tutor functional
-- [ ] Dashboard displays real-time data
-- [ ] Difficulty indicators update
-- [ ] Weakness detection triggers
-- [ ] Redis connection working
+## Conclusion
 
-### Performance Testing
-- [ ] Lighthouse score > 90
-- [ ] First Contentful Paint < 1.5s
-- [ ] Time to Interactive < 3.5s
-- [ ] Largest Contentful Paint < 2.5s
-- [ ] Cumulative Layout Shift < 0.1
+The application **cannot be deployed to Vercel** in its current state due to a **critical TypeScript compilation error** involving the `SpeechRecognitionEvent` type. The fix is relatively straightforward - define or properly import the missing type in the speech-recognition utility file.
 
-### API Testing
-- [ ] /api/chat/math responds
-- [ ] /api/chat/english responds
-- [ ] /api/progress/summary returns data
-- [ ] /api/difficulty returns current level
-- [ ] Redis operations complete < 200ms
+Additional configuration issues around workspace root detection and deprecated Sentry config should also be addressed to ensure reliable deployments and future compatibility.
 
-### Monitoring Validation
-- [ ] Sentry receiving error reports
-- [ ] Vercel Analytics tracking visits
-- [ ] Error rates < 1%
-- [ ] API success rate > 99%
-
-## Troubleshooting
-
-### Common Issues
-
-**Issue**: Build fails with type errors
-- **Solution**: Run `npm run build` locally first
-- **Prevention**: Enable pre-commit type checking
-
-**Issue**: Environment variables not found
-- **Solution**: Check Vercel dashboard settings
-- **Prevention**: Use `.env.local.example` template
-
-**Issue**: Redis connection timeout
-- **Solution**: Check Upstash dashboard status
-- **Prevention**: Implement connection retries
-
-**Issue**: Slow API responses
-- **Solution**: Check Redis cache hit rates
-- **Prevention**: Optimize cache TTL values
-
-### Debug Commands
-
-```bash
-# Check deployment status
-vercel ls smarttuter
-
-# View deployment logs
-vercel logs https://smarttuter.vercel.app
-
-# Inspect specific deployment
-vercel inspect https://smarttuter-{hash}.vercel.app
-
-# Check environment variables
-vercel env ls
-
-# Test production build locally
-npm run build && npm start
-```
-
-## Performance Benchmarks
-
-### Before Optimization (Phase 7)
-
-- Bundle size: ~250 kB (shared)
-- First Load: ~235 kB average
-- Build time: ~6-8 seconds
-- Deployment size: ~800 KB
-
-### After Optimization (Phase 15)
-
-- Bundle size: ~218 kB (shared) ✅ (-13%)
-- First Load: ~220 kB average ✅ (-6%)
-- Build time: ~4-5 seconds ✅ (-30%)
-- Deployment size: ~600 KB ✅ (-25%)
-
-### Production Metrics (Expected)
-
-**Load Times**:
-- Homepage (Static): < 1 second
-- Dashboard (SSR): < 1.5 seconds
-- Tutor Pages (Dynamic): < 2 seconds
-- API Responses: < 500ms
-
-**Cache Performance**:
-- Redis hit rate: 80-90%
-- CDN hit rate: 95%+
-- Static asset cache: 99%+
-
-## Cost Optimization
-
-### Vercel
-
-**Hobby Plan** (Free):
-- 100 GB bandwidth/month
-- 6,000 Edge Function executions/day
-- Unlimited deployments
-- **Status**: Sufficient for current scale
-
-**Pro Plan** ($20/month):
-- Recommended when exceeding hobby limits
-- 1 TB bandwidth/month
-- 1M Edge Function executions/month
-- Priority support
-
-### Upstash Redis
-
-**Free Tier**:
-- 10,000 commands/day
-- 256 MB storage
-- **Status**: Sufficient for testing/development
-
-**Pay-as-you-go**:
-- $0.20 per 100K commands
-- $0.25 per GB storage
-- **Estimated**: $5-15/month for production
-
-### Total Monthly Cost Estimate
-
-**Development**: $0 (Free tiers)
-**Production (Small Scale)**: ~$5-15
-**Production (Medium Scale)**: ~$35-50
-
-## Next Steps
-
-### Phase 15 Completion
-✅ Production optimizations complete
-✅ Deployment configuration optimized
-✅ Monitoring setup verified
-✅ Documentation complete
-
-### Future Enhancements
-
-**Performance**:
-- [ ] Add service worker for offline support
-- [ ] Implement request coalescing for Redis
-- [ ] Add Cloudflare CDN for additional caching
-- [ ] Optimize font loading strategy
-
-**Monitoring**:
-- [ ] Set up custom Sentry alerts
-- [ ] Configure Vercel Analytics goals
-- [ ] Add custom performance metrics
-- [ ] Implement real-time error dashboard
-
-**Deployment**:
-- [ ] Add staging environment
-- [ ] Implement blue-green deployments
-- [ ] Add automated rollback on errors
-- [ ] Configure preview deployment limits
-
-## References
-
-- [next.config.ts](../next.config.ts) - Production configuration
-- [.vercelignore](../.vercelignore) - Deployment exclusions
-- [Phase 8 Documentation](./phase8-realtime-data-integration.md) - Redis setup
-- [Vercel Documentation](https://vercel.com/docs)
-- [Next.js Optimization](https://nextjs.org/docs/app/building-your-application/optimizing)
-- [Upstash Redis](https://upstash.com/docs/redis)
+**Estimated Fix Time:** 15-30 minutes for critical issues

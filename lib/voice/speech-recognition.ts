@@ -12,6 +12,9 @@
  * Browser Support: Chrome, Edge (Chromium), Safari (partial)
  */
 
+// Web Speech API types (browser-specific, use any for compatibility)
+type SpeechRecognitionEvent = any
+
 // Check if browser supports Web Speech API
 export function isSpeechRecognitionSupported(): boolean {
   return typeof window !== 'undefined' && (

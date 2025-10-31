@@ -1,0 +1,60 @@
+
+> smart-tuter@0.1.0 build
+> next build
+
+ ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of /Users/hoonjaepark/package-lock.json as the root directory.
+ To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
+ Detected additional lockfiles: 
+   * /Users/hoonjaepark/projects/smartTuter/package-lock.json
+   * /Users/hoonjaepark/projects/package-lock.json
+
+   ▲ Next.js 15.5.6
+   - Environments: .env.local
+   - Experiments (use with caution):
+     · clientTraceMetadata
+     · optimizePackageImports
+
+   Creating an optimized production build ...
+[@sentry/nextjs] DEPRECATION WARNING: It is recommended renaming your `sentry.client.config.ts` file, or moving its content to `instrumentation-client.ts`. When using Turbopack `sentry.client.config.ts` will no longer work. Read more about the `instrumentation-client.ts` file: https://nextjs.org/docs/app/api-reference/file-conventions/instrumentation-client
+
+
+Source path: /Users/hoonjaepark/projects/smartTuter/app/globals.css
+Setting up new context...
+Finding changed files: 3.788ms
+Reading changed files: 63.896ms
+Sorting candidates: 2.76ms
+Generate rules: 45.563ms
+Build stylesheet: 1.353ms
+Potential classes:  6515
+Active contexts:  1
+JIT TOTAL: 188.486ms
+
+
+ ✓ Compiled successfully in 7.3s
+   Linting and checking validity of types ...
+
+./app/monitoring/page.tsx
+50:6  Warning: React Hook useEffect has a missing dependency: 'fetchDashboardData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/chat/ImageUpload.tsx
+85:13  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./components/chat/ImageUploadWithRecognition.tsx
+194:15  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+Failed to compile.
+
+./lib/voice/speech-recognition.ts:131:10
+Type error: Cannot find name 'SpeechRecognitionEvent'. Did you mean 'SpeechRecognitionResult'?
+
+[0m [90m 129 |[39m [90m */[39m
+ [90m 130 |[39m [36mexport[39m [36mfunction[39m parseSpeechRecognitionResults(
+[31m[1m>[22m[39m[90m 131 |[39m   event[33m:[39m [33mSpeechRecognitionEvent[39m
+ [90m     |[39m          [31m[1m^[22m[39m
+ [90m 132 |[39m )[33m:[39m [33mSpeechRecognitionResult[39m {
+ [90m 133 |[39m   [36mlet[39m finalTranscript [33m=[39m [32m''[39m
+ [90m 134 |[39m   [36mlet[39m interimTranscript [33m=[39m [32m''[39m[0m
+Next.js build worker exited with code: 1 and signal: null

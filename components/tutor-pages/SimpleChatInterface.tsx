@@ -5,7 +5,6 @@ import { Send, Volume2, VolumeX, Settings as SettingsIcon } from 'lucide-react';
 import { VoiceButton } from '@/components/voice/VoiceButton';
 import { VoiceSettings, VoiceSettingsConfig, DEFAULT_VOICE_SETTINGS } from '@/components/voice/VoiceSettings';
 import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
-import { BottomNavigation } from '@/components/navigation/BottomNavigation';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -306,9 +305,6 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
         settings={voiceSettings}
         onSettingsChange={setVoiceSettings}
       />
-
-      {/* Bottom Navigation */}
-      <BottomNavigation />
     </div>
   );
 }
