@@ -4,7 +4,7 @@
 
 SmartTuter의 학교급별 맞춤형 AI 튜터링 시스템이 구현되었습니다. 이 시스템은 초등학교부터 대학교까지 각 학교급에 맞는 수준의 학습 콘텐츠를 제공하고, 수준을 벗어난 질문은 자연스럽게 차단합니다.
 
-## 구현 완료 항목 (Phase 1-3)
+## 구현 완료 항목 (Phase 1-4)
 
 ### Phase 1: 기초 데이터 구조 (7개 파일)
 - `types/tutor.ts` - TypeScript 타입 시스템
@@ -20,8 +20,11 @@ SmartTuter의 학교급별 맞춤형 AI 튜터링 시스템이 구현되었습�
 - `lib/tutor/content-level-detector.ts` - 콘텐츠 수준 감지기
 - `lib/user-profile.ts` - 사용자 프로필 관리
 
-### Phase 3: API 통합 (1개 파일)
+### Phase 3: 수학 API 통합 (1개 파일)
 - `app/api/chat/math/route.ts` - 수학 튜터 API 가드레일 적용
+
+### Phase 4: 영어 API 통합 (1개 파일)
+- `app/api/chat/english/route.ts` - 영어 튜터 API 가드레일 적용
 
 ## 시스템 작동 방식
 
@@ -123,10 +126,6 @@ SmartTuter의 학교급별 맞춤형 AI 튜터링 시스템이 구현되었습�
 
 ## 다음 구현 단계 (TODO)
 
-### Phase 4: 영어 튜터 API 통합
-- [ ] app/api/chat/english/route.ts에 동일한 가드레일 적용
-- [ ] CEFR 레벨별 어휘 및 문법 제약 적용
-
 ### Phase 5: 온보딩 UI
 - [ ] app/onboarding/page.tsx 확장
 - [ ] 학교급 선택 카드 컴포넌트
@@ -164,9 +163,12 @@ SmartTuter의 학교급별 맞춤형 AI 튜터링 시스템이 구현되었습�
 - `424e582` - Phase 1: 기초 데이터 구조
 - `fc99b43` - Phase 2: 핵심 엔진 컴포넌트
 - `6c432b9` - Phase 3: Math API 가드레일 통합
+- `6e707f9` - 구현 가이드 문서 작성
+- `40105e9` - Phase 4: English API 가드레일 통합
 
 ---
 
 **작성일**: 2025-01-31
-**상태**: Phase 3 완료 (Math API 통합 완료)
-**다음**: Phase 4 (English API 통합)
+**최종 업데이트**: 2025-01-31
+**상태**: Phase 4 완료 (Math & English API 통합 완료)
+**다음**: Phase 5 (온보딩 UI 구현)
