@@ -114,6 +114,7 @@ export interface SubjectProgress {
   recommendedNextConcepts: string[];
   strongAreas: string[];
   weakAreas: string[];
+  lastActivityDate?: Date; // Last time student worked on this subject
 }
 
 // ============================================================================
@@ -134,11 +135,13 @@ export const REDIS_KEYS = {
 
 export interface LearningEvent {
   userId: string;
-  eventType: 'question_asked' | 'answer_received' | 'hint_requested' | 'concept_mastered' | 'difficulty_adjusted';
+  eventType: 'question_asked' | 'answer_received' | 'hint_requested' | 'concept_mastered' | 'difficulty_adjusted' | 'question_attempt' | 'conversation_turn';
   subject: Subject;
   conceptId?: string;
+  gradeLevel: GradeLevel;
   success: boolean;
   responseTime?: number;
+  hintsUsed?: number;
   timestamp: Date;
-  metadata: Record<string, any>;
+  metadata?: Record<string, any>;
 }

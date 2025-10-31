@@ -5,6 +5,8 @@ import { getUserProfile } from "@/lib/user-profile";
 import { generateSystemPrompt } from "@/lib/tutor/system-prompt-generator";
 import { contentLevelDetector } from "@/lib/tutor/content-level-detector";
 import { getRandomGuidanceMessage } from "@/lib/tutor/guidance-messages";
+import { trackLearningEvent } from "@/lib/learning-progress/progress-tracker";
+import type { LearningEvent } from "@/lib/learning-progress/types";
 
 // Initialize Gemini client
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
@@ -237,6 +239,7 @@ export async function POST(req: NextRequest) {
 
       // Create a readable stream for the response
       let fullResponse = ''; // Collect full response for caching
+      const startTime = Date.now(); // Track response time
       const readableStream = new ReadableStream({
         async start(controller) {
           try {
@@ -256,6 +259,30 @@ export async function POST(req: NextRequest) {
                 console.error('Failed to cache response:', err);
               });
             }
+
+            // Track learning event (Phase 8: Progress tracking integration)
+            const responseTime = Math.round((Date.now() - startTime) / 1000); // seconds
+            const learningEvent: LearningEvent = {
+              userId,
+              eventType: 'conversation_turn',
+              subject: 'english',
+              conceptId: `english_conversation_${Date.now()}`, // TODO: Extract topic from conversation
+              gradeLevel: userProfile.gradeLevel as any,
+              success: true, // Assume success if we got a response
+              timestamp: new Date(),
+              responseTime,
+              hintsUsed: 0, // Not applicable for conversation
+              metadata: {
+                message: message.substring(0, 200), // Store truncated message
+                responseLength: fullResponse.length,
+                turnCount: (conversationHistory?.length || 0) + 1,
+                outOfScope: false,
+              },
+            };
+
+            trackLearningEvent(learningEvent).catch(err => {
+              console.error('Failed to track learning event:', err);
+            });
           } catch (error) {
             console.error("Streaming error:", error);
             controller.error(error);
