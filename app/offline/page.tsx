@@ -1,11 +1,7 @@
-import { Metadata } from 'next'
+'use client'
+
 import Link from 'next/link'
 import { WifiOff, RefreshCw, Home } from 'lucide-react'
-
-export const metadata: Metadata = {
-  title: 'Offline - SmartTuter',
-  description: 'You are currently offline',
-}
 
 export default function OfflinePage() {
   return (
