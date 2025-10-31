@@ -2,15 +2,18 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { GraduationCap, BookOpen, Calculator, MessageCircle, ArrowRight, ArrowLeft, Sparkles } from "lucide-react";
+import { GraduationCap, BookOpen, Calculator, MessageCircle, ArrowRight, ArrowLeft, Sparkles, ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { createProfileFromOnboarding } from "@/lib/user-profile";
+import type { GradeLevel as GradeLevelType, GradeLevelDetail } from "@/types/tutor";
 
-type GradeLevel = "elementary" | "middle" | "high" | "university" | null;
+type GradeLevel = GradeLevelType | null;
 type Subject = "math" | "english" | null;
 
 interface OnboardingData {
   username: string;
   gradeLevel: GradeLevel;
+  gradeDetail: string | null;
   step: number;
 }
 
@@ -21,6 +24,10 @@ const gradeLevels = [
     icon: "🎒",
     description: "기초부터 탄탄하게",
     color: "from-yellow-400 to-orange-400",
+    details: [
+      { value: "3-4", label: "3-4학년", description: "기초 개념 다지기" },
+      { value: "5-6", label: "5-6학년", description: "심화 학습 준비" }
+    ]
   },
   {
     id: "middle" as const,
@@ -28,6 +35,11 @@ const gradeLevels = [
     icon: "📚",
     description: "개념을 확실하게",
     color: "from-green-400 to-teal-400",
+    details: [
+      { value: "1", label: "1학년", description: "중등 기초 확립" },
+      { value: "2", label: "2학년", description: "개념 심화" },
+      { value: "3", label: "3학년", description: "고등 준비" }
+    ]
   },
   {
     id: "high" as const,
@@ -35,6 +47,11 @@ const gradeLevels = [
     icon: "🎓",
     description: "심화 학습으로",
     color: "from-blue-400 to-indigo-400",
+    details: [
+      { value: "1", label: "1학년", description: "고등 기초 다지기" },
+      { value: "2", label: "2학년", description: "심화 개념 학습" },
+      { value: "3", label: "3학년", description: "수능 대비" }
+    ]
   },
   {
     id: "university" as const,
@@ -42,6 +59,12 @@ const gradeLevels = [
     icon: "🏛️",
     description: "전문 지식까지",
     color: "from-purple-400 to-pink-400",
+    details: [
+      { value: "1", label: "1학년", description: "전공 기초" },
+      { value: "2", label: "2학년", description: "전공 심화" },
+      { value: "3", label: "3학년", description: "전문 과정" },
+      { value: "4", label: "4학년 이상", description: "연구 및 응용" }
+    ]
   },
 ];
 
@@ -70,6 +93,7 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(1);
   const [username, setUsername] = useState("");
   const [selectedGrade, setSelectedGrade] = useState<GradeLevel>(null);
+  const [selectedGradeDetail, setSelectedGradeDetail] = useState<string | null>(null);
   const [selectedSubject, setSelectedSubject] = useState<Subject>(null);
 
   // Auto-save progress to localStorage
@@ -82,6 +106,7 @@ export default function OnboardingPage() {
         const data: OnboardingData = JSON.parse(savedData);
         setUsername(data.username || "");
         setSelectedGrade(data.gradeLevel || null);
+        setSelectedGradeDetail(data.gradeDetail || null);
         setStep(data.step || 1);
       } catch (e) {
         console.error('Failed to load onboarding progress:', e);
@@ -96,16 +121,17 @@ export default function OnboardingPage() {
     const data: OnboardingData = {
       username,
       gradeLevel: selectedGrade,
+      gradeDetail: selectedGradeDetail,
       step
     };
 
     localStorage.setItem('onboarding_progress', JSON.stringify(data));
-  }, [username, selectedGrade, step]);
+  }, [username, selectedGrade, selectedGradeDetail, step]);
 
   const handleNext = () => {
     if (step === 1 && username) {
       setStep(2);
-    } else if (step === 2 && selectedGrade) {
+    } else if (step === 2 && selectedGrade && selectedGradeDetail) {
       setStep(3);
     }
   };
@@ -116,25 +142,56 @@ export default function OnboardingPage() {
     }
   };
 
-  const handleStart = () => {
-    if (!username || !selectedGrade) return;
+  const handleStart = async () => {
+    if (!username || !selectedGrade || !selectedGradeDetail) return;
 
-    // Store onboarding data in localStorage for dashboard to initialize
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('onboarding_data', JSON.stringify({
-        username,
-        gradeLevel: selectedGrade,
-        userId: `user-${Date.now()}`,
-        timestamp: Date.now()
-      }));
+    const userId = `user-${Date.now()}`;
+    try {
+      const gradeLevelDetail: GradeLevelDetail = {};
 
-      // Clear progress data after completion
-      localStorage.removeItem('onboarding_progress');
+      if (selectedGrade === 'elementary') {
+        gradeLevelDetail.elementary = selectedGradeDetail as '1-2' | '3-4' | '5-6';
+      } else if (selectedGrade === 'middle') {
+        gradeLevelDetail.middle = selectedGradeDetail as '1' | '2' | '3';
+      } else if (selectedGrade === 'high') {
+        gradeLevelDetail.high = selectedGradeDetail as '1' | '2' | '3';
+      } else if (selectedGrade === 'university') {
+        gradeLevelDetail.university = {
+          year: parseInt(selectedGradeDetail),
+          major: undefined
+        };
+      }
+
+      await createProfileFromOnboarding(
+        userId,
+        selectedGrade,
+        gradeLevelDetail,
+        ['math', 'english'],
+        []
+      );
+
+      // Store onboarding data in localStorage for dashboard to initialize
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('onboarding_data', JSON.stringify({
+          username,
+          gradeLevel: selectedGrade,
+          gradeDetail: selectedGradeDetail,
+          userId,
+          timestamp: Date.now()
+        }));
+
+        // Clear progress data after completion
+        localStorage.removeItem('onboarding_progress');
+      }
+
+      // Navigate to dashboard (dashboard will initialize all stores)
+      router.push("/dashboard");
+    } catch (error) {
+      console.error('Failed to create user profile:', error);
     }
-
-    // Navigate to dashboard (dashboard will initialize all stores)
-    router.push("/dashboard");
   };
+
+  const currentGradeLevel = gradeLevels.find(g => g.id === selectedGrade);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 flex items-center justify-center p-4">
@@ -169,7 +226,7 @@ export default function OnboardingPage() {
           <div className="text-center flex flex-col items-center gap-2">
             <p className="text-sm md:text-base font-medium" style={{ color: '#4B5563' }}>
               {step === 1 && "이름 입력"}
-              {step === 2 && "학교급 선택"}
+              {step === 2 && "학교급 및 학년 선택"}
               {step === 3 && "준비 완료"}
             </p>
             <p className="text-xs md:text-sm text-gray-500">
@@ -269,11 +326,15 @@ export default function OnboardingPage() {
                     transition={{ delay: index * 0.1 }}
                   >
                     <button
-                      onClick={() => setSelectedGrade(grade.id)}
+                      onClick={() => {
+                        setSelectedGrade(grade.id);
+                        setSelectedGradeDetail(null);
+                      }}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
                           e.preventDefault();
                           setSelectedGrade(grade.id);
+                          setSelectedGradeDetail(null);
                         }
                       }}
                       className={`w-full p-6 md:p-8 rounded-2xl border-2 transition-all text-left focus:outline-none focus:ring-4 focus:ring-primary-200 ${
@@ -307,6 +368,33 @@ export default function OnboardingPage() {
                   </motion.div>
                 ))}
               </div>
+
+              {selectedGrade && currentGradeLevel && (
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="max-w-md mx-auto">
+                  <label className="block text-lg font-semibold text-gray-900 mb-3">세부 학년 선택</label>
+                  <div className="relative">
+                    <select
+                      value={selectedGradeDetail || ""}
+                      onChange={(e) => setSelectedGradeDetail(e.target.value)}
+                      className="w-full px-4 py-3 text-base text-gray-900 bg-white border-2 border-gray-300 rounded-xl focus:border-primary-500 focus:ring-4 focus:ring-primary-100 outline-none transition-all appearance-none cursor-pointer"
+                    >
+                      <option value="">학년을 선택하세요</option>
+                      {currentGradeLevel.details.map((detail) => (
+                        <option key={detail.value} value={detail.value}>
+                          {detail.label} - {detail.description}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                  </div>
+                  {selectedGradeDetail && (
+                    <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mt-3 text-sm text-green-600 flex items-center gap-2">
+                      <span className="text-green-500">✓</span>
+                      {currentGradeLevel.details.find(d => d.value === selectedGradeDetail)?.label} 선택됨
+                    </motion.p>
+                  )}
+                </motion.div>
+              )}
             </motion.div>
           )}
 
@@ -346,6 +434,12 @@ export default function OnboardingPage() {
                     <span className="text-gray-700">학교급</span>
                     <span className="font-bold text-gray-900">
                       {gradeLevels.find((g) => g.id === selectedGrade)?.name}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                    <span className="text-gray-700">학년</span>
+                    <span className="font-bold text-gray-900">
+                      {currentGradeLevel?.details.find((d) => d.value === selectedGradeDetail)?.label}
                     </span>
                   </div>
                 </div>
@@ -392,18 +486,18 @@ export default function OnboardingPage() {
             </motion.div>
 
             <motion.div
-              whileHover={{ scale: ((step === 1 && !username) || (step === 2 && !selectedGrade)) ? 1 : 1.05 }}
-              whileTap={{ scale: ((step === 1 && !username) || (step === 2 && !selectedGrade)) ? 1 : 0.95 }}
+              whileHover={{ scale: ((step === 1 && !username) || (step === 2 && (!selectedGrade || !selectedGradeDetail))) ? 1 : 1.05 }}
+              whileTap={{ scale: ((step === 1 && !username) || (step === 2 && (!selectedGrade || !selectedGradeDetail))) ? 1 : 0.95 }}
             >
               <button
                 onClick={handleNext}
-                disabled={(step === 1 && !username) || (step === 2 && !selectedGrade)}
+                disabled={(step === 1 && !username) || (step === 2 && (!selectedGrade || !selectedGradeDetail))}
                 className={`px-6 md:px-8 py-3 rounded-full font-semibold transition-all inline-flex items-center space-x-2 focus:outline-none focus:ring-4 focus:ring-primary-200 ${
-                (step === 1 && !username) || (step === 2 && !selectedGrade)
+                (step === 1 && !username) || (step === 2 && (!selectedGrade || !selectedGradeDetail))
                   ? "bg-gray-200 cursor-not-allowed opacity-50"
                   : "bg-gradient-to-r from-primary-500 to-secondary-500 text-white hover:shadow-xl active:scale-95"
               }`}
-                style={{ color: ((step === 1 && !username) || (step === 2 && !selectedGrade)) ? '#6B7280' : 'white' }}
+                style={{ color: ((step === 1 && !username) || (step === 2 && (!selectedGrade || !selectedGradeDetail))) ? '#6B7280' : 'white' }}
                 aria-label="다음 단계"
               >
                 <span className="hidden sm:inline">다음</span>
