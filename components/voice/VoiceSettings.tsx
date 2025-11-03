@@ -15,7 +15,10 @@ export interface VoiceSettingsConfig {
   repeatUserInput: boolean
   outputLanguage: string
   voiceSpeed: number // 0.5 - 2.0
+  voicePitch: number // 0.0 - 2.0
   voiceVolume: number // 0.0 - 1.0
+  ttsEngine: 'browser' | 'puter' // TTS engine selection
+  puterEngine: 'standard' | 'neural' | 'generative' // Puter.js engine quality
 
   // Advanced
   noiseSuppression: boolean
@@ -23,13 +26,16 @@ export interface VoiceSettingsConfig {
 }
 
 export const DEFAULT_VOICE_SETTINGS: VoiceSettingsConfig = {
-  inputMode: 'push-to-talk',
+  inputMode: 'continuous',
   inputLanguage: 'en-US',
   autoPlayResponses: true,
   repeatUserInput: false,
-  outputLanguage: 'en-US',
+  outputLanguage: 'ko-KR',
   voiceSpeed: 1.0,
+  voicePitch: 1.0,
   voiceVolume: 0.8,
+  ttsEngine: 'puter', // Use Puter.js by default for better quality
+  puterEngine: 'neural', // Use neural engine for balance of quality and speed
   noiseSuppression: true,
   echoCancellation: true,
 }
@@ -249,6 +255,45 @@ export function VoiceSettings({
                 </div>
               </label>
             </div>
+
+            {/* TTS Engine Selection */}
+            <div className="mt-4">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">
+                TTS Engine
+              </label>
+              <select
+                value={localSettings.ttsEngine}
+                onChange={(e) => handleChange('ttsEngine', e.target.value)}
+                className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="puter">Puter.js (High Quality, Recommended)</option>
+                <option value="browser">Browser TTS (Standard)</option>
+              </select>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Puter.js provides more natural-sounding voices
+              </p>
+            </div>
+
+            {/* Puter Engine Quality (only show if Puter is selected) */}
+            {localSettings.ttsEngine === 'puter' && (
+              <div className="mt-4">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">
+                  Voice Quality
+                </label>
+                <select
+                  value={localSettings.puterEngine}
+                  onChange={(e) => handleChange('puterEngine', e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="standard">Standard (Fast)</option>
+                  <option value="neural">Neural (Balanced, Recommended)</option>
+                  <option value="generative">Generative (Most Natural)</option>
+                </select>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Higher quality may be slightly slower
+                </p>
+              </div>
+            )}
 
             {/* Output Language */}
             <div className="mt-4">
