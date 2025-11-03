@@ -5,7 +5,11 @@ import { StoreProvider } from "@/components/providers/StoreProvider";
 import { NotificationProvider } from "@/components/gamification/NotificationProvider";
 import { ServiceWorkerProvider } from "@/components/providers/ServiceWorkerProvider";
 import { NavigationProvider } from "@/components/providers/NavigationProvider";
+import { SessionProvider } from "@/components/providers/SessionProvider";
+import { ProfileSyncProvider } from "@/components/providers/ProfileSyncProvider";
 import { WebVitalsReporter } from "@/components/WebVitalsReporter";
+import { TopNavigation } from "@/components/navigation/TopNavigation";
+import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -16,11 +20,11 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
   title: {
-    default: "SmartTuter - AI 기반 맞춤형 학습 플랫폼",
-    template: "%s | SmartTuter",
+    default: "AI Park - AI 기반 맞춤형 학습 플랫폼",
+    template: "%s | AI Park",
   },
   description:
-    "초등학교부터 대학교까지 학교급에 맞춘 AI 수학·영어 튜터. 실시간 대화, 맞춤형 학습, 성과 분석으로 효과적인 학습을 경험하세요.",
+    "초등학교부터 대학교까지 학교급에 맞춘 AI Park 수학·영어 학습. 실시간 대화, 맞춤형 학습, 성과 분석으로 효과적인 학습을 경험하세요.",
   keywords: [
     "AI 튜터",
     "온라인 학습",
@@ -33,9 +37,9 @@ export const metadata: Metadata = {
     "학습 분석",
     "교육 기술",
   ],
-  authors: [{ name: "SmartTuter Team" }],
-  creator: "SmartTuter",
-  publisher: "SmartTuter",
+  authors: [{ name: "AI Park Team" }],
+  creator: "AI Park",
+  publisher: "AI Park",
   robots: {
     index: true,
     follow: true,
@@ -51,21 +55,21 @@ export const metadata: Metadata = {
     type: "website",
     locale: "ko_KR",
     url: "/",
-    siteName: "SmartTuter",
-    title: "SmartTuter - AI 기반 맞춤형 학습 플랫폼",
+    siteName: "AI Park",
+    title: "AI Park - AI 기반 맞춤형 학습 플랫폼",
     description: "개인 맞춤형 AI 튜터와 함께하는 스마트 학습. 수학과 영어를 효과적으로 배우세요.",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "SmartTuter - AI 학습 플랫폼",
+        alt: "AI Park - AI 학습 플랫폼",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "SmartTuter - AI 기반 맞춤형 학습 플랫폼",
+    title: "AI Park - AI 기반 맞춤형 학습 플랫폼",
     description: "개인 맞춤형 AI 튜터와 함께하는 스마트 학습",
     images: ["/og-image.png"],
     creator: "@smarttuter",
@@ -88,17 +92,25 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <script src="https://js.puter.com/v2/" async></script>
       </head>
       <body className="antialiased">
-        <StoreProvider>
-          <NotificationProvider>
-            <ServiceWorkerProvider>
-              <NavigationProvider>
-                {children}
-              </NavigationProvider>
-            </ServiceWorkerProvider>
-          </NotificationProvider>
-        </StoreProvider>
+        <ErrorBoundary>
+          <SessionProvider>
+            <ProfileSyncProvider>
+              <StoreProvider>
+                <NotificationProvider>
+                  <ServiceWorkerProvider>
+                    <NavigationProvider>
+                      <TopNavigation />
+                      {children}
+                    </NavigationProvider>
+                  </ServiceWorkerProvider>
+                </NotificationProvider>
+              </StoreProvider>
+            </ProfileSyncProvider>
+          </SessionProvider>
+        </ErrorBoundary>
         <WebVitalsReporter />
       </body>
     </html>

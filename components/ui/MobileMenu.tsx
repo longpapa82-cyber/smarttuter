@@ -10,8 +10,8 @@ export function MobileMenu() {
 
   const menuItems = [
     { href: "/", label: "홈", icon: Home },
-    { href: "/tutor/math", label: "수학 튜터", icon: Calculator },
-    { href: "/tutor/english", label: "영어 튜터", icon: MessageCircle },
+    { href: "/tutor/math", label: "Math Park", icon: Calculator },
+    { href: "/tutor/english", label: "English Park", icon: MessageCircle },
     { href: "/report", label: "학습 리포트", icon: BarChart3 },
   ];
 
@@ -64,7 +64,7 @@ export function MobileMenu() {
                 <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center">
                   <span className="text-2xl">🎓</span>
                 </div>
-                <span className="text-xl font-bold gradient-text">SmartTuter</span>
+                <span className="text-xl font-bold gradient-text">AI Park</span>
               </div>
 
               {/* Menu Items */}
@@ -90,7 +90,7 @@ export function MobileMenu() {
               {/* Footer */}
               <div className="absolute bottom-6 left-6 right-6 pt-6 border-t border-gray-200">
                 <p className="text-xs text-gray-500 text-center">
-                  © 2025 SmartTuter
+                  © 2025 AI Park
                 </p>
               </div>
             </motion.div>
