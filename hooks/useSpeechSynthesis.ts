@@ -55,6 +55,17 @@ export function useSpeechSynthesis({
       utterance.pitch = pitch;
       utterance.volume = volume;
 
+      // Select best available voice for the language
+      const voices = window.speechSynthesis.getVoices();
+      if (voices.length > 0) {
+        // Try to find a voice that matches the language
+        const matchingVoice = voices.find(voice => voice.lang.startsWith(lang.split('-')[0]));
+        if (matchingVoice) {
+          utterance.voice = matchingVoice;
+          console.log('🎤 Selected voice:', matchingVoice.name, '(' + matchingVoice.lang + ')');
+        }
+      }
+
       utterance.onstart = () => {
         setIsSpeaking(true);
         setIsPaused(false);
@@ -66,13 +77,29 @@ export function useSpeechSynthesis({
       };
 
       utterance.onerror = (event) => {
-        console.error("Speech synthesis error:", event);
+        // Handle 'not-allowed' and 'interrupted' errors silently
+        if (event.error === 'not-allowed') {
+          console.warn('Speech synthesis blocked by browser. User interaction required.');
+        } else if (event.error === 'interrupted') {
+          // Speech was interrupted (user stopped it, new message, etc.) - this is expected behavior
+          console.log('Speech synthesis interrupted (expected behavior)');
+        } else {
+          // Log other errors for debugging
+          console.error("Speech synthesis error:", event);
+        }
         setIsSpeaking(false);
         setIsPaused(false);
       };
 
       utteranceRef.current = utterance;
-      window.speechSynthesis.speak(utterance);
+
+      try {
+        window.speechSynthesis.speak(utterance);
+      } catch (error) {
+        console.error('Failed to speak:', error);
+        setIsSpeaking(false);
+        setIsPaused(false);
+      }
     },
     [lang, rate, pitch, volume]
   );
