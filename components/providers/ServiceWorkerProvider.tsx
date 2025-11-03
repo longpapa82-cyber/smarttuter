@@ -64,7 +64,7 @@ export function ServiceWorkerProvider({
                   Update Available
                 </h3>
                 <p className="text-sm text-gray-600 mb-3">
-                  A new version of SmartTuter is available. Refresh to update.
+                  A new version of AI Park is available. Refresh to update.
                 </p>
 
                 <div className="flex gap-2">

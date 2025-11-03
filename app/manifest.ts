@@ -2,8 +2,8 @@ import { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "SmartTuter - AI-Powered Learning Platform",
-    short_name: "SmartTuter",
+    name: "AI Park - AI-Powered Learning Platform",
+    short_name: "AI Park",
     description: "학교급과 학년에 맞춘 AI 기반 수학·영어 학습 튜터링 서비스",
     start_url: "/",
     display: "standalone",

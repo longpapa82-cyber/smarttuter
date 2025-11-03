@@ -182,6 +182,14 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // Ensure chat history starts with 'user' role (Gemini requirement)
+    if (chatHistory.length > 0 && chatHistory[0].role !== 'user') {
+      // Remove leading model messages
+      while (chatHistory.length > 0 && chatHistory[0].role === 'model') {
+        chatHistory.shift();
+      }
+    }
+
     // Create streaming response with better error handling
     const encoder = new TextEncoder();
 

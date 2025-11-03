@@ -1,5 +1,5 @@
 /**
- * SmartTuter - Tutor System Type Definitions
+ * AI Park - Tutor System Type Definitions
  * 학교급별 맞춤형 튜터링 시스템의 핵심 타입 정의
  */
 

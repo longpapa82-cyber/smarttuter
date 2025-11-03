@@ -226,4 +226,37 @@ export class FlashcardScheduler {
       return `긴급! ${dueCount}개 밀려있음`;
     }
   }
+
+  /**
+   * Format next review time preview
+   */
+  static formatNextReviewTime(interval: number): string {
+    if (interval < 1) {
+      return '1분 후';
+    } else if (interval === 1) {
+      return '내일';
+    } else if (interval < 7) {
+      return `${interval}일 후`;
+    } else if (interval < 30) {
+      const weeks = Math.floor(interval / 7);
+      return `${weeks}주 후`;
+    } else if (interval < 365) {
+      const months = Math.floor(interval / 30);
+      return `${months}개월 후`;
+    } else {
+      const years = Math.floor(interval / 365);
+      return `${years}년 후`;
+    }
+  }
+
+  /**
+   * Get preview text for each quality option
+   */
+  static getNextReviewPreview(
+    card: Flashcard,
+    quality: 0 | 1 | 2 | 3 | 4 | 5
+  ): string {
+    const preview = this.calculateNextReview(card, quality);
+    return this.formatNextReviewTime(preview.interval);
+  }
 }

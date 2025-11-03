@@ -45,3 +45,7 @@ next-env.d.ts
 # Sentry
 .sentryclirc
 sentry.properties
+
+# Authentication Database (contains user data)
+/lib/db/auth-data.json
+/lib/db/*.json

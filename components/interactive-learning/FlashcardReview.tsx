@@ -7,6 +7,7 @@ import { FlashcardScheduler } from '@/lib/interactive-learning/flashcard-schedul
 import { useInteractiveLearning } from '@/lib/interactive-learning/store';
 import { useUserStore } from '@/lib/gamification/store';
 import { FLASHCARD_XP_REWARDS } from '@/lib/interactive-learning/types';
+import { XPAnimation, LevelUpAnimation } from '@/components/animations/XPAnimation';
 
 interface FlashcardReviewProps {
   cards: Flashcard[];
@@ -19,8 +20,18 @@ export default function FlashcardReview({ cards, onComplete }: FlashcardReviewPr
   const [startTime] = useState(Date.now());
   const [reviewedCount, setReviewedCount] = useState(0);
 
+  // Animation states
+  const [showXPAnimation, setShowXPAnimation] = useState(false);
+  const [currentXP, setCurrentXP] = useState(0);
+  const [currentQuality, setCurrentQuality] = useState<number>(0);
+  const [showLevelUp, setShowLevelUp] = useState(false);
+  const [newLevel, setNewLevel] = useState(1);
+
   const { reviewFlashcard } = useInteractiveLearning();
   const addXP = useUserStore((state) => state.addXP);
+  const updateStreak = useUserStore((state) => state.updateStreak);
+  const updateGoalProgress = useUserStore((state) => state.updateGoalProgress);
+  const profile = useUserStore((state) => state.profile);
 
   if (cards.length === 0) {
     return (
@@ -51,16 +62,40 @@ export default function FlashcardReview({ cards, onComplete }: FlashcardReviewPr
 
     // Award XP based on quality
     const xpReward = FLASHCARD_XP_REWARDS[quality];
+    const previousLevel = profile?.points.level || 1;
     addXP(xpReward, `flashcard-${currentCard.id}`);
 
-    // Move to next card or complete
-    setReviewedCount(reviewedCount + 1);
-    if (currentIndex < cards.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-      setIsFlipped(false);
-    } else {
-      onComplete();
+    // Update streak (will trigger milestone check)
+    updateStreak();
+
+    // Update daily goals - flashcards completed
+    updateGoalProgress('flashcards', 1);
+
+    // Show XP animation
+    setCurrentXP(xpReward);
+    setCurrentQuality(quality);
+    setShowXPAnimation(true);
+
+    // Check for level up
+    const newCurrentLevel = useUserStore.getState().profile?.points.level || 1;
+    if (newCurrentLevel > previousLevel) {
+      // Delay level up animation after XP animation
+      setTimeout(() => {
+        setNewLevel(newCurrentLevel);
+        setShowLevelUp(true);
+      }, 2000);
     }
+
+    // Move to next card or complete (after animation)
+    setTimeout(() => {
+      setReviewedCount(reviewedCount + 1);
+      if (currentIndex < cards.length - 1) {
+        setCurrentIndex(currentIndex + 1);
+        setIsFlipped(false);
+      } else {
+        onComplete();
+      }
+    }, quality >= 4 ? 2500 : 1500); // Longer delay for high quality (confetti)
   };
 
   return (
@@ -165,20 +200,28 @@ export default function FlashcardReview({ cards, onComplete }: FlashcardReviewPr
               { quality: 2, label: '어려움', color: 'from-orange-500 to-red-500', xp: 20 },
               { quality: 1, label: '틀림', color: 'from-red-500 to-pink-600', xp: 10 },
               { quality: 0, label: '완전히 잊음', color: 'from-gray-500 to-gray-700', xp: 5 },
-            ].map(({ quality, label, color, xp }) => (
-              <motion.button
-                key={quality}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => handleQualitySelect(quality as 0 | 1 | 2 | 3 | 4 | 5)}
-                className={`p-4 bg-gradient-to-r ${color} text-white rounded-lg font-semibold shadow-lg hover:shadow-xl transition-shadow`}
-              >
-                <div className="flex flex-col items-center gap-1">
-                  <span className="text-lg">{label}</span>
-                  <span className="text-xs opacity-80">+{xp} XP</span>
-                </div>
-              </motion.button>
-            ))}
+            ].map(({ quality, label, color, xp }) => {
+              const nextReviewTime = FlashcardScheduler.getNextReviewPreview(
+                currentCard,
+                quality as 0 | 1 | 2 | 3 | 4 | 5
+              );
+
+              return (
+                <motion.button
+                  key={quality}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => handleQualitySelect(quality as 0 | 1 | 2 | 3 | 4 | 5)}
+                  className={`p-4 bg-gradient-to-r ${color} text-white rounded-lg font-semibold shadow-lg hover:shadow-xl transition-shadow`}
+                >
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="text-lg">{label}</span>
+                    <span className="text-xs opacity-80">+{xp} XP</span>
+                    <span className="text-xs opacity-70 mt-1">📅 {nextReviewTime}</span>
+                  </div>
+                </motion.button>
+              );
+            })}
           </div>
 
           <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
@@ -189,6 +232,22 @@ export default function FlashcardReview({ cards, onComplete }: FlashcardReviewPr
           </div>
         </motion.div>
       )}
+
+      {/* XP Animation */}
+      <XPAnimation
+        xp={currentXP}
+        show={showXPAnimation}
+        quality={currentQuality}
+        position="center"
+        onComplete={() => setShowXPAnimation(false)}
+      />
+
+      {/* Level Up Animation */}
+      <LevelUpAnimation
+        newLevel={newLevel}
+        show={showLevelUp}
+        onComplete={() => setShowLevelUp(false)}
+      />
     </div>
   );
 }

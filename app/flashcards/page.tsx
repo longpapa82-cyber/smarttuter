@@ -6,6 +6,9 @@ import { useRouter } from 'next/navigation';
 import { useInteractiveLearning } from '@/lib/interactive-learning/store';
 import { FlashcardScheduler } from '@/lib/interactive-learning/flashcard-scheduler';
 import FlashcardReview from '@/components/interactive-learning/FlashcardReview';
+import { FlashcardMasteryDashboard } from '@/components/interactive-learning/FlashcardMasteryDashboard';
+import { LearningHeatmap } from '@/components/interactive-learning/LearningHeatmap';
+import { InstantStartModal } from '@/components/modals/InstantStartModal';
 import { Subject } from '@/lib/interactive-learning/types';
 
 export default function FlashcardsPage() {
@@ -13,6 +16,12 @@ export default function FlashcardsPage() {
   const [selectedSubject, setSelectedSubject] = useState<'math' | 'english' | null>(null);
   const [isReviewing, setIsReviewing] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showInstantStartModal, setShowInstantStartModal] = useState(false);
+  const [createdCardPreview, setCreatedCardPreview] = useState<{
+    front: string;
+    back: string;
+    difficulty: number;
+  } | null>(null);
 
   // Form state
   const [front, setFront] = useState('');
@@ -38,12 +47,21 @@ export default function FlashcardsPage() {
       difficulty
     );
 
+    // Save preview for modal
+    setCreatedCardPreview({
+      front,
+      back,
+      difficulty,
+    });
+
     // Reset form
     setFront('');
     setBack('');
     setDifficulty(3);
     setShowCreateForm(false);
-    alert('플래시카드가 생성되었습니다!');
+
+    // Show instant start modal
+    setShowInstantStartModal(true);
   };
 
   const handleStartReview = () => {
@@ -123,6 +141,20 @@ export default function FlashcardsPage() {
             <div className="text-sm text-gray-600 dark:text-gray-400">학습 중</div>
           </div>
         </div>
+
+        {/* Mastery Dashboard */}
+        {allFlashcards.length > 0 && (
+          <div className="mb-8">
+            <FlashcardMasteryDashboard flashcards={allFlashcards} />
+          </div>
+        )}
+
+        {/* Learning Heatmap */}
+        {allFlashcards.length > 0 && (
+          <div className="mb-8">
+            <LearningHeatmap />
+          </div>
+        )}
 
         <div className="grid md:grid-cols-2 gap-6">
           {/* Review Section */}
@@ -334,6 +366,17 @@ export default function FlashcardsPage() {
           </div>
         </div>
       </div>
+
+      {/* Instant Start Modal */}
+      {createdCardPreview && (
+        <InstantStartModal
+          isOpen={showInstantStartModal}
+          onClose={() => setShowInstantStartModal(false)}
+          onStart={handleStartReview}
+          type="flashcard"
+          flashcardPreview={createdCardPreview}
+        />
+      )}
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useInteractiveLearning } from '@/lib/interactive-learning/store';
 import { useAdaptiveLearning } from '@/lib/adaptive-learning/store';
 import QuizView from '@/components/interactive-learning/QuizView';
+import { InstantStartModal } from '@/components/modals/InstantStartModal';
 import { Quiz, QuizResult, Subject } from '@/lib/interactive-learning/types';
 
 export default function QuizPage() {
@@ -18,6 +19,14 @@ export default function QuizPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [quizResult, setQuizResult] = useState<QuizResult | null>(null);
+  const [showInstantStartModal, setShowInstantStartModal] = useState(false);
+  const [generatedQuizPreview, setGeneratedQuizPreview] = useState<{
+    topic: string;
+    difficulty: number;
+    questionCount: number;
+    estimatedMinutes: number;
+    estimatedXP: number;
+  } | null>(null);
 
   const { generateQuiz, getQuizHistory } = useInteractiveLearning();
   const { profile } = useAdaptiveLearning();
@@ -35,7 +44,20 @@ export default function QuizPage() {
         selectedDifficulty,
         questionCount
       );
+
+      // Save quiz preview
+      setGeneratedQuizPreview({
+        topic: selectedTopic,
+        difficulty: selectedDifficulty,
+        questionCount: quiz.questions.length,
+        estimatedMinutes: Math.ceil(quiz.questions.length * 1.5), // 1.5분/문항
+        estimatedXP: quiz.questions.length * 50, // 50 XP/문항
+      });
+
       setCurrentQuiz(quiz);
+
+      // Show instant start modal
+      setShowInstantStartModal(true);
     } catch (error) {
       console.error('Failed to generate quiz:', error);
       alert('퀴즈 생성 중 오류가 발생했습니다. 다시 시도해주세요.');
@@ -137,6 +159,17 @@ export default function QuizPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 py-8">
         <QuizView quiz={currentQuiz} onComplete={handleQuizComplete} />
+
+        {/* Instant Start Modal */}
+        {generatedQuizPreview && (
+          <InstantStartModal
+            isOpen={showInstantStartModal}
+            onClose={() => setShowInstantStartModal(false)}
+            onStart={() => setShowInstantStartModal(false)} // Just close modal, quiz already set
+            type="quiz"
+            quizPreview={generatedQuizPreview}
+          />
+        )}
       </div>
     );
   }

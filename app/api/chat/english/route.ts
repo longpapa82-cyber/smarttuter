@@ -28,7 +28,7 @@ const gradeLevelMap: Record<string, string> = {
 
 export async function POST(req: NextRequest) {
   try {
-    const { message, gradeLevel, conversationHistory, userId = 'default' } = await req.json();
+    const { message, gradeLevel, conversationHistory, userId = 'default', cefrLevel } = await req.json();
 
     if (!message) {
       return new Response(
@@ -163,7 +163,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Generate grade-level specific system prompt with guardrails
-    const systemPrompt = generateSystemPrompt(userProfile, 'english');
+    // Pass CEFR level if provided (adaptive learning)
+    const systemPrompt = generateSystemPrompt(userProfile, 'english', cefrLevel);
 
 
 
@@ -219,6 +220,14 @@ export async function POST(req: NextRequest) {
         role: msg.role === "user" ? "user" : "model",
         parts: [{ text: msg.content }],
       });
+    }
+
+    // Ensure chat history starts with 'user' role (Gemini requirement)
+    if (chatHistory.length > 0 && chatHistory[0].role !== 'user') {
+      // Remove leading model messages
+      while (chatHistory.length > 0 && chatHistory[0].role === 'model') {
+        chatHistory.shift();
+      }
     }
 
     // Create streaming response with better error handling

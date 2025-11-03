@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Activity, AlertTriangle, CheckCircle, TrendingUp, TrendingDown, Zap, Database, Users } from 'lucide-react'
 
 interface DashboardData {
@@ -43,13 +43,7 @@ export default function MonitoringDashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    fetchDashboardData()
-    const interval = setInterval(fetchDashboardData, 30000) // Refresh every 30s
-    return () => clearInterval(interval)
-  }, [timeRange])
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true)
       const response = await fetch(`/api/monitoring/dashboard?range=${timeRange}`)
@@ -66,7 +60,13 @@ export default function MonitoringDashboard() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [timeRange])
+
+  useEffect(() => {
+    fetchDashboardData()
+    const interval = setInterval(fetchDashboardData, 30000) // Refresh every 30s
+    return () => clearInterval(interval)
+  }, [fetchDashboardData])
 
   const getHealthColor = (status: string) => {
     switch (status) {

@@ -1,4 +1,4 @@
-// Service Worker for SmartTuter
+// Service Worker for AI Park
 // Provides offline support and caching strategies
 
 const CACHE_VERSION = 'v1';
@@ -159,7 +159,7 @@ async function syncLearningProgress() {
 // Push notification handler (for future use)
 self.addEventListener('push', (event) => {
   const data = event.data?.json() ?? {};
-  const title = data.title || 'SmartTuter Notification';
+  const title = data.title || 'AI Park Notification';
   const options = {
     body: data.body || 'You have a new notification',
     icon: '/icons/icon-192x192.png',

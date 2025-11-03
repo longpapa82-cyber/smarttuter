@@ -1,5 +1,10 @@
 import { withSentryConfig } from "@sentry/nextjs";
+import bundleAnalyzer from '@next/bundle-analyzer';
 import type { NextConfig } from "next";
+
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+});
 
 const nextConfig: NextConfig = {
   // Production optimizations
@@ -16,7 +21,14 @@ const nextConfig: NextConfig = {
 
   // Experimental features for performance
   experimental: {
-    optimizePackageImports: ['lucide-react', 'framer-motion'],
+    optimizePackageImports: [
+      'lucide-react',
+      'framer-motion',
+      'recharts',
+      'date-fns',
+      'd3',
+      'react-hot-toast'
+    ],
   },
 
   // Output file tracing for smaller deployments
@@ -91,8 +103,8 @@ const nextConfig: NextConfig = {
   },
 };
 
-// Sentry configuration
-export default withSentryConfig(nextConfig, {
+// Sentry configuration with Bundle Analyzer
+export default withSentryConfig(withBundleAnalyzer(nextConfig), {
   // For all available options, see:
   // https://github.com/getsentry/sentry-webpack-plugin#options
 

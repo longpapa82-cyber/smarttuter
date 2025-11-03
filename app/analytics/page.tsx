@@ -3,16 +3,27 @@
 import { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { useUserStore } from '@/lib/gamification/store';
 import { useAdaptiveLearning } from '@/lib/adaptive-learning/store';
 import { ProgressCalculator } from '@/lib/adaptive-learning/progress-calculator';
 import { PathGenerator } from '@/lib/adaptive-learning/path-generator';
 import { WeaknessAnalyzer } from '@/lib/adaptive-learning/weakness-analyzer';
 import { Subject, ProgressAnalytics, LearningPathway } from '@/lib/adaptive-learning/types';
-import MasteryHeatMap from '@/components/adaptive-learning/MasteryHeatMap';
-import WeaknessReport from '@/components/adaptive-learning/WeaknessReport';
-import LearningPathView from '@/components/adaptive-learning/LearningPathView';
-import DifficultyIndicator from '@/components/adaptive-learning/DifficultyIndicator';
+
+// Dynamic imports for heavy visualization components
+const MasteryHeatMap = dynamic(() => import('@/components/adaptive-learning/MasteryHeatMap'), {
+  loading: () => <div className="h-64 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />,
+});
+const WeaknessReport = dynamic(() => import('@/components/adaptive-learning/WeaknessReport'), {
+  loading: () => <div className="h-48 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />,
+});
+const LearningPathView = dynamic(() => import('@/components/adaptive-learning/LearningPathView'), {
+  loading: () => <div className="h-64 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />,
+});
+const DifficultyIndicator = dynamic(() => import('@/components/adaptive-learning/DifficultyIndicator'), {
+  loading: () => <div className="h-4 w-24 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />,
+});
 import {
   ArrowLeft,
   Brain,

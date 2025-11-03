@@ -1,213 +1,254 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { User, Mail, GraduationCap, Calendar, Award, Settings, LogOut, Bell } from 'lucide-react'
-import Link from 'next/link'
+import { useState, useEffect } from 'react';
+import { useSession, signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import {
+  User, Mail, Lock, ArrowLeft, LogOut,
+  CheckCircle, XCircle, Loader2, Shield
+} from 'lucide-react';
+import { SkeletonProfile } from '@/components/ui/Skeleton';
 
 export default function ProfilePage() {
-  const [profile, setProfile] = useState({
-    name: 'Student',
-    email: 'student@smarttuter.com',
-    grade: 'High School',
-    gradeDetail: 'Grade 10',
-    joinDate: '2025-01-15',
-    totalXP: 1250,
-    streak: 7,
-  })
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [success, setSuccess] = useState('');
+  const [error, setError] = useState('');
 
-  const [settings, setSettings] = useState({
-    notifications: true,
-    soundEffects: true,
-    darkMode: false,
-  })
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/login');
+    }
+  }, [status, router]);
+
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: '/login' });
+  };
+
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 p-4 md:p-6 lg:p-8">
+        <div className="max-w-4xl mx-auto py-8">
+          <div className="mb-8">
+            <div className="h-6 w-32 bg-gray-200 rounded mb-2 animate-pulse" />
+            <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
+          </div>
+          <div className="grid gap-6">
+            <SkeletonProfile />
+            <SkeletonProfile />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return null;
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 pb-24">
-      <div className="max-w-4xl mx-auto p-6">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 p-4">
+      <div className="max-w-4xl mx-auto py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Profile</h1>
-          <p className="text-gray-600">Manage your account and preferences</p>
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors mb-4"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            대시보드로 돌아가기
+          </Link>
+          <h1 className="text-4xl font-bold gradient-text mb-2">
+            프로필 설정
+          </h1>
+          <p className="text-gray-600">
+            계정 정보를 관리하고 보안 설정을 변경하세요
+          </p>
         </div>
 
-        {/* Profile Card */}
-        <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
-          {/* Avatar & Name */}
-          <div className="flex items-center gap-6 mb-6">
-            <div className="w-24 h-24 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
-              <User className="w-12 h-12 text-white" />
-            </div>
-            <div className="flex-1">
-              <h2 className="text-2xl font-bold text-gray-900 mb-1">{profile.name}</h2>
-              <p className="text-gray-600 flex items-center gap-2">
-                <Mail className="w-4 h-4" />
-                {profile.email}
-              </p>
-            </div>
-            <button className="p-3 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors">
-              <Settings className="w-5 h-5 text-gray-700" />
-            </button>
-          </div>
+        {/* Success/Error Messages */}
+        {success && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 bg-green-50 border border-green-200 rounded-xl p-4 flex items-start space-x-3"
+          >
+            <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-green-800">{success}</p>
+          </motion.div>
+        )}
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {/* Grade */}
-            <div className="p-4 bg-purple-50 rounded-xl">
-              <GraduationCap className="w-6 h-6 text-purple-600 mb-2" />
-              <p className="text-sm text-gray-600 mb-1">Grade</p>
-              <p className="font-bold text-gray-900">{profile.gradeDetail}</p>
-            </div>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start space-x-3"
+          >
+            <XCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-red-800">{error}</p>
+          </motion.div>
+        )}
 
-            {/* Join Date */}
-            <div className="p-4 bg-blue-50 rounded-xl">
-              <Calendar className="w-6 h-6 text-blue-600 mb-2" />
-              <p className="text-sm text-gray-600 mb-1">Joined</p>
-              <p className="font-bold text-gray-900">
-                {new Date(profile.joinDate).toLocaleDateString('en-US', {
-                  month: 'short',
-                  year: 'numeric',
-                })}
-              </p>
-            </div>
-
-            {/* Total XP */}
-            <div className="p-4 bg-yellow-50 rounded-xl">
-              <Award className="w-6 h-6 text-yellow-600 mb-2" />
-              <p className="text-sm text-gray-600 mb-1">Total XP</p>
-              <p className="font-bold text-gray-900">{profile.totalXP.toLocaleString()}</p>
-            </div>
-
-            {/* Streak */}
-            <div className="p-4 bg-orange-50 rounded-xl">
-              <div className="flex items-center gap-1 mb-2">
-                <span className="text-2xl">🔥</span>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Profile Info */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Account Information */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-2xl shadow-lg p-6"
+            >
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center">
+                  <User className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">계정 정보</h2>
+                  <p className="text-sm text-gray-600">기본 프로필 정보</p>
+                </div>
               </div>
-              <p className="text-sm text-gray-600 mb-1">Streak</p>
-              <p className="font-bold text-gray-900">{profile.streak} days</p>
-            </div>
+
+              <div className="space-y-4">
+                {/* Email */}
+                <div className="flex items-start space-x-3 p-4 bg-gray-50 rounded-xl">
+                  <Mail className="w-5 h-5 text-gray-400 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-700">이메일</p>
+                    <p className="text-gray-900">{session.user?.email}</p>
+                  </div>
+                  {session.user?.email && (
+                    <div className="flex items-center space-x-1 bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs">
+                      <CheckCircle className="w-3 h-3" />
+                      <span>인증됨</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Name */}
+                {session.user?.name && (
+                  <div className="flex items-start space-x-3 p-4 bg-gray-50 rounded-xl">
+                    <User className="w-5 h-5 text-gray-400 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-700">이름</p>
+                      <p className="text-gray-900">{session.user.name}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* User ID */}
+                <div className="flex items-start space-x-3 p-4 bg-gray-50 rounded-xl">
+                  <Shield className="w-5 h-5 text-gray-400 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-700">사용자 ID</p>
+                    <p className="text-gray-900 font-mono text-sm">{session.user?.id}</p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Security Settings */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="bg-white rounded-2xl shadow-lg p-6"
+            >
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                  <Shield className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">보안 설정</h2>
+                  <p className="text-sm text-gray-600">비밀번호 및 보안 관리</p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Link
+                  href="/forgot-password"
+                  className="flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors"
+                >
+                  <div className="flex items-center space-x-3">
+                    <Lock className="w-5 h-5 text-gray-400" />
+                    <div>
+                      <p className="font-medium text-gray-900">비밀번호 변경</p>
+                      <p className="text-sm text-gray-600">새로운 비밀번호로 변경하기</p>
+                    </div>
+                  </div>
+                  <span className="text-gray-400">→</span>
+                </Link>
+              </div>
+            </motion.div>
           </div>
-        </div>
 
-        {/* Settings Section */}
-        <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
-          <h3 className="text-xl font-bold text-gray-900 mb-4">Preferences</h3>
+          {/* Quick Actions Sidebar */}
+          <div className="space-y-6">
+            {/* Quick Actions */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="bg-white rounded-2xl shadow-lg p-6"
+            >
+              <h3 className="text-lg font-bold text-gray-900 mb-4">빠른 작업</h3>
+              <div className="space-y-3">
+                <button
+                  onClick={handleSignOut}
+                  className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors text-left"
+                >
+                  <div className="flex items-center space-x-3">
+                    <LogOut className="w-5 h-5 text-gray-600" />
+                    <span className="font-medium text-gray-900">로그아웃</span>
+                  </div>
+                </button>
+              </div>
+            </motion.div>
 
-          {/* Notifications */}
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl mb-3">
-            <div className="flex items-center gap-3">
-              <Bell className="w-5 h-5 text-gray-700" />
-              <div>
-                <p className="font-semibold text-gray-900">Notifications</p>
-                <p className="text-sm text-gray-600">
-                  Receive learning reminders and achievements
+            {/* Account Stats */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
+              className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl shadow-lg p-6 text-white"
+            >
+              <h3 className="text-lg font-bold mb-4">계정 통계</h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-white/80">가입 방법</span>
+                  <span className="font-semibold">이메일</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-white/80">계정 상태</span>
+                  <span className="font-semibold">활성</span>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Help & Support */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+              className="bg-white rounded-2xl shadow-lg p-6"
+            >
+              <h3 className="text-lg font-bold text-gray-900 mb-4">도움말</h3>
+              <div className="space-y-3 text-sm">
+                <Link
+                  href="/auth-setup"
+                  className="block text-primary-600 hover:text-primary-700 font-medium"
+                >
+                  → OAuth 설정 가이드
+                </Link>
+                <p className="text-gray-600">
+                  문제가 있으신가요?<br />
+                  <span className="text-primary-600">support@smarttuter.com</span>
                 </p>
               </div>
-            </div>
-            <button
-              onClick={() =>
-                setSettings({ ...settings, notifications: !settings.notifications })
-              }
-              className={`
-                relative w-14 h-8 rounded-full transition-colors
-                ${settings.notifications ? 'bg-purple-600' : 'bg-gray-300'}
-              `}
-            >
-              <div
-                className={`
-                  absolute top-1 w-6 h-6 bg-white rounded-full shadow transition-transform
-                  ${settings.notifications ? 'translate-x-7' : 'translate-x-1'}
-                `}
-              />
-            </button>
-          </div>
-
-          {/* Sound Effects */}
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl mb-3">
-            <div className="flex items-center gap-3">
-              <span className="text-xl">🔊</span>
-              <div>
-                <p className="font-semibold text-gray-900">Sound Effects</p>
-                <p className="text-sm text-gray-600">Play sounds for actions and rewards</p>
-              </div>
-            </div>
-            <button
-              onClick={() =>
-                setSettings({ ...settings, soundEffects: !settings.soundEffects })
-              }
-              className={`
-                relative w-14 h-8 rounded-full transition-colors
-                ${settings.soundEffects ? 'bg-purple-600' : 'bg-gray-300'}
-              `}
-            >
-              <div
-                className={`
-                  absolute top-1 w-6 h-6 bg-white rounded-full shadow transition-transform
-                  ${settings.soundEffects ? 'translate-x-7' : 'translate-x-1'}
-                `}
-              />
-            </button>
-          </div>
-
-          {/* Dark Mode */}
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-            <div className="flex items-center gap-3">
-              <span className="text-xl">🌙</span>
-              <div>
-                <p className="font-semibold text-gray-900">Dark Mode</p>
-                <p className="text-sm text-gray-600">Switch to dark theme</p>
-              </div>
-            </div>
-            <button
-              onClick={() => setSettings({ ...settings, darkMode: !settings.darkMode })}
-              className={`
-                relative w-14 h-8 rounded-full transition-colors
-                ${settings.darkMode ? 'bg-purple-600' : 'bg-gray-300'}
-              `}
-            >
-              <div
-                className={`
-                  absolute top-1 w-6 h-6 bg-white rounded-full shadow transition-transform
-                  ${settings.darkMode ? 'translate-x-7' : 'translate-x-1'}
-                `}
-              />
-            </button>
+            </motion.div>
           </div>
         </div>
-
-        {/* Quick Links */}
-        <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
-          <h3 className="text-xl font-bold text-gray-900 mb-4">Quick Links</h3>
-
-          <div className="space-y-2">
-            <Link
-              href="/dashboard"
-              className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
-            >
-              <GraduationCap className="w-5 h-5 text-purple-600" />
-              <span className="font-medium text-gray-900">My Learning Progress</span>
-            </Link>
-
-            <Link
-              href="/analytics"
-              className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
-            >
-              <Award className="w-5 h-5 text-blue-600" />
-              <span className="font-medium text-gray-900">Achievements & Badges</span>
-            </Link>
-
-            <button className="w-full flex items-center gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors text-left">
-              <Settings className="w-5 h-5 text-gray-600" />
-              <span className="font-medium text-gray-900">Account Settings</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Logout Button */}
-        <button className="w-full flex items-center justify-center gap-3 p-4 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition-colors">
-          <LogOut className="w-5 h-5" />
-          <span className="font-semibold">Log Out</span>
-        </button>
       </div>
     </div>
-  )
+  );
 }

@@ -12,33 +12,34 @@
 
 - [ ] ✅ GitHub 계정 (없으면 [github.com](https://github.com) 가입)
 - [ ] ✅ Vercel 계정 (없으면 [vercel.com](https://vercel.com) 가입 - GitHub로 가능)
-- [ ] ✅ Anthropic API 키 ([console.anthropic.com](https://console.anthropic.com) 발급)
+- [ ] ✅ Google Gemini API 키 ([aistudio.google.com/apikey](https://aistudio.google.com/apikey) 발급)
 
 ---
 
-## 1️⃣ Anthropic API 키 발급 (3분)
+## 1️⃣ Google Gemini API 키 발급 (3분)
 
-### 1-1. Anthropic Console 접속
-1. [Anthropic Console](https://console.anthropic.com) 열기
-2. 계정 생성 또는 로그인
-   - 이메일로 가입 또는 Google 계정 연동
+### 1-1. Google AI Studio 접속
+1. [Google AI Studio](https://aistudio.google.com/apikey) 열기
+2. Google 계정으로 로그인
 
 ### 1-2. API 키 생성
-1. 좌측 메뉴에서 **"API Keys"** 클릭
-2. **"Create Key"** 버튼 클릭
-3. 키 이름 입력 (예: "SmartTuter Production")
-4. **"Create Key"** 클릭
-5. **API 키 복사** (⚠️ 다시 볼 수 없으니 안전한 곳에 저장!)
+1. **"Get API key"** 또는 **"Create API key"** 버튼 클릭
+2. 프로젝트 선택 또는 새 프로젝트 생성
+3. **API 키 복사** (⚠️ 안전한 곳에 저장!)
    ```
-   sk-ant-api03-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+   AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
    ```
+4. **무료 할당량**: 월 15 requests/minute, 1 million tokens/minute
 
 ### 1-3. 로컬 테스트 (선택사항)
 로컬에서 먼저 테스트하고 싶다면:
 
 ```bash
 # .env.local 파일에 API 키 추가
-echo "ANTHROPIC_API_KEY=sk-ant-api03-여기에-실제-키-붙여넣기" >> .env.local
+echo "GEMINI_API_KEY=AIzaSy여기에-실제-키-붙여넣기" >> .env.local
+
+# 개발 서버 실행
+npm run dev
 
 # 브라우저에서 http://localhost:3000 접속하여 테스트
 # 온보딩 → 수학/영어 튜터 → AI 채팅 테스트
@@ -140,17 +141,34 @@ git push -u origin main
 
 **Environment Variables** 섹션에서:
 
-1. **Name**: `ANTHROPIC_API_KEY`
-2. **Value**: 1단계에서 복사한 API 키 붙여넣기
-   ```
-   sk-ant-api03-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-   ```
-3. **Environment**: `Production`, `Preview`, `Development` 모두 선택 (기본값)
-4. **"Add"** 클릭
+#### 필수 환경 변수
 
-**추가 환경 변수** (일단 생략 가능, 배포 후 추가):
-- Name: `NEXT_PUBLIC_APP_URL`
-- Value: 배포 후 생성되는 URL (예: `https://smarttuter.vercel.app`)
+1. **GEMINI_API_KEY**
+   - **Name**: `GEMINI_API_KEY`
+   - **Value**: 1단계에서 복사한 Gemini API 키
+     ```
+     AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+     ```
+   - **Environment**: Production, Preview, Development 모두 선택
+   - **"Add"** 클릭
+
+2. **NEXTAUTH_SECRET**
+   - **Name**: `NEXTAUTH_SECRET`
+   - **Value**: 랜덤 시크릿 생성 (아래 명령어 실행)
+     ```bash
+     openssl rand -base64 32
+     ```
+   - **Environment**: Production, Preview, Development 모두 선택
+   - **"Add"** 클릭
+
+3. **NEXTAUTH_URL** (배포 후 추가 가능)
+   - **Name**: `NEXTAUTH_URL`
+   - **Value**: 배포 후 생성되는 URL
+     ```
+     https://smarttuter-xxxx.vercel.app
+     ```
+   - **Environment**: Production만 선택
+   - **"Add"** 클릭
 
 ### 3-5. 배포 시작
 
@@ -205,16 +223,20 @@ Chrome DevTools로 성능 측정:
    - Best Practices: 95+ ✅
    - SEO: 100 ✅
 
-### 4-3. URL 업데이트 (선택사항)
+### 4-3. NEXTAUTH_URL 업데이트 (중요!)
 
 배포 완료 후 실제 URL로 환경 변수 업데이트:
 
 1. Vercel 대시보드 → 프로젝트 선택
 2. **Settings** 탭 → **Environment Variables**
-3. `NEXT_PUBLIC_APP_URL` 추가 또는 수정
-   - Value: `https://smarttuter-xxxx.vercel.app` (실제 URL)
+3. `NEXTAUTH_URL` 추가 또는 수정
+   - **Name**: `NEXTAUTH_URL`
+   - **Value**: `https://smarttuter-xxxx.vercel.app` (실제 배포된 URL)
+   - **Environment**: Production만 선택
 4. **Save** 클릭
 5. **Deployments** 탭 → 최근 배포 → **...** → **Redeploy**
+
+**⚠️ 중요**: NEXTAUTH_URL이 실제 배포 URL과 정확히 일치해야 로그인 기능이 작동합니다.
 
 ---
 
@@ -268,10 +290,15 @@ Vercel이 자동으로 Let's Encrypt SSL 인증서를 발급합니다 (약 5-10�
 
 ### API 사용량 모니터링
 
-**Anthropic Console**:
-1. [Anthropic Console](https://console.anthropic.com) 접속
-2. **"Usage"** 탭 클릭
-3. API 호출 수, 토큰 사용량, 비용 확인
+**Google AI Studio**:
+1. [Google AI Studio](https://aistudio.google.com) 접속
+2. **"API"** 탭 → **"Quota"** 클릭
+3. API 호출 수, 사용량 한도 확인
+
+**Google Cloud Console** (고급):
+1. [Google Cloud Console](https://console.cloud.google.com) 접속
+2. **APIs & Services** → **Dashboard**
+3. Gemini API 사용량 및 비용 확인
 
 ### 지속적 배포 (CI/CD)
 
@@ -323,14 +350,16 @@ npm i -g vercel
 # 로그인
 vercel login
 
-# 배포
+# 배포 (Preview)
 vercel
 
 # 프로덕션 배포
 vercel --prod
 
 # 환경 변수 추가
-vercel env add ANTHROPIC_API_KEY
+vercel env add GEMINI_API_KEY production
+vercel env add NEXTAUTH_SECRET production
+vercel env add NEXTAUTH_URL production
 ```
 
 ---
@@ -346,9 +375,11 @@ vercel env add ANTHROPIC_API_KEY
 
 **환경 변수 누락**:
 ```
-Error: Missing ANTHROPIC_API_KEY
+Error: Missing GEMINI_API_KEY
+Error: Missing NEXTAUTH_SECRET
 ```
 → Vercel Settings → Environment Variables 확인
+→ 모든 필수 환경 변수가 추가되었는지 확인
 
 **의존성 문제**:
 ```
@@ -362,9 +393,10 @@ Error: Cannot find module 'xxx'
 
 **해결**:
 1. Vercel 대시보드 → Settings → Environment Variables
-2. `ANTHROPIC_API_KEY` 확인
-3. Anthropic Console에서 API 키 유효성 확인
-4. API 사용량 한도 확인 (무료 크레딧 소진 여부)
+2. `GEMINI_API_KEY` 확인
+3. Google AI Studio에서 API 키 유효성 확인
+4. API 사용량 한도 확인 (무료 할당량 초과 여부)
+5. API 키가 올바른지 확인 (AIzaSy로 시작)
 
 ### 성능 문제
 
@@ -386,16 +418,23 @@ Error: Cannot find module 'xxx'
 - ✅ 커스텀 도메인: 지원
 - **충분**: 월 1,000명 정도까지 무료
 
-**Anthropic API**:
-- **무료 크레딧**: 가입 시 $5 제공 (약 100만 토큰)
-- **예상 사용량**:
-  - 10명/일 사용 시: ~$5-10/월
-  - 100명/일 사용 시: ~$50-100/월
+**Google Gemini API**:
+- **무료 할당량** (Gemini 2.0 Flash):
+  - 15 requests/minute
+  - 1 million tokens/minute
+  - 1,500 requests/day
+- **충분**: 월 수백 명 사용자까지 무료
+- **유료 전환 시**: $0.075/million tokens (input), $0.30/million tokens (output)
+
+**예상 사용량**:
+- **10명/일**: 완전 무료 (할당량 내)
+- **100명/일**: 완전 무료 (할당량 내)
+- **1000명/일**: 일부 요금 발생 가능 (~$10-30/월)
 
 **총 예상 비용**:
-- **초기 (테스트)**: 거의 무료
-- **성장 (100+ 사용자)**: ~$50-100/월
-- **확장 (1000+ 사용자)**: ~$200-500/월
+- **초기 (테스트)**: 완전 무료 ✅
+- **성장 (100+ 사용자)**: 무료 또는 ~$10/월
+- **확장 (1000+ 사용자)**: ~$30-100/월
 
 ---
 
@@ -404,18 +443,18 @@ Error: Cannot find module 'xxx'
 ### 공식 문서
 - **Vercel 문서**: https://vercel.com/docs
 - **Next.js 문서**: https://nextjs.org/docs
-- **Anthropic API**: https://docs.anthropic.com
+- **Google Gemini API**: https://ai.google.dev/docs
 
 ### 프로젝트 문서
 - **README**: [README.md](./README.md)
-- **상세 배포 가이드**: [DEPLOYMENT.md](./DEPLOYMENT.md)
-- **체크리스트**: [DEPLOYMENT_CHECKLIST.md](./DEPLOYMENT_CHECKLIST.md)
-- **프로젝트 현황**: [STATUS.md](./STATUS.md)
+- **상세 배포 가이드**: [PRODUCTION_DEPLOYMENT_GUIDE.md](./PRODUCTION_DEPLOYMENT_GUIDE.md)
+- **Phase 14 완료 보고서**: [claudedocs/PHASE_14_COMPLETE.md](./claudedocs/PHASE_14_COMPLETE.md)
+- **배포 준비 요약**: [claudedocs/deployment-readiness-summary.md](./claudedocs/deployment-readiness-summary.md)
 
 ### 지원
 - GitHub Issues: 프로젝트 저장소에서 이슈 생성
 - Vercel Support: https://vercel.com/support
-- Anthropic Support: https://support.anthropic.com
+- Google AI Support: https://support.google.com/ai-platform
 
 ---
 
@@ -426,8 +465,8 @@ SmartTuter 배포를 완료하셨습니다! 🚀
 **다음 단계**:
 1. 친구들에게 공유하기
 2. 사용자 피드백 수집
-3. Phase 2 개발 (음성 기능)
-4. 추가 기능 구현
+3. OAuth 인증 완성 (Google/GitHub 로그인)
+4. 추가 기능 구현 (Phase 15)
 
 **공유하기**:
 ```
@@ -445,8 +484,8 @@ SmartTuter 배포를 완료하셨습니다! 🚀
 
 ---
 
-**만든 이**: SmartTuter Team
-**배포 날짜**: 2025년 10월 25일
-**버전**: Phase 1 MVP v1.0.0
+**프로젝트 현황**: Phase 14 완료 (100%)
+**마지막 업데이트**: 2025년 11월 1일
+**버전**: v14.0.0
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)

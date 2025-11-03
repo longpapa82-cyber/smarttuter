@@ -10,8 +10,10 @@ export interface UserPoints {
 export interface StreakData {
   currentStreak: number;
   longestStreak: number;
-  lastStudyDate: string; // ISO date string
-  freezeCount: number;
+  lastStudyDate: string; // ISO date string (YYYY-MM-DD)
+  freezeTokens: number; // 스트릭 보호권
+  totalStudyDays: number;
+  streakMilestones: number[]; // 달성한 마일스톤 [7, 14, 30, 60, 100, 365]
 }
 
 export interface Achievement {
@@ -59,6 +61,7 @@ export interface UserProfile {
   points: UserPoints;
   achievements: string[]; // achievement IDs
   streak: StreakData;
+  dailyGoals?: import('./daily-goals').DailyGoalsProgress; // Daily goals tracking
 
   // Learning records
   sessions: SessionRecord[];

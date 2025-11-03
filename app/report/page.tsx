@@ -82,7 +82,7 @@ export default function ReportPage() {
               <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center">
                 <span className="text-2xl">🎓</span>
               </div>
-              <span className="text-xl font-bold gradient-text">SmartTuter</span>
+              <span className="text-xl font-bold gradient-text">AI Park</span>
             </Link>
 
             <div className="flex items-center space-x-2 px-4 py-2 bg-secondary-100 rounded-full">

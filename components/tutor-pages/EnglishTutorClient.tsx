@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserStore } from '@/lib/gamification/store';
-import SimpleChatInterface from './SimpleChatInterface';
+import EmotionEnhancedChat from './EmotionEnhancedChat';
 
 function LoadingSpinner() {
   return (
@@ -45,7 +45,7 @@ export default function EnglishTutorClient() {
   }
 
   return (
-    <SimpleChatInterface
+    <EmotionEnhancedChat
       subject="english"
       gradeLevel={profile.gradeLevel}
     />

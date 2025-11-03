@@ -5,7 +5,7 @@ test.describe('Landing Page', () => {
     await page.goto('/');
 
     // Check page title
-    await expect(page).toHaveTitle(/SmartTuter/);
+    await expect(page).toHaveTitle(/AI Park/);
 
     // Check hero section - using actual page content
     await expect(page.locator('text=당신만의 AI 튜터와').first()).toBeVisible();
@@ -79,7 +79,7 @@ test.describe('Landing Page', () => {
     await page.goto('/');
 
     // Page should still be readable - use .first() to avoid strict mode violation
-    await expect(page.locator('text=SmartTuter').first()).toBeVisible();
+    await expect(page.locator('text=AI Park').first()).toBeVisible();
 
     // CTA should be visible
     const ctaButton = page.locator('a:has-text("시작하기"), button:has-text("시작하기")').first();

@@ -21,6 +21,7 @@ export default function QuizView({ quiz, onComplete }: QuizViewProps) {
   const [startTime] = useState(Date.now());
 
   const addXP = useUserStore((state) => state.addXP);
+  const updateGoalProgress = useUserStore((state) => state.updateGoalProgress);
   const { submitQuizResult } = useInteractiveLearning();
 
   const currentQuestion = quiz.questions[currentQuestionIndex];
@@ -83,6 +84,10 @@ export default function QuizView({ quiz, onComplete }: QuizViewProps) {
 
       // Award XP
       addXP(quiz.xpReward, `quiz-${quiz.id}`);
+
+      // Update daily goal - quiz completed
+      updateGoalProgress('quiz', 1);
+
       submitQuizResult(result);
       onComplete(result);
     }

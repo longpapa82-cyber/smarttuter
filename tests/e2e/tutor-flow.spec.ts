@@ -28,7 +28,7 @@ test.describe('Tutor Pages', () => {
     await page.goto('/');
 
     // Check for main content (use first() to handle multiple matches)
-    await expect(page.locator('text=SmartTuter').first()).toBeVisible();
+    await expect(page.locator('text=AI Park').first()).toBeVisible();
     await expect(page.locator('text=/AI 튜터|스마트하게 학습/').first()).toBeVisible();
 
     // Check for CTA button

@@ -44,12 +44,12 @@ export function StreakDisplay() {
           </p>
         </div>
 
-        {/* Freeze Count */}
-        {streak.freezeCount > 0 && (
+        {/* Freeze Tokens */}
+        {streak.freezeTokens > 0 && (
           <div className="flex flex-col items-center gap-1">
             <Shield className="w-6 h-6 text-blue-500" />
             <span className="text-xs font-semibold text-blue-600">
-              ×{streak.freezeCount}
+              ×{streak.freezeTokens}
             </span>
             <span className="text-xs text-gray-500">보호권</span>
           </div>

@@ -11,6 +11,16 @@ import {
   ACHIEVEMENTS,
 } from './types';
 import { differenceInDays, isToday, parseISO } from 'date-fns';
+import {
+  updateStreak as updateStreakLogic,
+  getMilestoneReward,
+} from './streak-system';
+import {
+  initializeDailyGoals,
+  updateGoalProgress as updateGoalProgressLogic,
+  type DailyGoalsProgress,
+  type GoalType,
+} from './daily-goals';
 
 interface UserStore {
   profile: UserProfile | null;
@@ -22,6 +32,8 @@ interface UserStore {
   updateStreak: () => void;
   checkAchievements: () => void;
   unlockAchievement: (achievementId: string) => void;
+  updateGoalProgress: (goalType: GoalType, increment?: number) => void;
+  initializeTodayGoals: () => void;
   resetProfile: () => void;
 }
 
@@ -39,8 +51,11 @@ const DEFAULT_PROFILE: Omit<UserProfile, 'id' | 'username' | 'gradeLevel'> = {
     currentStreak: 0,
     longestStreak: 0,
     lastStudyDate: '',
-    freezeCount: 3,
+    freezeTokens: 3,
+    totalStudyDays: 0,
+    streakMilestones: [],
   },
+  dailyGoals: initializeDailyGoals(),
   sessions: [],
   totalStudyTime: 0,
   subjectProgress: {
@@ -79,6 +94,9 @@ export const useUserStore = create<UserStore>()(
             points: newPoints,
           },
         });
+
+        // Update XP daily goal automatically
+        get().updateGoalProgress('xp', amount);
 
         // Show level up notification if leveled up
         if (leveledUp && typeof window !== 'undefined') {
@@ -125,6 +143,10 @@ export const useUserStore = create<UserStore>()(
         // Update streak
         get().updateStreak();
 
+        // Update daily goals - tutor session and study time
+        get().updateGoalProgress('tutor', 1);
+        get().updateGoalProgress('studyTime', session.duration);
+
         // Check achievements
         get().checkAchievements();
 
@@ -136,77 +158,49 @@ export const useUserStore = create<UserStore>()(
         const { profile } = get();
         if (!profile) return;
 
-        const now = new Date();
-        const lastStudy = profile.streak.lastStudyDate
-          ? parseISO(profile.streak.lastStudyDate)
-          : null;
+        // Use the enhanced streak system
+        const result = updateStreakLogic(profile.streak, new Date());
 
-        if (!lastStudy) {
-          // First time studying
-          set({
-            profile: {
-              ...profile,
-              streak: {
-                ...profile.streak,
-                currentStreak: 1,
-                longestStreak: 1,
-                lastStudyDate: now.toISOString(),
-              },
-            },
-          });
-          return;
+        // Update profile with new streak data
+        set({
+          profile: {
+            ...profile,
+            streak: result.streakData,
+          },
+        });
+
+        // Handle milestone achievement
+        if (result.newMilestone) {
+          const reward = getMilestoneReward(result.newMilestone);
+
+          // Dispatch milestone animation event
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(
+              new CustomEvent('milestone', {
+                detail: { milestone: result.newMilestone, reward },
+              })
+            );
+          }
+
+          // Add milestone bonus XP
+          get().addXP(100, reward.message);
         }
 
-        // Check if already studied today
-        if (isToday(lastStudy)) {
-          return; // No update needed
+        // Add daily streak bonus XP if streak continued
+        if (result.streakChanged && !result.streakBroken) {
+          get().addXP(
+            XP_REWARDS.dailyStreak,
+            `${result.streakData.currentStreak} day streak!`
+          );
         }
 
-        const daysDiff = differenceInDays(now, lastStudy);
-
-        if (daysDiff === 1) {
-          // Consecutive day
-          const newStreak = profile.streak.currentStreak + 1;
-          const newLongest = Math.max(newStreak, profile.streak.longestStreak);
-
-          set({
-            profile: {
-              ...profile,
-              streak: {
-                ...profile.streak,
-                currentStreak: newStreak,
-                longestStreak: newLongest,
-                lastStudyDate: now.toISOString(),
-              },
-            },
-          });
-
-          // Add streak bonus XP
-          get().addXP(XP_REWARDS.dailyStreak, `${newStreak} day streak!`);
-        } else if (daysDiff > 1 && profile.streak.freezeCount > 0) {
-          // Use freeze to maintain streak
-          set({
-            profile: {
-              ...profile,
-              streak: {
-                ...profile.streak,
-                freezeCount: profile.streak.freezeCount - 1,
-                lastStudyDate: now.toISOString(),
-              },
-            },
-          });
-        } else {
-          // Streak broken
-          set({
-            profile: {
-              ...profile,
-              streak: {
-                ...profile.streak,
-                currentStreak: 1,
-                lastStudyDate: now.toISOString(),
-              },
-            },
-          });
+        // Show streak broken notification
+        if (result.streakBroken && typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('streakBroken', {
+              detail: { previousStreak: profile.streak.currentStreak },
+            })
+          );
         }
       },
 
@@ -282,6 +276,73 @@ export const useUserStore = create<UserStore>()(
 
         // Award bonus XP for achievement
         get().addXP(100, `Achievement unlocked: ${achievementId}`);
+      },
+
+      initializeTodayGoals: () => {
+        const { profile } = get();
+        if (!profile) return;
+
+        const todayGoals = initializeDailyGoals();
+        set({
+          profile: {
+            ...profile,
+            dailyGoals: todayGoals,
+          },
+        });
+      },
+
+      updateGoalProgress: (goalType: GoalType, increment: number = 1) => {
+        const { profile } = get();
+        if (!profile) return;
+
+        // Initialize daily goals if not present or outdated
+        if (!profile.dailyGoals) {
+          get().initializeTodayGoals();
+          return;
+        }
+
+        // Update goal progress with the enhanced logic
+        const result = updateGoalProgressLogic(
+          profile.dailyGoals,
+          goalType,
+          increment
+        );
+
+        set({
+          profile: {
+            ...profile,
+            dailyGoals: result.progress,
+          },
+        });
+
+        // Handle newly completed goals
+        if (result.newlyCompleted.length > 0) {
+          result.newlyCompleted.forEach((goal) => {
+            // Award XP for completing the goal
+            get().addXP(goal.xpReward, `목표 달성: ${goal.title}`);
+
+            // Dispatch custom event for UI animation
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(
+                new CustomEvent('goalCompleted', {
+                  detail: { goal },
+                })
+              );
+            }
+          });
+        }
+
+        // Check if all goals completed
+        if (result.allCompleted && typeof window !== 'undefined') {
+          // Bonus XP for completing all daily goals
+          get().addXP(200, '모든 일일 목표 달성! 🎉');
+
+          window.dispatchEvent(
+            new CustomEvent('allGoalsCompleted', {
+              detail: { date: result.progress.date },
+            })
+          );
+        }
       },
 
       resetProfile: () => {

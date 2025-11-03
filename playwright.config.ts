@@ -11,6 +11,10 @@ export default defineConfig({
     baseURL: process.env.PLAYWRIGHT_TEST_BASE_URL || 'http://localhost:3000',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
+    // Add E2E test header to bypass authentication
+    extraHTTPHeaders: {
+      'x-e2e-test': 'true',
+    },
   },
 
   projects: [
