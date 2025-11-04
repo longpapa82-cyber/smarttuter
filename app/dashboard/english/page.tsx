@@ -48,7 +48,7 @@ function EnglishDashboardContent() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
             <BookOpen className="w-8 h-8 text-blue-600" />
-            영어 학습 허브
+            English DashBoard
           </h1>
           <p className="mt-2 text-gray-600">
             {profile?.username || '학습자'}님의 영어 학습 현황과 추천 활동

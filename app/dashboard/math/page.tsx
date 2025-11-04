@@ -45,7 +45,7 @@ function MathDashboardContent() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
             <Calculator className="w-8 h-8 text-purple-600" />
-            수학 학습 허브
+            Math DashBoard
           </h1>
           <p className="mt-2 text-gray-600">
             {profile?.username || '학습자'}님의 수학 학습 현황과 추천 활동

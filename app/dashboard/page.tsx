@@ -216,7 +216,7 @@ function DashboardContent() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-3xl font-bold bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent">
-                전체 대시보드
+                Total DashBoard
               </h1>
               <p className="mt-2 text-gray-600">
                 {profile.username}님의 학습 현황과 추천 활동

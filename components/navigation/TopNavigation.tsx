@@ -200,9 +200,9 @@ function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
     { href: "/", label: "홈", icon: <Home className="w-5 h-5" /> },
     { href: "/tutor/english", label: "English", icon: <BookOpen className="w-5 h-5" /> },
     { href: "/tutor/math", label: "Math", icon: <Calculator className="w-5 h-5" /> },
-    { href: "/dashboard", label: "전체 대시보드", icon: <LayoutDashboard className="w-5 h-5" /> },
-    { href: "/dashboard/english", label: "영어 대시보드", icon: <BookOpen className="w-5 h-5" /> },
-    { href: "/dashboard/math", label: "수학 대시보드", icon: <Calculator className="w-5 h-5" /> },
+    { href: "/dashboard", label: "Total DashBoard", icon: <LayoutDashboard className="w-5 h-5" /> },
+    { href: "/dashboard/english", label: "English DashBoard", icon: <BookOpen className="w-5 h-5" /> },
+    { href: "/dashboard/math", label: "Math DashBoard", icon: <Calculator className="w-5 h-5" /> },
   ];
 
   const handleLogout = () => {
@@ -323,9 +323,9 @@ export function TopNavigation() {
   }, [pathname]);
 
   const dashboardItems = [
-    { href: "/dashboard", label: "전체 대시보드", icon: <LayoutDashboard className="w-4 h-4" /> },
-    { href: "/dashboard/english", label: "영어 대시보드", icon: <BookOpen className="w-4 h-4" /> },
-    { href: "/dashboard/math", label: "수학 대시보드", icon: <Calculator className="w-4 h-4" /> },
+    { href: "/dashboard", label: "Total DashBoard", icon: <LayoutDashboard className="w-4 h-4" /> },
+    { href: "/dashboard/english", label: "English DashBoard", icon: <BookOpen className="w-4 h-4" /> },
+    { href: "/dashboard/math", label: "Math DashBoard", icon: <Calculator className="w-4 h-4" /> },
   ];
 
   const isDashboardActive = pathname?.startsWith('/dashboard');
@@ -368,7 +368,7 @@ export function TopNavigation() {
                   isActive={pathname === '/tutor/math'}
                 />
                 <NavDropdown
-                  label="대시보드"
+                  label="DashBoard"
                   icon={<LayoutDashboard className="w-4 h-4" />}
                   items={dashboardItems}
                   isActive={isDashboardActive}
