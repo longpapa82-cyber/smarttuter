@@ -1660,6 +1660,520 @@ export const SCIENCE_VERIFIED_CONTENT: VerifiedContent[] = [
     lastVerified: "2025-01-04"
   },
 
+  // Energy and its Forms (Elementary)
+  {
+    id: "sci-elem-energy-forms",
+    subject: "science",
+    topic: "Energy and its Forms",
+    topicKo: "에너지와 형태",
+    gradeLevel: "4",
+    schoolLevel: "elementary",
+    content: `Energy is the ability to do work or cause change.
+
+**Forms of energy**:
+- **Light energy**: From sun, light bulbs (helps us see)
+- **Heat energy**: From fire, sun (makes things warm)
+- **Sound energy**: From vibrations (what we hear)
+- **Electrical energy**: From batteries, outlets (powers devices)
+- **Motion energy (kinetic)**: From moving things (ball rolling)
+
+**Energy transformation**:
+- Energy can change from one form to another
+- Example: Light bulb transforms electrical → light + heat
+- Example: Solar panel transforms light → electrical
+- Energy is never created or destroyed, only changed
+
+**Conservation of energy**:
+- Total energy stays the same
+- Just changes forms`,
+    examples: [
+      "Sun's light energy → plants use for growth",
+      "Battery's electrical energy → flashlight's light energy",
+      "Food's chemical energy → your body's motion energy",
+      "Wind's motion energy → windmill's electrical energy"
+    ],
+    commonMistakes: [
+      "❌ Energy disappears → ✅ Energy transforms to different forms",
+      "❌ Only big things have energy → ✅ Everything has energy"
+    ],
+    keyPoints: [
+      "Energy exists in many forms (light, heat, sound, electrical, motion)",
+      "Energy can transform from one form to another",
+      "Energy is conserved (never created or destroyed)"
+    ],
+    source: "NGSS - Elementary School Physical Science",
+    lastVerified: "2025-01-04"
+  },
+
+  // Food Chains and Ecosystems (Elementary)
+  {
+    id: "sci-elem-food-chains",
+    subject: "science",
+    topic: "Food Chains and Ecosystems",
+    topicKo: "먹이 사슬과 생태계",
+    gradeLevel: "3",
+    schoolLevel: "elementary",
+    content: `Food chains show how energy flows through ecosystems.
+
+**Parts of food chain**:
+1. **Producer**: Makes own food (plants use sunlight)
+2. **Consumer**: Eats other organisms
+   - Herbivore: Eats plants (rabbit, deer)
+   - Carnivore: Eats animals (lion, hawk)
+   - Omnivore: Eats both (bear, human)
+3. **Decomposer**: Breaks down dead things (mushroom, bacteria)
+
+**Energy flow**:
+- Sun → Producer → Consumer → Consumer
+- Example: Sun → grass → rabbit → fox
+- Energy decreases at each level
+
+**Ecosystem**:
+- Living things + non-living things in an area
+- All parts depend on each other
+- If one part changes, whole ecosystem affected`,
+    examples: [
+      "Sun → grass → grasshopper → frog → snake → hawk",
+      "Ocean: Sun → seaweed → fish → seal → shark",
+      "Decomposers: Mushrooms break down dead tree",
+      "Herbivore: Deer eats plants only"
+    ],
+    commonMistakes: [
+      "❌ All animals eat meat → ✅ Some eat only plants (herbivores)",
+      "❌ Energy goes backward in chain → ✅ Energy flows one direction (Sun to producers to consumers)"
+    ],
+    keyPoints: [
+      "Producers make food, consumers eat food, decomposers break down",
+      "Energy flows from Sun through food chain",
+      "All parts of ecosystem are connected"
+    ],
+    source: "NGSS - Elementary School Life Science",
+    lastVerified: "2025-01-04"
+  },
+
+  // The Water Cycle (Elementary)
+  {
+    id: "sci-elem-water-cycle",
+    subject: "science",
+    topic: "The Water Cycle",
+    topicKo: "물의 순환",
+    gradeLevel: "4",
+    schoolLevel: "elementary",
+    content: `Water moves in a cycle between Earth's surface and atmosphere.
+
+**Four main stages**:
+1. **Evaporation**: Water heats up and turns into water vapor (gas)
+   - Sun heats ocean, lake, river water
+   - Liquid water → gas (water vapor)
+
+2. **Condensation**: Water vapor cools and turns into tiny water droplets
+   - Forms clouds in sky
+   - Gas (water vapor) → liquid (water droplets)
+
+3. **Precipitation**: Water falls from clouds as rain, snow, sleet, or hail
+   - Clouds get heavy with water
+   - Water returns to Earth
+
+4. **Collection**: Water collects in oceans, lakes, rivers, and ground
+   - Cycle starts again
+
+**Important facts**:
+- Same water cycles over and over
+- No new water is created
+- Sun provides energy for cycle`,
+    examples: [
+      "Puddle dries up (evaporation) after rain",
+      "Water droplets on cold glass (condensation)",
+      "Rain falling from clouds (precipitation)",
+      "Rainwater flows to river (collection)"
+    ],
+    commonMistakes: [
+      "❌ Water disappears forever → ✅ Water changes form and cycles",
+      "❌ New water appears → ✅ Same water cycles continuously"
+    ],
+    keyPoints: [
+      "Evaporation: liquid → gas (heat from Sun)",
+      "Condensation: gas → liquid (cooling, forms clouds)",
+      "Precipitation: water falls as rain/snow",
+      "Collection: water gathers in bodies of water"
+    ],
+    source: "NGSS - Elementary School Earth Science",
+    lastVerified: "2025-01-04"
+  },
+
+  // Force and Motion (Middle School)
+  {
+    id: "sci-mid-force-motion",
+    subject: "science",
+    topic: "Force and Motion",
+    topicKo: "힘과 운동",
+    gradeLevel: "6",
+    schoolLevel: "middle",
+    content: `Force causes objects to change motion (speed up, slow down, or change direction).
+
+**What is force?**:
+- A push or pull on an object
+- Measured in Newtons (N)
+- Has size (magnitude) and direction
+
+**Types of forces**:
+- **Contact forces**: Touch object (push, pull, friction)
+- **Non-contact forces**: No touch needed (gravity, magnetism)
+
+**Friction**:
+- Force that opposes motion
+- Caused by surfaces rubbing together
+- Makes things slow down
+- Examples: Brakes on bike, hands rubbing together
+
+**Balanced vs Unbalanced forces**:
+- **Balanced**: Equal forces, opposite directions → no change in motion
+- **Unbalanced**: Forces not equal → motion changes (speeds up, slows down, turns)
+
+**Motion**:
+- Speed: how fast (distance/time)
+- Velocity: speed with direction
+- Acceleration: change in velocity`,
+    examples: [
+      "Gravity pulls apple down (non-contact force)",
+      "Friction slows bike when not pedaling",
+      "Balanced: Two people push box equally from opposite sides → box doesn't move",
+      "Unbalanced: Kick ball → ball accelerates forward"
+    ],
+    commonMistakes: [
+      "❌ Force = motion → ✅ Force causes CHANGE in motion",
+      "❌ No force if object moving → ✅ Balanced forces can keep object moving at constant speed"
+    ],
+    keyPoints: [
+      "Force is push or pull (measured in Newtons)",
+      "Unbalanced forces change motion",
+      "Friction opposes motion"
+    ],
+    source: "NGSS - Middle School Physical Science",
+    lastVerified: "2025-01-04"
+  },
+
+  // Photosynthesis and Cellular Respiration (Middle School)
+  {
+    id: "sci-mid-photosynthesis",
+    subject: "science",
+    topic: "Photosynthesis and Cellular Respiration",
+    topicKo: "광합성과 세포 호흡",
+    gradeLevel: "7",
+    schoolLevel: "middle",
+    content: `Two complementary processes that cycle energy in ecosystems.
+
+**Photosynthesis** (in plant cells):
+- Plants make glucose (sugar) and oxygen
+- Happens in chloroplasts (green organelles)
+- Needs: sunlight + water + carbon dioxide
+- Produces: glucose + oxygen
+- Equation: 6CO₂ + 6H₂O + light energy → C₆H₁₂O₆ + 6O₂
+- Stores energy in glucose bonds
+
+**Cellular Respiration** (in all cells):
+- Cells break down glucose to release energy
+- Happens in mitochondria
+- Needs: glucose + oxygen
+- Produces: energy (ATP) + water + carbon dioxide
+- Equation: C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O + ATP energy
+- Releases stored energy
+
+**Relationship**:
+- Opposite processes
+- Products of one are reactants of other
+- Form cycle that sustains life`,
+    examples: [
+      "Photosynthesis: Plant uses sunlight to make sugar",
+      "Respiration: You breathe in O₂, cells use it to release energy from food",
+      "Why plants important: They make oxygen for animals to breathe",
+      "Why we eat: Food provides glucose for cellular respiration"
+    ],
+    commonMistakes: [
+      "❌ Only plants do cellular respiration → ✅ ALL cells do cellular respiration",
+      "❌ Photosynthesis uses oxygen → ✅ Uses CO₂, makes O₂"
+    ],
+    keyPoints: [
+      "Photosynthesis: light + CO₂ + H₂O → glucose + O₂ (stores energy)",
+      "Cellular respiration: glucose + O₂ → CO₂ + H₂O + ATP (releases energy)",
+      "Complementary processes forming energy cycle"
+    ],
+    source: "NGSS - Middle School Life Science",
+    lastVerified: "2025-01-04"
+  },
+
+  // Atomic Structure (Middle School)
+  {
+    id: "sci-mid-atomic-structure",
+    subject: "science",
+    topic: "Atomic Structure",
+    topicKo: "원자 구조",
+    gradeLevel: "8",
+    schoolLevel: "middle",
+    content: `Atoms are the smallest units of elements that retain chemical properties.
+
+**Parts of atom**:
+1. **Nucleus** (center):
+   - Protons: Positive charge (+), mass = 1 amu
+   - Neutrons: No charge (neutral), mass = 1 amu
+   - Contains almost all atom's mass
+
+2. **Electron cloud** (around nucleus):
+   - Electrons: Negative charge (-), very little mass
+   - Move around nucleus in energy levels
+   - Equal number to protons in neutral atom
+
+**Atomic number**:
+- Number of protons
+- Identifies element (can't change without changing element)
+- Example: Carbon always has 6 protons
+
+**Mass number**:
+- Protons + Neutrons
+- Example: Carbon-12 has 6 protons + 6 neutrons = 12
+
+**Isotopes**:
+- Same element (same protons)
+- Different neutrons
+- Example: Carbon-12 and Carbon-14`,
+    examples: [
+      "Helium: 2 protons, 2 neutrons, 2 electrons",
+      "Carbon-12: 6 protons, 6 neutrons (mass 12)",
+      "Carbon-14: 6 protons, 8 neutrons (mass 14, isotope)",
+      "Ion: Atom loses or gains electrons (charge ≠ 0)"
+    ],
+    commonMistakes: [
+      "❌ Electrons in nucleus → ✅ Electrons orbit around nucleus",
+      "❌ Changing protons = isotope → ✅ Changing neutrons = isotope"
+    ],
+    keyPoints: [
+      "Atom = nucleus (protons + neutrons) + electrons",
+      "Atomic number = protons (identifies element)",
+      "Mass number = protons + neutrons"
+    ],
+    source: "NGSS - Middle School Physical Science",
+    lastVerified: "2025-01-04"
+  },
+
+  // Waves and Electromagnetic Spectrum (High School)
+  {
+    id: "sci-high-waves-spectrum",
+    subject: "science",
+    topic: "Waves and Electromagnetic Spectrum",
+    topicKo: "파동과 전자기 스펙트럼",
+    gradeLevel: "9",
+    schoolLevel: "high",
+    content: `Waves transfer energy through oscillations.
+
+**Wave properties**:
+- **Wavelength** (λ): Distance between wave peaks
+- **Frequency** (f): Number of waves per second (measured in Hertz, Hz)
+- **Amplitude**: Height of wave (relates to energy)
+- **Speed**: v = f × λ (velocity = frequency × wavelength)
+
+**Types of waves**:
+1. **Mechanical waves**: Need medium (sound, water waves)
+2. **Electromagnetic waves**: Don't need medium (can travel through vacuum)
+
+**Electromagnetic spectrum** (all travel at speed of light in vacuum):
+- Radio waves: Longest wavelength, lowest frequency
+- Microwaves: Cooking, communication
+- Infrared: Heat radiation
+- Visible light: What we see (ROYGBIV)
+- Ultraviolet: Causes sunburn
+- X-rays: Medical imaging
+- Gamma rays: Shortest wavelength, highest frequency, most energy
+
+**Energy relationship**:
+- Higher frequency = shorter wavelength = MORE energy
+- Lower frequency = longer wavelength = LESS energy`,
+    examples: [
+      "AM radio: Long wavelength, low frequency, low energy",
+      "Visible light: Medium wavelength and frequency",
+      "Gamma rays: Very short wavelength, very high frequency, very high energy",
+      "Wave equation: If f = 10 Hz and λ = 2 m, then v = 20 m/s"
+    ],
+    commonMistakes: [
+      "❌ All waves need medium → ✅ Electromagnetic waves don't",
+      "❌ Higher wavelength = more energy → ✅ Higher frequency = more energy"
+    ],
+    keyPoints: [
+      "Wave speed = frequency × wavelength",
+      "Electromagnetic spectrum: radio → gamma (increasing frequency, energy)",
+      "Higher frequency = more energy"
+    ],
+    source: "NGSS - High School Physical Science",
+    lastVerified: "2025-01-04"
+  },
+
+  // Acids and Bases (High School)
+  {
+    id: "sci-high-acids-bases",
+    subject: "science",
+    topic: "Acids and Bases",
+    topicKo: "산과 염기",
+    gradeLevel: "10",
+    schoolLevel: "high",
+    content: `Acids and bases are important classes of chemical compounds.
+
+**Acids**:
+- Taste sour (don't taste in lab!)
+- Turn blue litmus paper red
+- pH < 7
+- Release H⁺ ions in water
+- Examples: HCl (hydrochloric acid), H₂SO₄ (sulfuric acid), citric acid
+
+**Bases**:
+- Taste bitter, feel slippery
+- Turn red litmus paper blue
+- pH > 7
+- Release OH⁻ ions in water
+- Examples: NaOH (sodium hydroxide), ammonia
+
+**pH scale**:
+- 0-14 scale measuring acidity
+- pH = 7: Neutral (pure water)
+- pH < 7: Acidic (lower = more acidic)
+- pH > 7: Basic/alkaline (higher = more basic)
+- Each pH unit = 10× difference in H⁺ concentration
+
+**Neutralization**:
+- Acid + Base → Salt + Water
+- Example: HCl + NaOH → NaCl + H₂O
+- Products are neutral (pH ≈ 7)
+
+**Strong vs weak**:
+- Strong acids/bases: Completely dissociate in water
+- Weak acids/bases: Partially dissociate`,
+    examples: [
+      "Stomach acid: HCl, pH ≈ 2 (very acidic)",
+      "Lemon juice: pH ≈ 2 (acidic)",
+      "Water: pH = 7 (neutral)",
+      "Soap: pH ≈ 9 (basic)",
+      "Drain cleaner: NaOH, pH ≈ 14 (very basic)"
+    ],
+    commonMistakes: [
+      "❌ pH 7 is an acid → ✅ pH 7 is neutral",
+      "❌ Strong acid = dangerous → ✅ Strong = degree of dissociation (concentration matters too)"
+    ],
+    keyPoints: [
+      "Acids: pH < 7, release H⁺",
+      "Bases: pH > 7, release OH⁻",
+      "Neutralization: acid + base → salt + water"
+    ],
+    source: "NGSS - High School Chemistry",
+    lastVerified: "2025-01-04"
+  },
+
+  // Evolution and Natural Selection (High School)
+  {
+    id: "sci-high-evolution",
+    subject: "science",
+    topic: "Evolution and Natural Selection",
+    topicKo: "진화와 자연 선택",
+    gradeLevel: "11",
+    schoolLevel: "high",
+    content: `Evolution is change in populations over time through natural selection.
+
+**Natural selection** (Darwin's theory):
+1. **Variation**: Individuals in population have different traits
+2. **Competition**: More offspring than resources (struggle for survival)
+3. **Survival**: Individuals with advantageous traits more likely to survive
+4. **Reproduction**: Survivors pass traits to offspring
+5. **Adaptation**: Population changes over generations
+
+**Evidence for evolution**:
+- **Fossil record**: Shows change over time, transitional forms
+- **Comparative anatomy**: Homologous structures (similar bones, different functions)
+- **DNA/molecular biology**: Similar DNA = common ancestor
+- **Geographic distribution**: Species vary by location
+- **Embryology**: Similar development stages
+
+**Mechanisms**:
+- Mutation: Changes in DNA (source of new traits)
+- Gene flow: Migration between populations
+- Genetic drift: Random changes (especially small populations)
+- Natural selection: Non-random survival based on fitness
+
+**Common misconceptions**:
+- Evolution is gradual (millions of years)
+- Populations evolve, not individuals
+- Evolution doesn't have goal or direction`,
+    examples: [
+      "Peppered moths: Dark moths survived better during Industrial Revolution (pollution made trees dark)",
+      "Antibiotic resistance: Bacteria with resistance genes survive, reproduce",
+      "Whale flippers and human arms: Homologous structures (common ancestor)",
+      "Finch beaks: Different shapes adapted to different foods on Galápagos Islands"
+    ],
+    commonMistakes: [
+      "❌ Individuals evolve during lifetime → ✅ Populations evolve over generations",
+      "❌ Evolution = progression toward perfection → ✅ Evolution = adaptation to current environment"
+    ],
+    keyPoints: [
+      "Natural selection: variation + competition → survival of fittest",
+      "Evidence: fossils, anatomy, DNA, geography, embryology",
+      "Populations evolve over many generations"
+    ],
+    source: "NGSS - High School Life Science / AP Biology",
+    lastVerified: "2025-01-04"
+  },
+
+  // Thermodynamics (High School/University)
+  {
+    id: "sci-uni-thermodynamics",
+    subject: "science",
+    topic: "Laws of Thermodynamics",
+    topicKo: "열역학 법칙",
+    gradeLevel: "12",
+    schoolLevel: "university",
+    content: `Thermodynamics studies energy transfer and transformations.
+
+**First Law (Conservation of Energy)**:
+- Energy cannot be created or destroyed
+- Only converted from one form to another
+- ΔU = Q - W
+  - ΔU: Change in internal energy
+  - Q: Heat added to system
+  - W: Work done by system
+
+**Second Law (Entropy)**:
+- Entropy (disorder) of universe always increases
+- Heat flows from hot to cold (not reverse spontaneously)
+- No process is 100% efficient
+- Some energy always becomes unusable heat
+
+**Third Law**:
+- Entropy of perfect crystal at absolute zero = 0
+- Absolute zero (0 K = -273.15°C) is unattainable
+
+**Applications**:
+- Heat engines: Convert heat → work (car engines)
+- Refrigerators: Move heat from cold → hot (requires work)
+- Efficiency: η = W_out / Q_in × 100%
+
+**Entropy**:
+- Measure of disorder/randomness
+- Natural processes increase entropy
+- Example: Ice melting increases entropy (ordered crystal → disordered liquid)`,
+    examples: [
+      "Car engine: Chemical energy (fuel) → heat → motion (not 100% efficient)",
+      "Refrigerator: Uses electricity to move heat from inside to outside",
+      "Coffee cooling: Heat flows from hot coffee to cool air (2nd law)",
+      "Mixing: Drop of ink in water spreads out (entropy increases)"
+    ],
+    commonMistakes: [
+      "❌ Energy disappears → ✅ Energy changes form (1st law)",
+      "❌ Heat engine can be 100% efficient → ✅ Always some waste heat (2nd law)"
+    ],
+    keyPoints: [
+      "1st Law: Energy conserved (ΔU = Q - W)",
+      "2nd Law: Entropy always increases, heat flows hot → cold",
+      "No process is 100% efficient"
+    ],
+    source: "AP Physics / College Physics",
+    lastVerified: "2025-01-04"
+  },
+
   // DNA and Genetics (High School)
   {
     id: "sci-high-dna-genetics",
