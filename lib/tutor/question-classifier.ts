@@ -53,14 +53,18 @@ export async function classifyQuestion(
 
 2. **math** (수학):
    - 수학 계산, 연산, 문제 풀이
-   - 대수학, 기하학, 미적분, 통계
-   - 수학 개념, 공식, 정리
+   - 대수학, 기하학, 미적분, 통계, 삼각법
+   - 수학 개념, 공식, 정리, 법칙
+   - 수학자 이름과 관련된 정리 (피타고라스, 유클리드, 페르마, 탈레스 등)
+   - 도형, 넓이, 부피, 각도 관련 질문
    - 수학 응용 문제
-   - 예: "2+2는?", "이차방정식 푸는 법", "미적분 개념"
+   - **중요**: "~정리", "~법칙", "~공식"은 대부분 수학임
+   - 예: "2+2는?", "이차방정식 푸는 법", "피타고라스 정리", "삼각형 넓이"
 
 3. **science** (과학):
    - 물리, 화학, 생물, 지구과학
    - 과학 실험, 현상, 이론
+   - 과학자 이름과 관련된 법칙 (뉴턴, 아인슈타인 등)
    - 예: "광합성", "뉴턴의 법칙", "화학 반응"
 
 4. **social** (사회):
@@ -71,13 +75,14 @@ export async function classifyQuestion(
 5. **other** (기타):
    - 일상 대화, 인사, 잡담
    - 교과와 무관한 질문
+   - **주의**: 모호한 경우 'other'가 아닌 가장 가능성 높은 교과로 분류
    - 예: "안녕", "날씨 어때?", "심심해"
 
-중요 규칙:
-- 질문이 명확히 영어 학습(문법, 어휘, 표현 등)과 관련되면 'english'
-- 질문이 명확히 수학 계산이나 개념과 관련되면 'math'
-- 애매한 경우 가장 가능성 높은 카테고리 선택
-- 신뢰도(confidence)를 0-100으로 표시
+🔴 **매우 중요한 분류 원칙**:
+1. 수학/과학 관련 인명이 나오면 해당 교과로 분류 (피타고라스→math, 뉴턴→science)
+2. "정리", "공식", "법칙" 단어가 있으면 높은 확률로 math 또는 science
+3. 불확실한 경우 'other'보다는 가장 관련성 높은 교과 선택
+4. 신뢰도는 정직하게 표시 (확실: 90-100, 관련성 높음: 70-89, 불확실: 50-69)
 
 JSON 형식으로만 응답하세요:
 {
@@ -115,7 +120,9 @@ JSON 형식으로만 응답하세요:
 }
 
 /**
- * AI 실패 시 폴백: 키워드 기반 간단한 분류
+ * AI 실패 시 폴백: 관대한 분류 (Conservative Filtering)
+ *
+ * 핵심 원칙: "확실히 다른 교과인 경우만 차단, 불확실하면 expectedSubject로 통과"
  */
 function fallbackClassification(
   question: string,
@@ -123,97 +130,127 @@ function fallbackClassification(
 ): QuestionClassification {
   const lowerQuestion = question.toLowerCase();
 
-  // 영어 키워드
-  const englishKeywords = [
-    '문법', '어휘', '단어', '철자', '발음', 'grammar', 'vocabulary', 'spelling',
-    '시제', '동사', '명사', '형용사', '부사', 'tense', 'verb', 'noun',
-    '독해', '작문', 'reading', 'writing', 'essay',
-    '회화', '대화', 'conversation', 'speaking'
-  ];
-
-  // 수학 키워드
-  const mathKeywords = [
-    '계산', '더하기', '빼기', '곱하기', '나누기', '+', '-', '×', '÷',
-    '방정식', '함수', '미분', '적분', 'equation', 'function',
-    '기하', '도형', '삼각', 'geometry', 'triangle',
-    '확률', '통계', 'probability', 'statistics'
-  ];
-
-  // 과학 키워드
-  const scienceKeywords = [
-    '실험', '화학', '물리', '생물', 'experiment', 'chemistry', 'physics', 'biology',
-    '광합성', '세포', '원자', 'photosynthesis', 'cell', 'atom'
-  ];
-
-  // 사회 키워드
-  const socialKeywords = [
-    '역사', '지리', '정치', '경제', 'history', 'geography', 'politics', 'economy',
-    '전쟁', '수도', '민주', 'war', 'capital', 'democracy'
-  ];
-
-  // 키워드 매칭
-  const hasEnglish = englishKeywords.some(kw => lowerQuestion.includes(kw));
-  const hasMath = mathKeywords.some(kw => lowerQuestion.includes(kw));
-  const hasScience = scienceKeywords.some(kw => lowerQuestion.includes(kw));
-  const hasSocial = socialKeywords.some(kw => lowerQuestion.includes(kw));
-
-  let subject: QuestionClassification['subject'] = 'other';
-  let confidence = 50; // 기본 낮은 신뢰도
-
-  if (hasEnglish) {
-    subject = 'english';
-    confidence = 70;
-  } else if (hasMath) {
-    subject = 'math';
-    confidence = 70;
-  } else if (hasScience) {
-    subject = 'science';
-    confidence = 70;
-  } else if (hasSocial) {
-    subject = 'social';
-    confidence = 70;
+  // 1단계: 명확한 인사/잡담만 'other'로 분류
+  const obviousCasual = ['안녕', '하이', 'hi', 'hello', '심심', '놀아줘', '뭐해', '굿'];
+  if (obviousCasual.some(g => lowerQuestion === g || lowerQuestion === g + '?')) {
+    return {
+      subject: 'other',
+      confidence: 90,
+      isOnTopic: false,
+      reason: '명확한 일상 대화',
+      detectedKeywords: []
+    };
   }
 
+  // 2단계: 명확히 반대 교과인지 확인
+  if (expectedSubject === 'math') {
+    // 수학 튜터에서 명확한 영어 질문
+    const obviousEnglish = [
+      '문법', 'grammar', '시제', 'tense',
+      '단어', 'vocabulary', '철자', 'spelling',
+      '영작', 'essay'
+    ];
+    if (obviousEnglish.some(kw => lowerQuestion.includes(kw))) {
+      return {
+        subject: 'english',
+        confidence: 85,
+        isOnTopic: false,
+        reason: '명확한 영어 학습 질문',
+        detectedKeywords: []
+      };
+    }
+  } else if (expectedSubject === 'english') {
+    // 영어 튜터에서 명확한 수학 질문
+    const obviousMath = [
+      '방정식', 'equation', '미분', 'derivative',
+      '적분', 'integral', '계산해', 'calculate'
+    ];
+    if (obviousMath.some(kw => lowerQuestion.includes(kw))) {
+      return {
+        subject: 'math',
+        confidence: 85,
+        isOnTopic: false,
+        reason: '명확한 수학 계산/개념 질문',
+        detectedKeywords: []
+      };
+    }
+  }
+
+  // 3단계: 패턴 기반 관대한 분류
+  // "~정리", "~공식", "~법칙" → 대부분 수학/과학
+  if (lowerQuestion.includes('정리') || lowerQuestion.includes('theorem')) {
+    if (expectedSubject === 'math') {
+      return {
+        subject: 'math',
+        confidence: 75,
+        isOnTopic: true,
+        reason: '정리 관련 질문은 수학일 가능성 높음',
+        detectedKeywords: ['정리']
+      };
+    }
+  }
+
+  if (lowerQuestion.includes('공식') || lowerQuestion.includes('formula')) {
+    if (expectedSubject === 'math') {
+      return {
+        subject: 'math',
+        confidence: 75,
+        isOnTopic: true,
+        reason: '공식 관련 질문은 수학일 가능성 높음',
+        detectedKeywords: ['공식']
+      };
+    }
+  }
+
+  // 4단계: 기본 전략 - 불확실하면 expectedSubject로 통과
+  // (AI가 실패했고, 명확히 다른 교과도 아니면 일단 허용)
   return {
-    subject,
-    confidence,
-    isOnTopic: subject === expectedSubject,
-    reason: `키워드 기반 폴백 분류 (AI 오류)`,
+    subject: expectedSubject,
+    confidence: 60, // 낮은 신뢰도지만 통과
+    isOnTopic: true,
+    reason: `불확실한 질문은 ${expectedSubject} 튜터가 처리 (관대한 필터링)`,
     detectedKeywords: []
   };
 }
 
 /**
- * 빠른 검증: 명확히 off-topic인지 사전 체크
+ * 빠른 검증: 명확히 off-topic인지 사전 체크 (Conservative Filtering)
  * (API 호출 전 빠른 필터링)
+ *
+ * 핵심 원칙: "100% 확실한 경우만 true 반환"
  */
 export function isObviouslyOffTopic(
   question: string,
-  expectedSubject: 'english' | 'math'
+  expectedSubject: 'english' | 'math' | 'science' | 'social-studies'
 ): boolean {
-  const lowerQuestion = question.toLowerCase();
+  const lowerQuestion = question.toLowerCase().trim();
 
-  // 명확한 인사/잡담
+  // 1. 명확한 인사/잡담만 차단 (단일 단어 또는 단순 인사)
   const casualGreetings = ['안녕', '하이', 'hi', 'hello', '심심', '놀아줘', '뭐해'];
-  if (casualGreetings.some(g => lowerQuestion === g || lowerQuestion === g + '?')) {
+  const isSingleWordGreeting = casualGreetings.some(
+    g => lowerQuestion === g || lowerQuestion === g + '?' || lowerQuestion === g + '!'
+  );
+  if (isSingleWordGreeting) {
     return true;
   }
 
-  // 영어 튜터에서 명확한 수학 질문
+  // 2. 영어 튜터에서 명확한 수학 질문 (매우 제한적)
   if (expectedSubject === 'english') {
-    const obviousMath = ['방정식', '미분', '적분', '계산해', '더하기', '빼기'];
+    const obviousMath = ['방정식 풀', '미분 계산', '적분 계산'];
     if (obviousMath.some(kw => lowerQuestion.includes(kw))) {
       return true;
     }
   }
 
-  // 수학 튜터에서 명확한 영어 질문
+  // 3. 수학 튜터에서 명확한 영어 질문 (매우 제한적)
   if (expectedSubject === 'math') {
-    const obviousEnglish = ['문법', '시제', '어휘', '단어', '철자', 'grammar'];
+    const obviousEnglish = ['문법 설명', '시제 설명', 'grammar rule'];
     if (obviousEnglish.some(kw => lowerQuestion.includes(kw))) {
       return true;
     }
   }
 
+  // 4. 기본적으로 false (AI 분류로 넘김)
+  // 불확실한 경우 AI가 판단하도록 함
   return false;
 }
