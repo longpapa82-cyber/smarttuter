@@ -198,8 +198,8 @@ function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
 
   const mobileNavItems = [
     { href: "/", label: "홈", icon: <Home className="w-5 h-5" /> },
-    { href: "/tutor/english", label: "English Park", icon: <BookOpen className="w-5 h-5" /> },
-    { href: "/tutor/math", label: "Math Park", icon: <Calculator className="w-5 h-5" /> },
+    { href: "/tutor/english", label: "English", icon: <BookOpen className="w-5 h-5" /> },
+    { href: "/tutor/math", label: "Math", icon: <Calculator className="w-5 h-5" /> },
     { href: "/dashboard", label: "전체 대시보드", icon: <LayoutDashboard className="w-5 h-5" /> },
     { href: "/dashboard/english", label: "영어 대시보드", icon: <BookOpen className="w-5 h-5" /> },
     { href: "/dashboard/math", label: "수학 대시보드", icon: <Calculator className="w-5 h-5" /> },
@@ -358,13 +358,13 @@ export function TopNavigation() {
                 <NavItem
                   href="/tutor/english"
                   icon={<BookOpen className="w-4 h-4" />}
-                  label="English Park"
+                  label="English"
                   isActive={pathname === '/tutor/english'}
                 />
                 <NavItem
                   href="/tutor/math"
                   icon={<Calculator className="w-4 h-4" />}
-                  label="Math Park"
+                  label="Math"
                   isActive={pathname === '/tutor/math'}
                 />
                 <NavDropdown

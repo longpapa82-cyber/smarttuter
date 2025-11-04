@@ -962,12 +962,12 @@ ${scenario.initialMessage}`,
               <ul className="space-y-2 text-gray-400 text-sm">
                 <li>
                   <a className="hover:text-white transition-colors" href="/tutor/english">
-                    English Park
+                    English
                   </a>
                 </li>
                 <li>
                   <a className="hover:text-white transition-colors" href="/tutor/math">
-                    Math Park
+                    Math
                   </a>
                 </li>
                 <li>

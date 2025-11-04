@@ -10,8 +10,8 @@ export function MobileMenu() {
 
   const menuItems = [
     { href: "/", label: "홈", icon: Home },
-    { href: "/tutor/math", label: "Math Park", icon: Calculator },
-    { href: "/tutor/english", label: "English Park", icon: MessageCircle },
+    { href: "/tutor/math", label: "Math", icon: Calculator },
+    { href: "/tutor/english", label: "English", icon: MessageCircle },
     { href: "/report", label: "학습 리포트", icon: BarChart3 },
   ];
 

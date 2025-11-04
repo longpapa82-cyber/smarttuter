@@ -285,8 +285,8 @@ export function HomeClient() {
             <div>
               <h4 className="font-semibold mb-4">서비스</h4>
               <ul className="space-y-2 text-gray-400">
-                <li><Link href="/tutor/english" className="hover:text-white">English Park</Link></li>
-                <li><Link href="/tutor/math" className="hover:text-white">Math Park</Link></li>
+                <li><Link href="/tutor/english" className="hover:text-white">English</Link></li>
+                <li><Link href="/tutor/math" className="hover:text-white">Math</Link></li>
                 <li><Link href="/analytics" className="hover:text-white">학습 리포트</Link></li>
               </ul>
             </div>
