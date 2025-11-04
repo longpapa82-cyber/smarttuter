@@ -148,25 +148,52 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
         const isElementary = gradeLevel.includes('초등');
         const isMiddle = gradeLevel.includes('중학');
         const isHigh = gradeLevel.includes('고등');
-        const isEnglish = subject === 'english';
 
-        if (isElementary) {
-          return isEnglish
-            ? `안녕! 😊 AI Park이에요! 오늘은 재미있게 영어 공부해봐요! 🌈\n\n무엇이 궁금한가요? 편하게 물어보세요! ✨`
-            : `안녕! 🌟 AI Park이에요! 오늘은 재미있게 수학 공부해봐요! 🎯\n\n어떤 문제가 궁금한가요? 같이 풀어봐요! 💪`;
-        } else if (isMiddle) {
-          return isEnglish
-            ? `안녕하세요! 👋 AI Park입니다! 오늘도 열심히 영어 공부해봐요!\n\n무엇을 배우고 싶나요? 편하게 질문해주세요! 📚`
-            : `안녕하세요! 😊 AI Park입니다! 오늘도 열심히 수학 공부해봐요!\n\n어떤 개념이 궁금한가요? 함께 풀어봐요! 🔢`;
-        } else if (isHigh) {
-          return isEnglish
-            ? `안녕하세요! AI Park입니다. 오늘은 어떤 주제를 공부할까요?\n\n문법, 독해, 작문 등 무엇이든 질문해주세요. 함께 실력을 쌓아봐요! 💡`
-            : `안녕하세요! AI Park입니다. 오늘은 어떤 주제를 공부할까요?\n\n개념 설명이나 문제 풀이, 무엇이든 질문해주세요. 차근차근 풀어봐요! ✓`;
-        } else {
-          return isEnglish
-            ? `안녕하세요. AI Park입니다. 어떤 주제를 다루시겠습니까?\n\n학술 영어, 전문 분야 등 필요한 부분을 질문해주세요.`
-            : `안녕하세요. AI Park입니다. 어떤 주제를 학습하시겠습니까?\n\n고급 수학 개념, 증명, 응용 등 필요한 부분을 질문해주세요.`;
+        // Subject-specific greetings
+        if (subject === 'english') {
+          if (isElementary) {
+            return `안녕! 😊 AI Park이에요! 오늘은 재미있게 영어 공부해봐요! 🌈\n\n무엇이 궁금한가요? 편하게 물어보세요! ✨`;
+          } else if (isMiddle) {
+            return `안녕하세요! 👋 AI Park입니다! 오늘도 열심히 영어 공부해봐요!\n\n무엇을 배우고 싶나요? 편하게 질문해주세요! 📚`;
+          } else if (isHigh) {
+            return `안녕하세요! AI Park입니다. 오늘은 어떤 주제를 공부할까요?\n\n문법, 독해, 작문 등 무엇이든 질문해주세요. 함께 실력을 쌓아봐요! 💡`;
+          } else {
+            return `안녕하세요. AI Park입니다. 어떤 주제를 다루시겠습니까?\n\n학술 영어, 전문 분야 등 필요한 부분을 질문해주세요.`;
+          }
+        } else if (subject === 'math') {
+          if (isElementary) {
+            return `안녕! 🌟 AI Park이에요! 오늘은 재미있게 수학 공부해봐요! 🎯\n\n어떤 문제가 궁금한가요? 같이 풀어봐요! 💪`;
+          } else if (isMiddle) {
+            return `안녕하세요! 😊 AI Park입니다! 오늘도 열심히 수학 공부해봐요!\n\n어떤 개념이 궁금한가요? 함께 풀어봐요! 🔢`;
+          } else if (isHigh) {
+            return `안녕하세요! AI Park입니다. 오늘은 어떤 주제를 공부할까요?\n\n개념 설명이나 문제 풀이, 무엇이든 질문해주세요. 차근차근 풀어봐요! ✓`;
+          } else {
+            return `안녕하세요. AI Park입니다. 어떤 주제를 학습하시겠습니까?\n\n고급 수학 개념, 증명, 응용 등 필요한 부분을 질문해주세요.`;
+          }
+        } else if (subject === 'science') {
+          if (isElementary) {
+            return `안녕! 🔬 AI Park이에요! 오늘은 재미있게 과학 탐구해봐요! 🧪\n\n어떤 과학 현상이 궁금한가요? 같이 알아봐요! ⚗️`;
+          } else if (isMiddle) {
+            return `안녕하세요! 🔬 AI Park입니다! 오늘도 열심히 과학 공부해봐요!\n\n생물, 화학, 물리, 지구과학... 무엇이든 질문해주세요! 🧬`;
+          } else if (isHigh) {
+            return `안녕하세요! AI Park입니다. 오늘은 어떤 과학 주제를 탐구할까요?\n\n실험 원리, 개념 설명, 현상 분석 등 무엇이든 질문해주세요. 함께 탐구해봐요! 🔭`;
+          } else {
+            return `안녕하세요. AI Park입니다. 어떤 과학 주제를 연구하시겠습니까?\n\n고급 과학 이론, 실험 설계, 연구 방법론 등 필요한 부분을 질문해주세요.`;
+          }
+        } else if (subject === 'social-studies') {
+          if (isElementary) {
+            return `안녕! 🏛️ AI Park이에요! 오늘은 재미있게 사회 공부해봐요! 🌍\n\n우리 동네, 세계, 역사... 무엇이 궁금한가요? 같이 알아봐요! 🗺️`;
+          } else if (isMiddle) {
+            return `안녕하세요! 🏛️ AI Park입니다! 오늘도 열심히 사회 공부해봐요!\n\n지리, 역사, 정치, 경제... 무엇이든 질문해주세요! 📚`;
+          } else if (isHigh) {
+            return `안녕하세요! AI Park입니다. 오늘은 어떤 사회 주제를 탐구할까요?\n\n역사적 사건, 지리적 특성, 정치 체제 등 무엇이든 질문해주세요. 함께 탐구해봐요! 🌏`;
+          } else {
+            return `안녕하세요. AI Park입니다. 어떤 사회과학 주제를 연구하시겠습니까?\n\n고급 역사 이론, 정치학, 경제학, 사회학 등 필요한 부분을 질문해주세요.`;
+          }
         }
+
+        // Fallback (should not reach here)
+        return `안녕하세요! AI Park입니다. 무엇을 도와드릴까요?`;
       };
 
       setMessages([
