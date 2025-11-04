@@ -39,7 +39,7 @@ interface Message {
 }
 
 interface SimpleChatInterfaceProps {
-  subject: 'english' | 'math';
+  subject: 'english' | 'math' | 'science';
   gradeLevel: string;
 }
 
