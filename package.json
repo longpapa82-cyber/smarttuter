@@ -19,8 +19,9 @@
     "test:e2e:report": "playwright show-report"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.67.0",
+    "@anthropic-ai/sdk": "^0.67.1",
     "@google-cloud/text-to-speech": "^6.4.0",
+    "@google-cloud/vertexai": "^1.10.0",
     "@google/genai": "^1.27.0",
     "@google/generative-ai": "^0.24.1",
     "@sentry/nextjs": "^10.22.0",
