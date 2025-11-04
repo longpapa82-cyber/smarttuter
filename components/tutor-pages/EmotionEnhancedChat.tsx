@@ -11,7 +11,7 @@ import { useEmotionDetection } from '@/hooks/useEmotionDetection';
 import type { EmotionAnalysis, EmotionResponseStrategy } from '@/types/emotion';
 
 interface EmotionEnhancedChatProps {
-  subject: 'english' | 'math' | 'science';
+  subject: 'english' | 'math' | 'science' | 'social-studies';
   gradeLevel: string;
 }
 

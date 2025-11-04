@@ -5,7 +5,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { BookOpen, Calculator, Beaker, BarChart3, Trophy, Target, TrendingUp, Award, Clock, Star, Zap, Home, Flame } from "lucide-react";
+import { BookOpen, Calculator, Beaker, Landmark, BarChart3, Trophy, Target, TrendingUp, Award, Clock, Star, Zap, Home, Flame } from "lucide-react";
 import { useUserStore } from "@/lib/gamification/store";
 import { useAdaptiveLearning } from "@/lib/adaptive-learning/store";
 import { useInteractiveLearning } from "@/lib/interactive-learning/store";
@@ -454,7 +454,7 @@ function DashboardContent() {
               <Zap className="w-6 h-6 text-yellow-500" />
               빠른 시작
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Continue English */}
               <Link href="/tutor/english">
                 <motion.div
@@ -519,6 +519,30 @@ function DashboardContent() {
                         <h4 className="text-xl font-bold mb-1">과학 튜터 계속하기</h4>
                         <p className="text-sm text-white/80">
                           마지막 주제: &ldquo;물질의 상태&rdquo;
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-2xl">→</div>
+                  </div>
+                </motion.div>
+              </Link>
+
+              {/* Continue Social Studies */}
+              <Link href="/tutor/social-studies">
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="bg-gradient-to-r from-orange-600 via-amber-600 to-yellow-600 rounded-xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                        <Landmark className="w-8 h-8" />
+                      </div>
+                      <div>
+                        <h4 className="text-xl font-bold mb-1">사회 튜터 계속하기</h4>
+                        <p className="text-sm text-white/80">
+                          마지막 주제: &ldquo;세계 지리&rdquo;
                         </p>
                       </div>
                     </div>

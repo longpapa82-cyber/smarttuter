@@ -5,7 +5,7 @@
 
 export type GradeLevel = 'elementary' | 'middle' | 'high' | 'university';
 
-export type Subject = 'english' | 'math' | 'science';
+export type Subject = 'english' | 'math' | 'science' | 'social-studies';
 
 export type AuthProvider = 'credentials' | 'google' | 'github' | 'guest';
 
@@ -106,6 +106,13 @@ export const SUBJECT_OPTIONS: SubjectOption[] = [
     emoji: '🔬',
     description: '생물·화학·물리·지구과학 체계적 학습',
     color: 'from-cyan-600 via-blue-600 to-indigo-600',
+  },
+  {
+    value: 'social-studies',
+    label: '사회',
+    emoji: '🏛️',
+    description: '지리·역사·정치·문화 깊이있는 학습',
+    color: 'from-orange-600 via-amber-600 to-yellow-600',
   },
 ];
 
