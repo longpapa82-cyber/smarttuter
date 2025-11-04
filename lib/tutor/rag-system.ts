@@ -1712,6 +1712,336 @@ export const SCIENCE_VERIFIED_CONTENT: VerifiedContent[] = [
 ];
 
 /**
+ * SOCIAL STUDIES VERIFIED CONTENT
+ */
+export const SOCIAL_STUDIES_VERIFIED_CONTENT: VerifiedContent[] = [
+  // My Community (Elementary)
+  {
+    id: "soc-elem-my-community",
+    subject: "social-studies",
+    topic: "My Community",
+    topicKo: "우리 동네",
+    gradeLevel: "3",
+    schoolLevel: "elementary",
+    content: `A community is a group of people living in the same area and sharing resources.
+
+**What is a community?**
+- A place where people live, work, and play together
+- Includes homes, schools, stores, parks, and more
+- People in a community help each other
+
+**Community Helpers**:
+- **Teachers**: Help students learn
+- **Police Officers**: Keep community safe
+- **Firefighters**: Put out fires and rescue people
+- **Doctors**: Help sick or injured people
+- **Mail Carriers**: Deliver letters and packages
+
+**Places in a Community**:
+- **School**: Where children learn
+- **Library**: Where people borrow books
+- **Park**: Where people play and exercise
+- **Store**: Where people buy things they need
+- **Hospital**: Where sick people get care
+
+**Community Rules**:
+- Follow traffic lights and signs
+- Take turns and share
+- Be kind and helpful to neighbors
+- Keep community clean (don't litter)`,
+    examples: [
+      "School is a place in our community where we learn",
+      "Police officers help keep us safe",
+      "A library is where we can borrow books",
+      "We should follow traffic lights to stay safe"
+    ],
+    commonMistakes: [
+      "❌ Community = only houses → ✅ Community includes schools, stores, parks",
+      "❌ Only parents help us → ✅ Many community helpers support us"
+    ],
+    keyPoints: [
+      "Community is people living and working together",
+      "Community helpers have important jobs",
+      "We should follow community rules"
+    ],
+    source: "National Council for the Social Studies (NCSS) - Grade 3",
+    lastVerified: "2025-01-04"
+  },
+  // World Geography (Middle School)
+  {
+    id: "soc-middle-world-geography",
+    subject: "social-studies",
+    topic: "World Geography",
+    topicKo: "세계 지리",
+    gradeLevel: "7",
+    schoolLevel: "middle",
+    content: `World geography studies Earth's physical features, climate, and how people interact with their environment.
+
+**Seven Continents**:
+1. **Asia** - Largest continent, most populated
+2. **Africa** - Second largest, diverse ecosystems
+3. **North America** - Includes USA, Canada, Mexico
+4. **South America** - Amazon rainforest, Andes mountains
+5. **Europe** - Many countries, rich history
+6. **Australia** - Island continent, unique wildlife
+7. **Antarctica** - Coldest continent, ice-covered
+
+**Five Oceans**:
+- **Pacific Ocean** - Largest ocean
+- **Atlantic Ocean** - Between Americas and Europe/Africa
+- **Indian Ocean** - South of Asia
+- **Southern Ocean** - Surrounds Antarctica
+- **Arctic Ocean** - Around North Pole
+
+**Climate Zones**:
+- **Tropical** - Hot and humid year-round (near equator)
+- **Temperate** - Moderate, four seasons (mid-latitudes)
+- **Polar** - Very cold, ice and snow (near poles)
+- **Desert** - Very dry, hot days and cold nights
+- **Mediterranean** - Warm, dry summers and mild winters
+
+**Physical Features**:
+- **Mountains** - High elevated landforms (Himalayas, Andes, Rockies)
+- **Rivers** - Flowing water (Nile, Amazon, Yangtze)
+- **Deserts** - Dry regions (Sahara, Gobi, Mojave)
+- **Forests** - Dense tree areas (Amazon, Congo, Taiga)`,
+    examples: [
+      "Asia is the largest and most populated continent",
+      "The Pacific Ocean is the largest ocean",
+      "Tropical climate is hot and humid year-round",
+      "The Himalayas are the world's highest mountains"
+    ],
+    commonMistakes: [
+      "❌ Seven oceans → ✅ Five oceans",
+      "❌ Europe is a country → ✅ Europe is a continent with many countries"
+    ],
+    keyPoints: [
+      "Seven continents, five oceans",
+      "Climate zones determined by latitude and geography",
+      "Physical features shape how people live"
+    ],
+    source: "National Geography Standards - Grade 7",
+    lastVerified: "2025-01-04"
+  },
+  // Ancient Civilizations (Middle School)
+  {
+    id: "soc-middle-ancient-civilizations",
+    subject: "social-studies",
+    topic: "Ancient Civilizations",
+    topicKo: "고대 문명",
+    gradeLevel: "7",
+    schoolLevel: "middle",
+    content: `Ancient civilizations were complex societies that developed thousands of years ago.
+
+**Major Ancient Civilizations**:
+
+**1. Mesopotamia (3500-500 BCE)**
+- "Land between rivers" (Tigris and Euphrates)
+- Invented writing (cuneiform)
+- Code of Hammurabi (first written laws)
+- Built ziggurats (temple towers)
+
+**2. Ancient Egypt (3100-30 BCE)**
+- Along Nile River
+- Built pyramids and sphinx
+- Hieroglyphic writing
+- Pharaohs ruled as god-kings
+- Mummification for afterlife
+
+**3. Ancient Greece (800-146 BCE)**
+- Democracy invented in Athens
+- Philosophy (Socrates, Plato, Aristotle)
+- Olympic Games started here
+- Greek mythology (Zeus, Athena, Apollo)
+- City-states (Athens, Sparta)
+
+**4. Roman Empire (27 BCE-476 CE)**
+- Republic → Empire
+- Roman law influenced modern legal systems
+- Built roads, aqueducts, Colosseum
+- Latin language (basis for Romance languages)
+- Christianity spread through empire
+
+**5. Ancient China (2070 BCE-220 CE)**
+- Great Wall of China
+- Inventions: paper, compass, gunpowder, printing
+- Confucianism and Taoism
+- Silk Road trade route
+- Dynasties (Shang, Zhou, Qin, Han)
+
+**Common Features**:
+- Developed agriculture
+- Built cities and monuments
+- Created writing systems
+- Organized governments
+- Trade with other regions`,
+    examples: [
+      "Mesopotamia invented cuneiform writing",
+      "Egypt built pyramids as tombs for pharaohs",
+      "Greece invented democracy in Athens",
+      "Rome built roads and aqueducts across empire"
+    ],
+    commonMistakes: [
+      "❌ All ancient civilizations existed at same time → ✅ They developed at different periods",
+      "❌ Pyramids built by aliens → ✅ Built by thousands of workers over many years"
+    ],
+    keyPoints: [
+      "Ancient civilizations developed complex societies",
+      "Each made unique contributions to human progress",
+      "Many modern ideas come from ancient civilizations"
+    ],
+    source: "World History Standards - Grade 7",
+    lastVerified: "2025-01-04"
+  },
+  // World History (High School)
+  {
+    id: "soc-high-world-history",
+    subject: "social-studies",
+    topic: "World History",
+    topicKo: "세계사",
+    gradeLevel: "10",
+    schoolLevel: "high",
+    content: `World history examines major events, movements, and transformations that shaped the modern world.
+
+**Industrial Revolution (1760-1840)**
+- Shift from agriculture to manufacturing
+- Inventions: steam engine, spinning jenny, power loom
+- Factories and urbanization
+- **Positive effects**: Increased production, new jobs, technological progress
+- **Negative effects**: Child labor, pollution, poor working conditions
+
+**French Revolution (1789-1799)**
+- Overthrow of monarchy
+- Enlightenment ideas (liberty, equality, fraternity)
+- Reign of Terror (1793-1794)
+- Rise of Napoleon Bonaparte
+- Spread of revolutionary ideas across Europe
+
+**World War I (1914-1918)**
+- **Causes**: Militarism, alliances, imperialism, nationalism (MAIN)
+- **Trigger**: Assassination of Archduke Franz Ferdinand
+- **Major Powers**:
+  - Allied Powers: Britain, France, Russia, USA (later)
+  - Central Powers: Germany, Austria-Hungary, Ottoman Empire
+- Trench warfare on Western Front
+- **Results**: Treaty of Versailles, League of Nations, empires collapsed
+
+**World War II (1939-1945)**
+- **Causes**: Treaty of Versailles, Great Depression, rise of fascism
+- **Axis Powers**: Germany (Hitler), Italy (Mussolini), Japan
+- **Allied Powers**: Britain, France, Soviet Union, USA
+- Holocaust: Nazi genocide of 6 million Jews
+- Atomic bombs dropped on Hiroshima and Nagasaki
+- **Results**: United Nations, Cold War begins, decolonization
+
+**Cold War (1947-1991)**
+- USA vs. Soviet Union
+- Capitalism vs. Communism
+- Arms race and nuclear weapons
+- Korean War, Vietnam War
+- Space Race
+- Berlin Wall built (1961) and fell (1989)
+- Soviet Union collapsed (1991)`,
+    examples: [
+      "Industrial Revolution changed how goods were produced",
+      "French Revolution spread ideas of liberty and equality",
+      "WWI was triggered by assassination but had deeper causes",
+      "WWII resulted in formation of United Nations"
+    ],
+    commonMistakes: [
+      "❌ WWI and WWII had same causes → ✅ Different but related causes",
+      "❌ Cold War had direct battles between USA and USSR → ✅ Proxy wars, not direct conflict"
+    ],
+    keyPoints: [
+      "Industrial Revolution transformed economies",
+      "World Wars reshaped global power structure",
+      "Cold War divided world into two blocs"
+    ],
+    source: "National History Standards - Grade 10",
+    lastVerified: "2025-01-04"
+  },
+  // Government Systems (High School)
+  {
+    id: "soc-high-government-systems",
+    subject: "social-studies",
+    topic: "Government Systems",
+    topicKo: "정부 체제",
+    gradeLevel: "10",
+    schoolLevel: "high",
+    content: `Government systems are the structures and processes by which countries are governed.
+
+**Types of Government**:
+
+**1. Democracy**
+- Power held by the people
+- **Direct Democracy**: Citizens vote on laws directly (rare, ancient Athens)
+- **Representative Democracy**: Citizens elect representatives (most common today)
+- Free elections, freedom of speech, rule of law
+- Examples: USA, UK, France, South Korea
+
+**2. Republic**
+- Form of democracy with elected representatives
+- Constitution protects individual rights
+- No monarch (or monarch has limited power)
+- Examples: USA, France, India
+
+**3. Monarchy**
+- Rule by king or queen
+- **Absolute Monarchy**: Monarch has complete power (Saudi Arabia)
+- **Constitutional Monarchy**: Monarch is symbolic, parliament governs (UK, Japan)
+- Power usually inherited
+
+**4. Dictatorship**
+- Single person has absolute power
+- No free elections or civil liberties
+- Often comes to power through force
+- Examples: North Korea (Kim family)
+
+**5. Communism**
+- Government controls economy and property
+- Based on Karl Marx's ideas
+- Single party rule (usually)
+- Goal: equality, no social classes
+- Examples: China, Cuba, Vietnam
+
+**6. Totalitarianism**
+- Government controls all aspects of life
+- No freedom of speech or opposition
+- Secret police and surveillance
+- Examples: Nazi Germany, Stalin's USSR
+
+**Branches of Government (USA Model)**:
+- **Legislative**: Makes laws (Congress: Senate + House)
+- **Executive**: Enforces laws (President)
+- **Judicial**: Interprets laws (Supreme Court)
+- System of checks and balances
+
+**Key Concepts**:
+- **Constitution**: Written plan for government
+- **Separation of Powers**: Divides government into branches
+- **Checks and Balances**: Each branch limits others' power
+- **Rule of Law**: Everyone, including leaders, must follow laws`,
+    examples: [
+      "USA is a representative democracy and republic",
+      "UK is a constitutional monarchy with parliament",
+      "Separation of powers prevents any one branch from becoming too powerful",
+      "Constitution protects individual rights"
+    ],
+    commonMistakes: [
+      "❌ Democracy and republic are opposites → ✅ Republic is a type of democracy",
+      "❌ Communism = dictatorship → ✅ Communism is economic system, can have different political systems"
+    ],
+    keyPoints: [
+      "Democracy gives power to the people",
+      "Different systems have different freedoms",
+      "Separation of powers protects liberty"
+    ],
+    source: "Civics and Government Standards - Grade 10",
+    lastVerified: "2025-01-04"
+  }
+];
+
+/**
  * ════════════════════════════════════════════════════════════════
  * RAG RETRIEVAL FUNCTIONS
  * ════════════════════════════════════════════════════════════════
@@ -1738,6 +2068,7 @@ export async function retrieveVerifiedContent(
       subject === 'english' ? ENGLISH_VERIFIED_CONTENT :
       subject === 'math' ? MATH_VERIFIED_CONTENT :
       subject === 'science' ? SCIENCE_VERIFIED_CONTENT :
+      subject === 'social-studies' ? SOCIAL_STUDIES_VERIFIED_CONTENT :
       [];
 
     // Use AI to identify relevant topics
@@ -1925,6 +2256,7 @@ export function getVerifiedContentByTopic(
     subject === 'english' ? ENGLISH_VERIFIED_CONTENT :
     subject === 'math' ? MATH_VERIFIED_CONTENT :
     subject === 'science' ? SCIENCE_VERIFIED_CONTENT :
+    subject === 'social-studies' ? SOCIAL_STUDIES_VERIFIED_CONTENT :
     [];
 
   return database.find(vc =>

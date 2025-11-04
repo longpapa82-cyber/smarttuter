@@ -1193,6 +1193,87 @@ export const SCIENCE_CURRICULUM: GradeCurriculum[] = [
 
 /**
  * ════════════════════════════════════════════════════════════════
+ * SOCIAL STUDIES CURRICULUM (사회)
+ * Based on National Curriculum Standards
+ * ════════════════════════════════════════════════════════════════
+ */
+export const SOCIAL_STUDIES_CURRICULUM: GradeCurriculum[] = [
+  // Elementary School (Grade 3)
+  {
+    grade: "3",
+    schoolLevel: "elementary",
+    subject: "social-studies",
+    topics: [
+      {
+        id: "soc-elem-3-my-community",
+        name: "My Community",
+        nameKo: "우리 동네",
+        description: "Understanding local community, places, and roles",
+        keywords: ["community", "neighborhood", "local", "동네", "지역사회", "마을"],
+        examples: ["What is a community?", "What are community helpers?"]
+      },
+      {
+        id: "soc-elem-3-maps-globes",
+        name: "Maps and Globes",
+        nameKo: "지도와 지구본",
+        description: "Basic geography, cardinal directions, map symbols",
+        keywords: ["map", "globe", "direction", "north", "south", "지도", "지구본", "방향"],
+        examples: ["How to read a map?", "What are cardinal directions?"]
+      }
+    ]
+  },
+  // Middle School (Grade 7)
+  {
+    grade: "7",
+    schoolLevel: "middle",
+    subject: "social-studies",
+    topics: [
+      {
+        id: "soc-middle-7-world-geography",
+        name: "World Geography",
+        nameKo: "세계 지리",
+        description: "Continents, countries, climate zones, physical features",
+        keywords: ["geography", "continent", "country", "climate", "지리", "대륙", "기후"],
+        examples: ["What are the continents?", "How does climate affect regions?"]
+      },
+      {
+        id: "soc-middle-7-ancient-civilizations",
+        name: "Ancient Civilizations",
+        nameKo: "고대 문명",
+        description: "Mesopotamia, Egypt, Greece, Rome, ancient China",
+        keywords: ["ancient", "civilization", "mesopotamia", "egypt", "rome", "고대", "문명"],
+        examples: ["What were ancient civilizations?", "How did ancient Egypt develop?"]
+      }
+    ]
+  },
+  // High School (Grade 10)
+  {
+    grade: "10",
+    schoolLevel: "high",
+    subject: "social-studies",
+    topics: [
+      {
+        id: "soc-high-10-world-history",
+        name: "World History",
+        nameKo: "세계사",
+        description: "Major historical events, revolutions, world wars",
+        keywords: ["history", "revolution", "war", "enlightenment", "역사", "혁명", "전쟁"],
+        examples: ["What caused World War I?", "What was the Industrial Revolution?"]
+      },
+      {
+        id: "soc-high-10-government-systems",
+        name: "Government Systems",
+        nameKo: "정부 체제",
+        description: "Democracy, monarchy, communism, political structures",
+        keywords: ["government", "democracy", "politics", "constitution", "정부", "민주주의", "정치"],
+        examples: ["What is democracy?", "How does government work?"]
+      }
+    ]
+  }
+];
+
+/**
+ * ════════════════════════════════════════════════════════════════
  * CURRICULUM LOOKUP FUNCTIONS
  * ════════════════════════════════════════════════════════════════
  */
@@ -1208,6 +1289,7 @@ export function getCurriculum(
     subject === 'english' ? ENGLISH_CURRICULUM :
     subject === 'math' ? MATH_CURRICULUM :
     subject === 'science' ? SCIENCE_CURRICULUM :
+    subject === 'social-studies' ? SOCIAL_STUDIES_CURRICULUM :
     [];
   return database.find(c => c.grade === grade && c.subject === subject);
 }
@@ -1223,6 +1305,7 @@ export function getTopicsByLevel(
     subject === 'english' ? ENGLISH_CURRICULUM :
     subject === 'math' ? MATH_CURRICULUM :
     subject === 'science' ? SCIENCE_CURRICULUM :
+    subject === 'social-studies' ? SOCIAL_STUDIES_CURRICULUM :
     [];
   return database
     .filter(c => c.schoolLevel === schoolLevel)
@@ -1237,7 +1320,12 @@ export function searchTopics(
   subject: Subject,
   schoolLevel?: SchoolLevel
 ): CurriculumTopic[] {
-  const database = subject === 'english' ? ENGLISH_CURRICULUM : MATH_CURRICULUM;
+  const database =
+    subject === 'english' ? ENGLISH_CURRICULUM :
+    subject === 'math' ? MATH_CURRICULUM :
+    subject === 'science' ? SCIENCE_CURRICULUM :
+    subject === 'social-studies' ? SOCIAL_STUDIES_CURRICULUM :
+    [];
   const lowerKeyword = keyword.toLowerCase();
 
   return database
@@ -1272,7 +1360,12 @@ export function getTopicGrade(
   topicId: string,
   subject: Subject
 ): string | undefined {
-  const database = subject === 'english' ? ENGLISH_CURRICULUM : MATH_CURRICULUM;
+  const database =
+    subject === 'english' ? ENGLISH_CURRICULUM :
+    subject === 'math' ? MATH_CURRICULUM :
+    subject === 'science' ? SCIENCE_CURRICULUM :
+    subject === 'social-studies' ? SOCIAL_STUDIES_CURRICULUM :
+    [];
 
   for (const curriculum of database) {
     if (curriculum.topics.some(t => t.id === topicId)) {
@@ -1290,6 +1383,7 @@ export function getAllCurriculum() {
   return {
     english: ENGLISH_CURRICULUM,
     math: MATH_CURRICULUM,
-    science: SCIENCE_CURRICULUM
+    science: SCIENCE_CURRICULUM,
+    'social-studies': SOCIAL_STUDIES_CURRICULUM
   };
 }
