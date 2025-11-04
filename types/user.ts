@@ -5,7 +5,7 @@
 
 export type GradeLevel = 'elementary' | 'middle' | 'high' | 'university';
 
-export type Subject = 'english' | 'math';
+export type Subject = 'english' | 'math' | 'science';
 
 export type AuthProvider = 'credentials' | 'google' | 'github' | 'guest';
 
@@ -99,6 +99,13 @@ export const SUBJECT_OPTIONS: SubjectOption[] = [
     emoji: '🔢',
     description: '개념부터 문제풀이까지 완벽 학습',
     color: 'from-purple-600 via-pink-600 to-rose-600',
+  },
+  {
+    value: 'science',
+    label: '과학',
+    emoji: '🔬',
+    description: '생물·화학·물리·지구과학 체계적 학습',
+    color: 'from-cyan-600 via-blue-600 to-indigo-600',
   },
 ];
 
