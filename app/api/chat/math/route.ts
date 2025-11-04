@@ -3,6 +3,7 @@ import { NextRequest } from "next/server";
 import { generateCacheKey, getCachedResponse, setCachedResponse } from "@/lib/cache/redis";
 import { getUserProfile } from "@/lib/user-profile";
 import { generateSystemPrompt } from "@/lib/tutor/system-prompt-generator";
+import { generateEnhancedSystemPrompt } from "@/lib/tutor/enhanced-system-prompt";
 import { contentLevelDetector } from "@/lib/tutor/content-level-detector";
 import { getRandomGuidanceMessage } from "@/lib/tutor/guidance-messages";
 import { trackLearningEvent } from "@/lib/learning-progress/progress-tracker";
@@ -221,8 +222,16 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Generate grade-level specific system prompt with guardrails
-    const systemPrompt = generateSystemPrompt(userProfile, 'math');
+    // Generate enhanced system prompt (Week 4: Integrates all accuracy systems)
+    const systemPrompt = generateEnhancedSystemPrompt({
+      subject: 'math',
+      grade: userProfile.gradeLevelDetail || '5',
+      schoolLevel: userProfile.gradeLevel,
+      studentName: userId,
+      includeChainOfThought: true,
+      includeRAGContext: false, // Will be enabled in P1-1
+      ragContext: undefined
+    });
 
     // Prepare conversation for Gemini API with system instruction
     const model = genAI.getGenerativeModel({

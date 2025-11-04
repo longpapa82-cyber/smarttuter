@@ -3,6 +3,7 @@ import { NextRequest } from "next/server";
 import { generateCacheKey, getCachedResponse, setCachedResponse } from "@/lib/cache/redis";
 import { getUserProfile } from "@/lib/user-profile";
 import { generateSystemPrompt } from "@/lib/tutor/system-prompt-generator";
+import { generateEnhancedSystemPrompt } from "@/lib/tutor/enhanced-system-prompt";
 import { contentLevelDetector } from "@/lib/tutor/content-level-detector";
 import { getRandomGuidanceMessage } from "@/lib/tutor/guidance-messages";
 import { trackLearningEvent } from "@/lib/learning-progress/progress-tracker";
@@ -221,9 +222,17 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Generate grade-level specific system prompt with guardrails
+    // Generate enhanced system prompt (Week 4: Integrates all accuracy systems)
     // Pass CEFR level if provided (adaptive learning)
-    const systemPrompt = generateSystemPrompt(userProfile, 'english', cefrLevel);
+    const systemPrompt = generateEnhancedSystemPrompt({
+      subject: 'english',
+      grade: userProfile.gradeLevelDetail || '5',
+      schoolLevel: userProfile.gradeLevel,
+      studentName: userId,
+      includeChainOfThought: true,
+      includeRAGContext: false, // Will be enabled in P1-1
+      ragContext: undefined
+    });
 
 
 
