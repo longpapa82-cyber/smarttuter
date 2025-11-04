@@ -10,6 +10,7 @@ import { trackLearningEvent } from "@/lib/learning-progress/progress-tracker";
 import type { LearningEvent } from "@/lib/learning-progress/types";
 import { classifyQuestion, isObviouslyOffTopic } from "@/lib/tutor/question-classifier";
 import { filterBySubject } from "@/lib/tutor/response-filter";
+import { retrieveVerifiedContent, formatRetrievedContext } from "@/lib/tutor/rag-system";
 
 // Initialize Gemini client
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
@@ -222,16 +223,36 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // P1-1: Retrieve verified content using RAG system
+    let ragContext: string | undefined = undefined;
+    try {
+      const gradeStr = String(userProfile.gradeLevelDetail || '5');
+      const retrievedContext = await retrieveVerifiedContent(
+        message,
+        'english',
+        gradeStr,
+        3 // Max 3 relevant content pieces
+      );
+
+      if (retrievedContext.content.length > 0) {
+        ragContext = formatRetrievedContext(retrievedContext);
+      }
+    } catch (error) {
+      console.error('[RAG] Failed to retrieve verified content:', error);
+      // Continue without RAG context - graceful degradation
+    }
+
     // Generate enhanced system prompt (Week 4: Integrates all accuracy systems)
     // Pass CEFR level if provided (adaptive learning)
+    const gradeForPrompt = String(userProfile.gradeLevelDetail || '5');
     const systemPrompt = generateEnhancedSystemPrompt({
       subject: 'english',
-      grade: userProfile.gradeLevelDetail || '5',
+      grade: gradeForPrompt,
       schoolLevel: userProfile.gradeLevel,
       studentName: userId,
       includeChainOfThought: true,
-      includeRAGContext: false, // Will be enabled in P1-1
-      ragContext: undefined
+      includeRAGContext: ragContext !== undefined, // P1-1: Enable RAG
+      ragContext
     });
 
 

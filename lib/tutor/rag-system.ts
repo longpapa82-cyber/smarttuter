@@ -583,6 +583,27 @@ Answer:`;
 }
 
 /**
+ * Format retrieved context for Enhanced System Prompt
+ */
+export function formatRetrievedContext(retrievedContext: RetrievedContext): string {
+  if (retrievedContext.content.length === 0) {
+    return '';
+  }
+
+  // Build compact context from verified content
+  const contextSections = retrievedContext.content.map((vc, index) => {
+    return `**[Reference ${index + 1}] ${vc.topic}** (Grade ${vc.gradeLevel})
+${vc.content}
+
+Examples: ${vc.examples.join(', ')}
+${vc.commonMistakes ? `Common Mistakes: ${vc.commonMistakes.join(', ')}` : ''}
+Key Points: ${vc.keyPoints.join(', ')}`;
+  }).join('\n\n---\n\n');
+
+  return contextSections;
+}
+
+/**
  * Get all verified content for a specific topic
  */
 export function getVerifiedContentByTopic(
