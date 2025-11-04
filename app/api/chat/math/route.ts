@@ -11,6 +11,8 @@ import type { LearningEvent } from "@/lib/learning-progress/types";
 import { classifyQuestion, isObviouslyOffTopic } from "@/lib/tutor/question-classifier";
 import { filterBySubject } from "@/lib/tutor/response-filter";
 import { retrieveVerifiedContent, formatRetrievedContext } from "@/lib/tutor/rag-system";
+import { responseCache } from "@/lib/cache/response-cache";
+import { quickClassify, apiTracker } from "@/lib/cache/api-optimizer";
 
 // Initialize Gemini client
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
@@ -48,6 +50,59 @@ export async function POST(req: NextRequest) {
         JSON.stringify({ error: "User profile not found. Please complete onboarding." }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
+    }
+
+    // 🚀 Phase 1: Check smart cache first (saves 4 API calls if hit)
+    const gradeStr = String(userProfile.gradeLevelDetail || '5');
+    const cachedAnswer = responseCache.get(message, 'math', gradeStr);
+
+    if (cachedAnswer) {
+      const encoder = new TextEncoder();
+      const cacheStream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: cachedAnswer })}\n\n`));
+          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+          controller.close();
+        },
+      });
+
+      const stats = apiTracker.getStats();
+      return new Response(cacheStream, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          "Connection": "keep-alive",
+          "X-Cache-Hit": "smart-cache",
+          "X-API-Remaining": stats.remaining.toString(),
+        },
+      });
+    }
+
+    // 🚀 Phase 2: Quick keyword-based classification (no API call)
+    const quickClassification = quickClassify(message, 'math');
+
+    if (quickClassification && !quickClassification.isOnTopic) {
+      apiTracker.track('quick-classify-redirect');
+      const encoder = new TextEncoder();
+      const redirectStream = new ReadableStream({
+        start(controller) {
+          const redirectMsg = `🔢 **Math Park**에서 도와드려요! 수학 관련 질문을 해주세요.
+
+저는 수학 전문 튜터예요. 계산, 문제 풀이, 개념 설명을 도와드려요! 🧮`;
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: redirectMsg })}\n\n`));
+          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+          controller.close();
+        },
+      });
+
+      return new Response(redirectStream, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          "Connection": "keep-alive",
+          "X-Subject-Filter": "off-topic-quick-no-api",
+        },
+      });
     }
 
     // 🎯 Week 1: Subject Classification - Quick pre-filter
@@ -223,10 +278,11 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // P1-1: Retrieve verified content using RAG system
+    // 🚀 Phase 3: P1-1: RAG-First Strategy (Try to answer without API if possible)
     let ragContext: string | undefined = undefined;
+    let ragDirectAnswer: string | undefined = undefined;
+
     try {
-      const gradeStr = String(userProfile.gradeLevelDetail || '5');
       const retrievedContext = await retrieveVerifiedContent(
         message,
         'math',
@@ -236,6 +292,45 @@ export async function POST(req: NextRequest) {
 
       if (retrievedContext.content.length > 0) {
         ragContext = formatRetrievedContext(retrievedContext);
+
+        // If RAG confidence is very high (>90%) and content is comprehensive,
+        // we can potentially answer directly without API call
+        const avgConfidence = retrievedContext.content.reduce((sum, c) => sum + c.confidence, 0) / retrievedContext.content.length;
+
+        if (avgConfidence > 0.9 && retrievedContext.content.length >= 2) {
+          // Try to construct answer from RAG content only
+          ragDirectAnswer = `📚 **검증된 교육 자료를 바탕으로 답변드려요:**
+
+${retrievedContext.content.map(c => c.content).join('\n\n---\n\n')}
+
+💡 더 궁금한 점이 있으시면 언제든 질문해주세요!`;
+
+          console.log(`[RAG Direct] High confidence (${avgConfidence.toFixed(2)}) - answering without API`);
+
+          // Cache this RAG-based answer
+          responseCache.set(message, 'math', gradeStr, ragDirectAnswer);
+
+          const encoder = new TextEncoder();
+          const ragStream = new ReadableStream({
+            start(controller) {
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: ragDirectAnswer })}\n\n`));
+              controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+              controller.close();
+            },
+          });
+
+          const stats = apiTracker.getStats();
+          return new Response(ragStream, {
+            headers: {
+              "Content-Type": "text/event-stream",
+              "Cache-Control": "no-cache",
+              "Connection": "keep-alive",
+              "X-RAG-Direct": "true",
+              "X-API-Saved": "4",
+              "X-API-Remaining": stats.remaining.toString(),
+            },
+          });
+        }
       }
     } catch (error) {
       console.error('[RAG] Failed to retrieve verified content:', error);
@@ -292,6 +387,9 @@ export async function POST(req: NextRequest) {
         },
       });
 
+      // Track API call
+      apiTracker.track('chat-math');
+
       // Send message and get stream (system prompt는 이미 모델에 설정됨)
       const result = await chat.sendMessageStream(message);
 
@@ -311,11 +409,15 @@ export async function POST(req: NextRequest) {
             controller.enqueue(encoder.encode("data: [DONE]\n\n"));
             controller.close();
 
-            // Cache the complete response (fire and forget)
+            // Cache the complete response (both Redis and smart cache)
             if (fullResponse.trim()) {
+              // Redis cache
               setCachedResponse(cacheKey, fullResponse, 3600).catch(err => {
                 console.error('Failed to cache response:', err);
               });
+
+              // Smart cache for similarity matching
+              responseCache.set(message, 'math', gradeStr, fullResponse);
             }
 
             // Track learning event (Phase 8: Progress tracking integration)
@@ -346,11 +448,14 @@ export async function POST(req: NextRequest) {
         },
       });
 
+      const stats = apiTracker.getStats();
       return new Response(readableStream, {
         headers: {
           "Content-Type": "text/event-stream",
           "Cache-Control": "no-cache",
           "Connection": "keep-alive",
+          "X-API-Remaining": stats.remaining.toString(),
+          "X-Cache-Stats": JSON.stringify(responseCache.getStats()),
         },
       });
     } catch (apiError: any) {

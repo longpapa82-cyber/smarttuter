@@ -12,6 +12,8 @@ import { classifyQuestion, isObviouslyOffTopic } from "@/lib/tutor/question-clas
 import { filterBySubject } from "@/lib/tutor/response-filter";
 import { retrieveVerifiedContent, formatRetrievedContext } from "@/lib/tutor/rag-system";
 
+import { responseCache } from "@/lib/cache/response-cache";
+import { quickClassify, apiTracker } from "@/lib/cache/api-optimizer";
 // Initialize Gemini client
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
@@ -47,6 +49,57 @@ export async function POST(req: NextRequest) {
       return new Response(
         JSON.stringify({ error: "User profile not found. Please complete onboarding." }),
         { status: 400, headers: { "Content-Type": "application/json" } }
+
+    // 🚀 Phase 1: Check smart cache first (saves 4 API calls if hit)
+    const gradeStr = String(userProfile.gradeLevelDetail || '5');
+    const cachedAnswer = responseCache.get(message, 'science', gradeStr);
+
+    if (cachedAnswer) {
+      const encoder = new TextEncoder();
+      const cacheStream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: cachedAnswer })}\n\n`));
+          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+          controller.close();
+        },
+      });
+
+      const stats = apiTracker.getStats();
+      return new Response(cacheStream, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          "Connection": "keep-alive",
+          "X-Cache-Hit": "smart-cache",
+          "X-API-Remaining": stats.remaining.toString(),
+        },
+      });
+    }
+
+    // 🚀 Phase 2: Quick keyword-based classification (no API call)
+    const quickClassification = quickClassify(message, 'science');
+
+    if (quickClassification && !quickClassification.isOnTopic) {
+      apiTracker.track('quick-classify-redirect');
+      const encoder = new TextEncoder();
+      const redirectStream = new ReadableStream({
+        start(controller) {
+          const redirectMsg = `🔬 **과학 튜터**에서 도와드려요! 과학 관련 질문을 해주세요.`;
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: redirectMsg })}\n\n`));
+          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+          controller.close();
+        },
+      });
+
+      return new Response(redirectStream, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          "Connection": "keep-alive",
+          "X-Subject-Filter": "off-topic-quick-no-api",
+        },
+      });
+    }
       );
     }
 
@@ -293,6 +346,9 @@ export async function POST(req: NextRequest) {
       });
 
       // Send message and get stream (system prompt는 이미 모델에 설정됨)
+      // Track API call
+      apiTracker.track('chat-science');
+
       const result = await chat.sendMessageStream(message);
 
       // Create a readable stream for the response
@@ -316,6 +372,9 @@ export async function POST(req: NextRequest) {
               setCachedResponse(cacheKey, fullResponse, 3600).catch(err => {
                 console.error('Failed to cache response:', err);
               });
+
+              // Smart cache for similarity matching
+              responseCache.set(message, 'science', gradeStr, fullResponse);
             }
 
             // Track learning event (Phase 8: Progress tracking integration)
@@ -346,11 +405,14 @@ export async function POST(req: NextRequest) {
         },
       });
 
+      const stats = apiTracker.getStats();
       return new Response(readableStream, {
         headers: {
           "Content-Type": "text/event-stream",
           "Cache-Control": "no-cache",
           "Connection": "keep-alive",
+          "X-API-Remaining": stats.remaining.toString(),
+          "X-Cache-Stats": JSON.stringify(responseCache.getStats()),
         },
       });
     } catch (apiError: any) {
