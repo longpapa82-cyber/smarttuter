@@ -2229,6 +2229,59 @@ export const SCIENCE_VERIFIED_CONTENT: VerifiedContent[] = [
  * SOCIAL STUDIES VERIFIED CONTENT
  */
 export const SOCIAL_STUDIES_VERIFIED_CONTENT: VerifiedContent[] = [
+  // Maps and Globes (Elementary)
+  {
+    id: "soc-elem-maps-globes",
+    subject: "social-studies",
+    topic: "Maps and Globes",
+    topicKo: "지도와 지구본",
+    gradeLevel: "2",
+    schoolLevel: "elementary",
+    content: `Maps and globes help us understand where places are located.
+
+**Globe**:
+- A round model of Earth
+- Shows all continents and oceans
+- More accurate than flat maps
+- Continents: Asia, Africa, North America, South America, Europe, Australia, Antarctica
+- Oceans: Pacific, Atlantic, Indian, Arctic, Southern
+
+**Maps**:
+- Flat pictures of Earth or parts of Earth
+- Different types: world map, country map, city map
+- Easier to carry than globes
+- Can show many details
+
+**Map parts**:
+- **Title**: What the map shows
+- **Compass rose**: Shows directions (North, South, East, West)
+- **Key/Legend**: Explains symbols on map
+- **Scale**: Shows distance
+
+**Cardinal directions**:
+- **North (N)**: Top of map
+- **South (S)**: Bottom of map
+- **East (E)**: Right side
+- **West (W)**: Left side`,
+    examples: [
+      "Globe shows Earth is round, not flat",
+      "Compass rose helps us find north",
+      "Legend shows what symbols mean (e.g., 🏔️ = mountain)",
+      "If your home is north of school, school is south of your home"
+    ],
+    commonMistakes: [
+      "❌ Globe and map are the same → ✅ Globe is round, map is flat",
+      "❌ East and West are same as left and right → ✅ East is toward sunrise, West is toward sunset"
+    ],
+    keyPoints: [
+      "Globes are round models of Earth",
+      "Maps are flat pictures showing locations",
+      "Compass rose shows directions: N, S, E, W"
+    ],
+    source: "National Council for the Social Studies (NCSS) - Grade 2",
+    lastVerified: "2025-01-04"
+  },
+
   // My Community (Elementary)
   {
     id: "soc-elem-my-community",
@@ -2551,6 +2604,884 @@ export const SOCIAL_STUDIES_VERIFIED_CONTENT: VerifiedContent[] = [
       "Separation of powers protects liberty"
     ],
     source: "Civics and Government Standards - Grade 10",
+    lastVerified: "2025-01-04"
+  },
+
+  // Native Americans (Elementary)
+  {
+    id: "soc-elem-native-americans",
+    subject: "social-studies",
+    topic: "Native Americans",
+    topicKo: "아메리카 원주민",
+    gradeLevel: "4",
+    schoolLevel: "elementary",
+    content: `Native Americans were the first people to live in North America, thousands of years before European explorers arrived.
+
+**Major Native American Groups**:
+
+**1. Eastern Woodlands**
+- **Location**: East of Mississippi River
+- **Tribes**: Iroquois, Cherokee, Powhatan
+- **Housing**: Longhouses, wigwams
+- **Lifestyle**: Farming (corn, beans, squash), hunting, fishing
+- **Government**: Iroquois Confederacy (inspired U.S. government)
+
+**2. Plains**
+- **Location**: Central USA (Great Plains)
+- **Tribes**: Sioux, Cheyenne, Comanche
+- **Housing**: Teepees (easy to move)
+- **Lifestyle**: Buffalo hunting, nomadic lifestyle
+- **Transportation**: Horses (after 1600s)
+
+**3. Southwest**
+- **Location**: Desert areas (Arizona, New Mexico)
+- **Tribes**: Pueblo, Navajo, Apache
+- **Housing**: Adobe houses, cliff dwellings
+- **Lifestyle**: Farming in dry climate, weaving, pottery
+- **Water**: Built irrigation systems
+
+**4. Northwest Coast**
+- **Location**: Pacific Coast (Alaska to California)
+- **Tribes**: Chinook, Tlingit, Haida
+- **Housing**: Wooden plank houses
+- **Lifestyle**: Fishing (salmon), totem poles
+- **Resources**: Rich in fish, forests
+
+**5. Great Basin**
+- **Location**: Between Rocky Mountains and Sierra Nevada
+- **Tribes**: Shoshone, Paiute
+- **Lifestyle**: Hunting small animals, gathering seeds and plants
+- **Housing**: Small temporary shelters
+
+**Important Concepts**:
+- **Tribe**: Group of Native Americans with shared culture, language, and land
+- **Confederacy**: Multiple tribes working together (like Iroquois Confederacy)
+- **Respect for Nature**: Native Americans lived in harmony with environment
+- **Oral Tradition**: History and stories passed down by speaking, not writing`,
+    examples: [
+      "Iroquois lived in longhouses and farmed corn, beans, and squash",
+      "Plains tribes followed buffalo herds and lived in teepees",
+      "Pueblo people built adobe houses in the Southwest desert",
+      "Northwest Coast tribes carved totem poles and fished for salmon"
+    ],
+    commonMistakes: [
+      "❌ All Native Americans lived in teepees → ✅ Different tribes had different housing",
+      "❌ Native Americans were primitive → ✅ They had complex societies and governments"
+    ],
+    keyPoints: [
+      "Native Americans lived in North America first",
+      "Different regions had different lifestyles",
+      "Native Americans respected and adapted to their environment"
+    ],
+    source: "National Council for the Social Studies (NCSS) - Grade 4",
+    lastVerified: "2025-01-04"
+  },
+
+  // US Regions and Geography (Elementary)
+  {
+    id: "soc-elem-us-regions",
+    subject: "social-studies",
+    topic: "US Regions and Geography",
+    topicKo: "미국의 지역과 지리",
+    gradeLevel: "5",
+    schoolLevel: "elementary",
+    content: `The United States is divided into five main regions, each with unique geography, climate, and culture.
+
+**Five Regions of the USA**:
+
+**1. Northeast**
+- **States**: Maine, New York, Pennsylvania, Massachusetts, etc.
+- **Geography**: Mountains (Appalachian), coastline, forests
+- **Climate**: Four seasons, cold winters, moderate summers
+- **Major Cities**: New York City, Boston, Philadelphia
+- **Economy**: Manufacturing, finance, shipping, tourism
+- **History**: First European colonies, Industrial Revolution
+
+**2. Southeast**
+- **States**: Florida, Georgia, Virginia, North Carolina, etc.
+- **Geography**: Coastal plains, swamps (Everglades), beaches
+- **Climate**: Hot, humid summers; mild winters
+- **Major Cities**: Atlanta, Miami, Charlotte
+- **Economy**: Agriculture (cotton, tobacco), tourism, tech
+- **History**: Civil War battlefields, civil rights movement
+
+**3. Midwest**
+- **States**: Ohio, Illinois, Wisconsin, Iowa, Kansas, etc.
+- **Geography**: Flat plains, Great Lakes, Mississippi River
+- **Climate**: Four seasons, very cold winters, hot summers
+- **Major Cities**: Chicago, Detroit, St. Louis
+- **Economy**: Farming (corn, wheat), manufacturing
+- **Nickname**: "America's Breadbasket"
+
+**4. Southwest**
+- **States**: Texas, Arizona, New Mexico, Nevada
+- **Geography**: Deserts, mountains, canyons (Grand Canyon)
+- **Climate**: Hot, dry; little rainfall
+- **Major Cities**: Phoenix, Houston, Dallas, Las Vegas
+- **Economy**: Oil, ranching, tourism, technology
+- **Culture**: Strong Hispanic and Native American influence
+
+**5. West**
+- **States**: California, Oregon, Washington, Alaska, Hawaii
+- **Geography**: Pacific Ocean, mountains (Rockies, Sierra Nevada)
+- **Climate**: Varies widely (rainforests, deserts, arctic)
+- **Major Cities**: Los Angeles, San Francisco, Seattle
+- **Economy**: Technology, entertainment, agriculture, fishing
+- **Features**: Tallest mountains, largest state (Alaska)`,
+    examples: [
+      "Northeast has cold winters and is where USA was founded",
+      "Midwest is called 'Breadbasket' because it grows lots of crops",
+      "Southwest has deserts and is hot and dry",
+      "West Coast borders Pacific Ocean and has tech industry"
+    ],
+    commonMistakes: [
+      "❌ All of USA has same weather → ✅ Different regions have different climates",
+      "❌ Alaska is near Hawaii on maps → ✅ Alaska is far north, Hawaii is in Pacific"
+    ],
+    keyPoints: [
+      "USA has five distinct regions",
+      "Geography affects how people live and work",
+      "Each region has unique climate and economy"
+    ],
+    source: "National Geography Standards - Grade 5",
+    lastVerified: "2025-01-04"
+  },
+
+  // US Constitution and Bill of Rights (Middle School)
+  {
+    id: "soc-middle-us-constitution",
+    subject: "social-studies",
+    topic: "US Constitution and Bill of Rights",
+    topicKo: "미국 헌법과 권리 장전",
+    gradeLevel: "8",
+    schoolLevel: "middle",
+    content: `The US Constitution is the supreme law of the United States, written in 1787 and ratified in 1788.
+
+**Why the Constitution Was Written**:
+- Articles of Confederation (first government) was too weak
+- No strong central government to collect taxes or regulate trade
+- Needed stronger federal government while protecting states' rights
+
+**Structure of the Constitution**:
+
+**Preamble** - Introduction stating goals:
+"We the People... in Order to form a more perfect Union..."
+
+**Seven Articles**:
+1. Legislative Branch (Congress: Senate + House)
+2. Executive Branch (President)
+3. Judicial Branch (Supreme Court)
+4. Relations between states
+5. Amendment process
+6. Federal power over states
+7. Ratification process
+
+**Three Branches of Government**:
+- **Legislative**: Makes laws (Congress)
+- **Executive**: Enforces laws (President)
+- **Judicial**: Interprets laws (Courts)
+- **Checks and Balances**: Each branch can limit others' power
+
+**The Bill of Rights (First 10 Amendments)**:
+
+**1st Amendment**: Freedom of speech, religion, press, assembly, petition
+**2nd Amendment**: Right to bear arms
+**3rd Amendment**: No quartering soldiers in homes
+**4th Amendment**: Protection from unreasonable searches
+**5th Amendment**: Right to due process, no self-incrimination
+**6th Amendment**: Right to speedy trial, lawyer
+**7th Amendment**: Right to jury trial in civil cases
+**8th Amendment**: No cruel and unusual punishment
+**9th Amendment**: People have rights not listed in Constitution
+**10th Amendment**: Powers not given to federal government belong to states
+
+**Key Constitutional Principles**:
+- **Popular Sovereignty**: Government's power comes from the people
+- **Limited Government**: Government can only do what Constitution allows
+- **Separation of Powers**: Divided into three branches
+- **Checks and Balances**: Each branch can limit others
+- **Federalism**: Power divided between federal and state governments
+- **Judicial Review**: Courts can declare laws unconstitutional`,
+    examples: [
+      "1st Amendment protects freedom of speech and religion",
+      "Checks and balances: President can veto laws, Congress can override veto",
+      "Separation of powers prevents any branch from becoming too powerful",
+      "Bill of Rights protects individual freedoms"
+    ],
+    commonMistakes: [
+      "❌ Constitution and Declaration of Independence are same → ✅ Different documents with different purposes",
+      "❌ President makes laws → ✅ Congress makes laws, President enforces them"
+    ],
+    keyPoints: [
+      "Constitution is supreme law of USA",
+      "Three branches with checks and balances",
+      "Bill of Rights protects individual freedoms"
+    ],
+    source: "Civics Standards - Grade 8",
+    lastVerified: "2025-01-04"
+  },
+
+  // Basic Economics (Middle School)
+  {
+    id: "soc-middle-basic-economics",
+    subject: "social-studies",
+    topic: "Basic Economics",
+    topicKo: "기초 경제학",
+    gradeLevel: "8",
+    schoolLevel: "middle",
+    content: `Economics studies how people, businesses, and governments make choices about using limited resources.
+
+**Key Economic Concepts**:
+
+**1. Scarcity**
+- **Definition**: Limited resources but unlimited wants
+- Resources: land, labor, capital (money/tools), entrepreneurship
+- Because of scarcity, we must make choices
+- **Opportunity Cost**: What you give up when making a choice
+
+**2. Supply and Demand**
+- **Demand**: How much consumers want to buy at different prices
+  - Higher price → Less demand
+  - Lower price → More demand
+- **Supply**: How much producers want to sell at different prices
+  - Higher price → More supply
+  - Lower price → Less supply
+- **Equilibrium**: Price where supply = demand
+
+**3. Economic Systems**:
+
+**Market Economy (Capitalism)**
+- Individuals and businesses make decisions
+- Competition and profit motive
+- Limited government control
+- Examples: USA, most developed countries
+
+**Command Economy (Socialism)**
+- Government makes economic decisions
+- Government owns most businesses
+- Government sets prices and production
+- Examples: North Korea, Cuba
+
+**Mixed Economy**
+- Combination of market and command
+- Some government regulation of free markets
+- Examples: Most modern countries including USA
+
+**4. Types of Resources**:
+- **Natural Resources**: Things from nature (water, minerals, forests)
+- **Human Resources**: People's work and skills (labor)
+- **Capital Resources**: Tools, machines, buildings, money
+- **Entrepreneurship**: People who start businesses and take risks
+
+**5. Basic Market Concepts**:
+- **Producer**: Person or business that makes goods/services
+- **Consumer**: Person who buys goods/services
+- **Profit**: Money left after paying costs
+- **Competition**: When businesses compete for customers
+- **Monopoly**: When one company controls entire market (usually bad)
+
+**6. Money and Banking**:
+- **Money Functions**: Medium of exchange, store of value, unit of account
+- **Banks**: Store money, make loans, create economic growth
+- **Interest**: Cost of borrowing money
+- **Inflation**: When prices rise and money value decreases`,
+    examples: [
+      "Scarcity: You have $20 but want game ($15) and movie ($10) - must choose",
+      "Supply and demand: iPhone price high because high demand and limited supply",
+      "Opportunity cost: Going to movie means giving up studying time",
+      "Market economy: Businesses compete to offer best products at lowest prices"
+    ],
+    commonMistakes: [
+      "❌ Demand always increases → ✅ Demand depends on price",
+      "❌ Free market = no rules → ✅ Government regulates to prevent fraud and protect consumers"
+    ],
+    keyPoints: [
+      "Scarcity requires making choices",
+      "Supply and demand determine prices",
+      "Different economic systems have different approaches"
+    ],
+    source: "Economics Standards - Grade 8",
+    lastVerified: "2025-01-04"
+  },
+
+  // American Revolution (Middle School)
+  {
+    id: "soc-middle-american-revolution",
+    subject: "social-studies",
+    topic: "American Revolution",
+    topicKo: "미국 독립 혁명",
+    gradeLevel: "7",
+    schoolLevel: "middle",
+    content: `The American Revolution (1775-1783) was when 13 American colonies fought for independence from Great Britain.
+
+**Causes of the Revolution**:
+
+**1. Taxation Without Representation**
+- Britain taxed colonies to pay war debts
+- Colonists had no representatives in British Parliament
+- "No taxation without representation!" became rallying cry
+
+**Key Taxes**:
+- **Stamp Act (1765)**: Tax on printed materials (newspapers, cards, documents)
+- **Tea Act (1773)**: Tax on tea, led to Boston Tea Party
+- **Intolerable Acts (1774)**: Punishment laws after Boston Tea Party
+
+**2. British Control**
+- Britain controlled colonial trade
+- Quartering Act: Colonists had to house British soldiers
+- Limited colonial self-government
+
+**3. Growing Colonial Identity**
+- Colonists felt more American than British
+- Distance from Britain (3,000 miles away)
+- Different economic interests
+
+**Major Events**:
+
+**1775 - War Begins**
+- **Battles of Lexington and Concord**: First shots fired ("shot heard round the world")
+- **Battle of Bunker Hill**: Showed colonists could fight British
+
+**1776 - Declaration of Independence**
+- Written by Thomas Jefferson
+- Signed July 4, 1776 (Independence Day)
+- Key ideas: All men created equal, natural rights (life, liberty, pursuit of happiness)
+
+**1777 - Turning Point**
+- **Battle of Saratoga**: Major American victory
+- France decided to help America (crucial support)
+
+**1781 - War Ends**
+- **Battle of Yorktown**: British General Cornwallis surrendered
+- Last major battle
+
+**1783 - Treaty of Paris**
+- Britain recognized American independence
+- America gained land to Mississippi River
+
+**Key People**:
+- **George Washington**: Commander of Continental Army, 1st President
+- **Thomas Jefferson**: Wrote Declaration of Independence
+- **Benjamin Franklin**: Diplomat, convinced France to help
+- **King George III**: British king
+- **Paul Revere**: Warned colonists "The British are coming!"
+
+**Results**:
+- USA became independent nation
+- Inspired other revolutions (French Revolution)
+- Proved democracy could work
+- Set up challenges for new nation (need for Constitution)`,
+    examples: [
+      "Boston Tea Party: Colonists dumped tea into harbor to protest tax",
+      "Declaration of Independence declared all men created equal",
+      "George Washington led Continental Army to victory",
+      "Battle of Saratoga convinced France to help America"
+    ],
+    commonMistakes: [
+      "❌ All colonists wanted independence → ✅ Many loyalists supported Britain",
+      "❌ America won easily → ✅ Very difficult war, almost lost several times"
+    ],
+    keyPoints: [
+      "Revolution caused by unfair taxes and British control",
+      "Declaration of Independence declared freedom and equality",
+      "America won with French help"
+    ],
+    source: "US History Standards - Grade 7",
+    lastVerified: "2025-01-04"
+  },
+
+  // World War II (High School)
+  {
+    id: "soc-high-wwii",
+    subject: "social-studies",
+    topic: "World War II",
+    topicKo: "제2차 세계 대전",
+    gradeLevel: "11",
+    schoolLevel: "high",
+    content: `World War II (1939-1945) was the deadliest conflict in human history, involving most of the world's nations.
+
+**Causes of WWII**:
+
+**1. Treaty of Versailles (WWI aftermath)**
+- Germany forced to accept blame for WWI
+- Harsh reparations bankrupted Germany
+- Lost territory and military restrictions
+- Created resentment and economic hardship
+
+**2. Rise of Totalitarianism**
+- **Germany**: Adolf Hitler and Nazi Party
+  - Blamed Jews and others for Germany's problems
+  - Promised to restore German greatness
+- **Italy**: Benito Mussolini and Fascism
+- **Japan**: Military expansionism
+
+**3. Great Depression**
+- Economic crisis weakened democracies
+- Created conditions for extremist leaders
+- Led to aggressive nationalism
+
+**4. Policy of Appeasement**
+- Britain and France tried to avoid war
+- Allowed Hitler to take Austria and Czechoslovakia
+- Failed to stop aggression
+
+**Major Powers**:
+
+**Axis Powers**:
+- **Germany** (Adolf Hitler): Nazi ideology, Holocaust
+- **Italy** (Benito Mussolini): Fascism
+- **Japan** (Emperor Hirohito): Expansion in Asia
+
+**Allied Powers**:
+- **Britain** (Winston Churchill): Resisted Nazi invasion
+- **Soviet Union** (Joseph Stalin): Defeated Germany on Eastern Front
+- **United States** (Franklin D. Roosevelt): Industrial powerhouse
+- **France** (Charles de Gaulle): Occupied but resistance fought on
+- **China**: Fought Japan in Asia
+
+**Major Events**:
+
+**1939** - Germany invades Poland, war begins
+
+**1940** - Germany conquers France, Battle of Britain
+
+**1941** - Key turning points:
+- June: Germany invades Soviet Union (Operation Barbarossa)
+- December: Japan attacks Pearl Harbor, USA enters war
+
+**1942** - Axis expansion stops:
+- Battle of Midway: US defeats Japan at sea
+- Battle of Stalingrad: Soviets defeat Germany
+
+**1944** - Allied offensive:
+- D-Day (June 6): Allies invade Normandy, France
+- Liberation of France
+
+**1945** - War ends:
+- **May 8 (V-E Day)**: Germany surrenders
+- **August 6 & 9**: Atomic bombs dropped on Hiroshima and Nagasaki
+- **August 15 (V-J Day)**: Japan surrenders
+
+**The Holocaust**:
+- Nazi genocide of 6 million Jews
+- Systematic murder in concentration camps
+- Also targeted Roma, disabled, political opponents, LGBTQ
+- Liberation of camps revealed horrific atrocities
+
+**Impact and Results**:
+- **Casualties**: 70-85 million deaths (military and civilian)
+- **United Nations**: Created to prevent future wars
+- **Cold War**: USA vs Soviet Union rivalry begins
+- **Decolonization**: European empires collapse
+- **Nuclear Age**: Atomic weapons change warfare
+- **Human Rights**: Universal Declaration of Human Rights
+- **Israel**: Jewish state created (1948)
+- **Germany and Japan**: Occupied and rebuilt as democracies`,
+    examples: [
+      "D-Day invasion was largest amphibious assault in history",
+      "Holocaust was systematic genocide of 6 million Jews",
+      "Pearl Harbor attack brought USA into war",
+      "Atomic bombs forced Japan's surrender"
+    ],
+    commonMistakes: [
+      "❌ USA entered war in 1939 → ✅ USA entered in December 1941 after Pearl Harbor",
+      "❌ Holocaust was discovered after war → ✅ Some knew during war but full horror revealed at end"
+    ],
+    keyPoints: [
+      "WWII caused by Treaty of Versailles, totalitarianism, and appeasement",
+      "Deadliest war in history with 70-85 million deaths",
+      "Ended with atomic bombs and created United Nations"
+    ],
+    source: "World History Standards - Grade 11",
+    lastVerified: "2025-01-04"
+  },
+
+  // Civil Rights Movement (High School)
+  {
+    id: "soc-high-civil-rights",
+    subject: "social-studies",
+    topic: "Civil Rights Movement",
+    topicKo: "시민권 운동",
+    gradeLevel: "11",
+    schoolLevel: "high",
+    content: `The Civil Rights Movement (1950s-1960s) was a struggle for racial equality and justice for African Americans.
+
+**Historical Background**:
+
+**Slavery and Reconstruction**:
+- Slavery ended with 13th Amendment (1865)
+- Reconstruction (1865-1877): Brief period of progress
+- 14th Amendment: Citizenship for all born in USA
+- 15th Amendment: Voting rights regardless of race
+
+**Jim Crow Era (1877-1954)**:
+- Segregation laws in Southern states
+- "Separate but equal" (Plessy v. Ferguson, 1896)
+- Voting restrictions: Poll taxes, literacy tests, violence
+- Lynching and racial terrorism
+- Inferior schools, jobs, housing for Black Americans
+
+**Major Events and Milestones**:
+
+**1954 - Brown v. Board of Education**
+- Supreme Court ruled school segregation unconstitutional
+- Overturned "separate but equal"
+- Ordered school integration
+
+**1955-1956 - Montgomery Bus Boycott**
+- Rosa Parks refused to give up bus seat
+- Led by Martin Luther King Jr.
+- Boycott lasted 381 days
+- Supreme Court ruled bus segregation unconstitutional
+
+**1957 - Little Rock Nine**
+- Nine Black students integrated Little Rock Central High School
+- President Eisenhower sent federal troops to protect them
+- Showed federal government support for integration
+
+**1960 - Sit-ins**
+- Black students sat at whites-only lunch counters
+- Nonviolent protest spread across South
+- Led to desegregation of many facilities
+
+**1961 - Freedom Rides**
+- Activists rode buses to challenge segregation
+- Faced violent attacks
+- Gained national attention
+
+**1963 - Birmingham Campaign**
+- MLK led protests in Birmingham, Alabama
+- Police used dogs and fire hoses on peaceful protesters
+- Images shocked nation and world
+- MLK wrote "Letter from Birmingham Jail"
+
+**1963 - March on Washington**
+- 250,000 people gathered in Washington DC
+- MLK delivered "I Have a Dream" speech
+- Pressured government to act
+
+**1964 - Civil Rights Act**
+- Outlawed discrimination based on race, color, religion, sex, national origin
+- Ended segregation in public places
+- Banned employment discrimination
+- Major legislative victory
+
+**1965 - Voting Rights Act**
+- Outlawed discriminatory voting practices
+- Federal oversight of elections in some states
+- Dramatically increased Black voter registration
+
+**1968 - Fair Housing Act**
+- Banned discrimination in housing
+- Passed after MLK assassination
+
+**Key Leaders**:
+- **Martin Luther King Jr.**: Nonviolent resistance, "I Have a Dream"
+- **Rosa Parks**: Montgomery Bus Boycott catalyst
+- **Malcolm X**: Black nationalism, more militant approach
+- **John Lewis**: Freedom Rider, congressman
+- **Thurgood Marshall**: Lawyer (Brown case), first Black Supreme Court Justice
+- **Fannie Lou Hamer**: Voting rights activist
+
+**Tactics and Strategies**:
+- **Nonviolent Resistance**: Gandhi-inspired peaceful protest
+- **Civil Disobedience**: Breaking unjust laws
+- **Boycotts**: Economic pressure
+- **Sit-ins**: Occupying segregated spaces
+- **Freedom Rides**: Testing desegregation laws
+- **Legal Challenges**: Court cases to overturn segregation
+
+**Results and Legacy**:
+- Ended legal segregation
+- Voting rights for all Americans
+- Inspired other movements (women's rights, LGBTQ rights)
+- Ongoing work for racial justice continues
+- Showed power of nonviolent protest`,
+    examples: [
+      "Rosa Parks' bus boycott sparked year-long protest",
+      "MLK's 'I Have a Dream' speech inspired millions",
+      "Sit-ins at lunch counters spread across South",
+      "Civil Rights Act ended legal segregation"
+    ],
+    commonMistakes: [
+      "❌ Civil Rights Movement solved all racism → ✅ Legal equality achieved but social inequality persists",
+      "❌ Only MLK led movement → ✅ Many leaders with different approaches"
+    ],
+    keyPoints: [
+      "Movement fought against Jim Crow segregation",
+      "Used nonviolent tactics to achieve change",
+      "Major laws: Civil Rights Act, Voting Rights Act"
+    ],
+    source: "US History Standards - Grade 11",
+    lastVerified: "2025-01-04"
+  },
+
+  // International Relations (University)
+  {
+    id: "soc-univ-international-relations",
+    subject: "social-studies",
+    topic: "International Relations",
+    topicKo: "국제 관계",
+    gradeLevel: "13",
+    schoolLevel: "university",
+    content: `International Relations (IR) studies interactions between nation-states, international organizations, and non-state actors.
+
+**Major Theoretical Frameworks**:
+
+**1. Realism**
+- **Core Assumption**: States are primary actors seeking power and security
+- **Key Concepts**:
+  - Anarchy: No world government above states
+  - Self-help: States must protect themselves
+  - Balance of power: Prevent any state from dominating
+  - National interest guides foreign policy
+- **Critics**: Hans Morgenthau, Kenneth Waltz
+- **Example**: Cold War arms race, alliances
+
+**2. Liberalism**
+- **Core Assumption**: Cooperation possible through institutions and interdependence
+- **Key Concepts**:
+  - International institutions matter (UN, WTO, NATO)
+  - Democratic peace theory: Democracies rarely fight each other
+  - Economic interdependence reduces conflict
+  - International law and norms shape behavior
+- **Critics**: Woodrow Wilson, Robert Keohane, Joseph Nye
+- **Example**: European Union, free trade agreements
+
+**3. Constructivism**
+- **Core Assumption**: Ideas, norms, and identities shape state behavior
+- **Key Concepts**:
+  - State interests are socially constructed, not given
+  - Norms and culture matter
+  - Identity shapes foreign policy
+  - Intersubjective understanding
+- **Critics**: Alexander Wendt
+- **Example**: Spread of human rights norms, end of apartheid
+
+**Key Concepts**:
+
+**Power**:
+- **Hard Power**: Military force, economic sanctions
+- **Soft Power**: Culture, values, diplomacy (Joseph Nye)
+- **Smart Power**: Combination of hard and soft power
+
+**Security**:
+- **Traditional Security**: Military threats, war
+- **Human Security**: Poverty, disease, human rights
+- **Security Dilemma**: One state's security makes others feel insecure
+
+**International Organizations**:
+- **United Nations (UN)**: Peace, security, human rights, development
+- **NATO**: Military alliance (North Atlantic Treaty Organization)
+- **WTO**: World Trade Organization, regulates international trade
+- **IMF/World Bank**: Economic development and financial stability
+- **Regional Organizations**: EU, ASEAN, African Union
+
+**Global Issues**:
+
+**1. War and Peace**
+- Just war theory
+- Collective security
+- Peacekeeping operations
+- Nuclear proliferation
+
+**2. Economic Globalization**
+- Free trade vs protectionism
+- Multinational corporations
+- Global supply chains
+- Economic inequality
+
+**3. Human Rights**
+- Universal Declaration of Human Rights
+- Responsibility to Protect (R2P)
+- Humanitarian intervention debates
+- International Criminal Court
+
+**4. Environmental Issues**
+- Climate change (Paris Agreement)
+- Transboundary pollution
+- Global commons (oceans, Antarctica)
+- Sustainable development
+
+**5. Terrorism and Non-State Actors**
+- Transnational terrorism
+- Cyber warfare
+- NGOs and advocacy networks
+- Multinational corporations
+
+**Contemporary Challenges**:
+- US-China rivalry
+- Russia-West tensions
+- Nuclear weapons (Iran, North Korea)
+- Migration and refugees
+- Pandemic response
+- Cyber security
+- Climate crisis
+
+**Levels of Analysis**:
+1. **Individual Level**: Leaders' personalities, beliefs
+2. **State Level**: Government type, domestic politics, economy
+3. **System Level**: Structure of international system (unipolar, bipolar, multipolar)`,
+    examples: [
+      "Realism: Cold War as US-Soviet power struggle",
+      "Liberalism: EU integration through trade and institutions",
+      "Constructivism: End of Cold War through changing ideas",
+      "Soft power: American culture spreading through movies and music"
+    ],
+    commonMistakes: [
+      "❌ One theory explains everything → ✅ Different theories useful for different situations",
+      "❌ UN controls all countries → ✅ UN has limited enforcement power"
+    ],
+    keyPoints: [
+      "Multiple theories explain international relations",
+      "Power, security, and cooperation are central themes",
+      "Global challenges require international cooperation"
+    ],
+    source: "International Relations Theory - University Level",
+    lastVerified: "2025-01-04"
+  },
+
+  // Political Philosophy (University)
+  {
+    id: "soc-univ-political-philosophy",
+    subject: "social-studies",
+    topic: "Political Philosophy",
+    topicKo: "정치 철학",
+    gradeLevel: "14",
+    schoolLevel: "university",
+    content: `Political philosophy examines fundamental questions about government, justice, rights, law, and political obligation.
+
+**Classical Political Philosophy**:
+
+**Plato (428-348 BCE)**
+- **The Republic**: Ideal state ruled by philosopher-kings
+- Justice: Each person doing their proper role
+- Three classes: Rulers (gold), Guardians (silver), Workers (bronze)
+- Criticized democracy as rule by ignorant masses
+- Theory of Forms: True reality beyond physical world
+
+**Aristotle (384-322 BCE)**
+- Politics is natural to humans ("political animal")
+- Goal of politics: Common good and human flourishing
+- Best government: Mixed constitution balancing monarchy, aristocracy, democracy
+- Critiqued pure democracy (mob rule) and oligarchy (rule by rich)
+- Virtue ethics: Good life requires cultivating virtues
+
+**Modern Political Philosophy**:
+
+**Thomas Hobbes (1588-1679)**
+- **Leviathan**: Social contract theory
+- State of nature: "War of all against all," life "nasty, brutish, short"
+- People surrender rights to sovereign for security
+- Absolute monarchy needed to prevent chaos
+- Justifies strong central authority
+
+**John Locke (1632-1704)**
+- **Two Treatises of Government**
+- State of nature: Generally peaceful but insecure
+- Natural rights: Life, liberty, property
+- Social contract: People consent to government to protect rights
+- Right to revolution if government violates rights
+- Influenced American Declaration of Independence
+- Separation of powers
+
+**Jean-Jacques Rousseau (1712-1778)**
+- **The Social Contract**: "Man is born free but everywhere in chains"
+- General will: What's best for community as whole
+- Direct democracy ideal
+- Private property creates inequality
+- Criticized civilization as corrupting natural goodness
+
+**Immanuel Kant (1724-1804)**
+- Perpetual peace through democracy and federation
+- Categorical imperative: Moral law based on reason
+- Human dignity: People are ends in themselves, not means
+- Enlightenment: "Dare to know!" Use reason
+- Republican government and international cooperation
+
+**John Stuart Mill (1806-1873)**
+- **On Liberty**: Harm principle
+- Individual liberty unless harming others
+- Free speech essential for truth discovery
+- Utilitarianism: Greatest happiness for greatest number
+- Defended democracy and women's rights
+- Marketplace of ideas
+
+**Karl Marx (1818-1883)**
+- Capitalism exploits workers
+- History driven by class struggle
+- Workers should own means of production
+- Revolution needed to create classless society
+- Communism: "From each according to ability, to each according to need"
+- Criticized as ignoring human nature and freedom
+
+**Contemporary Political Philosophy**:
+
+**John Rawls (1921-2002)**
+- **A Theory of Justice**: Justice as fairness
+- Original position: Behind veil of ignorance
+- Two principles:
+  1. Equal basic liberties for all
+  2. Inequality allowed only if benefits worst-off (difference principle)
+- Social contract for modern times
+
+**Robert Nozick (1938-2002)**
+- **Anarchy, State, and Utopia**: Libertarianism
+- Minimal state only (protection, contracts)
+- Taxation is forced labor
+- Absolute property rights
+- Criticized Rawls' redistribution
+
+**Michael Sandel (1953-)**
+- Communitarianism: Community shapes identity
+- Justice depends on purpose and virtues
+- Critiques libertarianism and Rawls
+- Markets should not decide everything
+
+**Key Concepts**:
+
+**Justice**:
+- Distributive justice: Fair allocation of resources
+- Procedural justice: Fair processes
+- Retributive justice: Fair punishment
+- Restorative justice: Healing and reconciliation
+
+**Rights**:
+- Natural rights vs legal rights
+- Negative rights: Freedom from interference
+- Positive rights: Entitlements (healthcare, education)
+- Human rights: Universal rights of all people
+
+**Authority and Obligation**:
+- When is government legitimate?
+- Do citizens have duty to obey laws?
+- When is civil disobedience justified?
+
+**Liberty vs Equality**:
+- Tension between freedom and fairness
+- Negative liberty: Freedom from constraints
+- Positive liberty: Freedom to achieve potential
+
+**Democracy**:
+- Majority rule vs minority rights
+- Direct vs representative democracy
+- Deliberative democracy: Reasoned discussion`,
+    examples: [
+      "Hobbes: Strong government needed to prevent chaos",
+      "Locke: Government must protect natural rights or be overthrown",
+      "Rawls: Design society behind 'veil of ignorance'",
+      "Nozick: Taxation violates individual property rights"
+    ],
+    commonMistakes: [
+      "❌ All philosophers agree on democracy → ✅ Plato and Hobbes skeptical of democracy",
+      "❌ Marx wanted dictatorship → ✅ Marx envisioned classless society without state"
+    ],
+    keyPoints: [
+      "Political philosophy examines justice, rights, authority",
+      "Social contract theory: Government by consent",
+      "Tension between liberty, equality, community"
+    ],
+    source: "Political Philosophy - University Level",
     lastVerified: "2025-01-04"
   }
 ];
