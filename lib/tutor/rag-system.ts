@@ -1474,6 +1474,244 @@ Indeterminate forms (need more work):
 ];
 
 /**
+ * SCIENCE VERIFIED CONTENT
+ */
+export const SCIENCE_VERIFIED_CONTENT: VerifiedContent[] = [
+  // States of Matter (Elementary)
+  {
+    id: "sci-elem-states-matter",
+    subject: "science",
+    topic: "States of Matter",
+    topicKo: "물질의 상태",
+    gradeLevel: "3",
+    schoolLevel: "elementary",
+    content: `Matter exists in three main states: solid, liquid, and gas.
+
+**Solid**:
+- Has definite shape and volume
+- Particles are tightly packed and vibrate in place
+- Examples: ice, rock, wood
+
+**Liquid**:
+- Has definite volume but takes shape of container
+- Particles move freely but stay close together
+- Examples: water, juice, oil
+
+**Gas**:
+- No definite shape or volume
+- Particles move freely and spread out
+- Examples: air, steam, helium
+
+**Changes of state**:
+- Melting: solid → liquid (ice → water)
+- Freezing: liquid → solid (water → ice)
+- Evaporation: liquid → gas (water → steam)
+- Condensation: gas → liquid (steam → water drops)`,
+    examples: [
+      "Ice is solid water",
+      "Water is liquid at room temperature",
+      "Steam is water in gas form",
+      "When ice melts, it becomes liquid water"
+    ],
+    commonMistakes: [
+      "❌ Gas has shape → ✅ Gas has no definite shape",
+      "❌ Solid particles move freely → ✅ Solid particles vibrate in place"
+    ],
+    keyPoints: [
+      "Three main states: solid, liquid, gas",
+      "Each state has different particle arrangement",
+      "Matter can change states with temperature"
+    ],
+    source: "Next Generation Science Standards (NGSS) - Grade 3",
+    lastVerified: "2025-01-04"
+  },
+
+  // Cell Biology (Middle School)
+  {
+    id: "sci-mid-cell-biology",
+    subject: "science",
+    topic: "Cell Structure",
+    topicKo: "세포 구조",
+    gradeLevel: "7",
+    schoolLevel: "middle",
+    content: `Cells are the basic unit of life. All living things are made of cells.
+
+**Cell parts and functions**:
+- Nucleus: control center, contains DNA
+- Cell membrane: outer boundary, controls what enters/exits
+- Cytoplasm: jelly-like substance that fills the cell
+- Mitochondria: powerhouse, makes energy (ATP)
+- Chloroplasts: (plants only) makes food through photosynthesis
+- Cell wall: (plants only) rigid outer structure
+
+**Plant vs Animal cells**:
+- Both have: nucleus, membrane, cytoplasm, mitochondria
+- Only plants have: cell wall, chloroplasts, large vacuole
+- Animal cells: smaller, round shape
+- Plant cells: larger, rectangular shape`,
+    examples: [
+      "Nucleus is like the brain of the cell",
+      "Mitochondria make energy for the cell",
+      "Plant cells have chloroplasts for photosynthesis",
+      "Cell membrane controls what goes in and out"
+    ],
+    commonMistakes: [
+      "❌ Animal cells have cell walls → ✅ Only plant cells have cell walls",
+      "❌ All cells have chloroplasts → ✅ Only plant cells have chloroplasts"
+    ],
+    keyPoints: [
+      "Cells are the basic unit of life",
+      "Plant and animal cells have similarities and differences",
+      "Each cell part has a specific function"
+    ],
+    source: "NGSS - Middle School Life Science",
+    lastVerified: "2025-01-04"
+  },
+
+  // Newton's Laws (Middle School)
+  {
+    id: "sci-mid-newtons-laws",
+    subject: "science",
+    topic: "Newton's Laws of Motion",
+    topicKo: "뉴턴의 운동 법칙",
+    gradeLevel: "8",
+    schoolLevel: "middle",
+    content: `Three laws that describe how objects move.
+
+**Newton's First Law (Inertia)**:
+- An object at rest stays at rest
+- An object in motion stays in motion at constant velocity
+- Unless acted upon by an outside force
+- Example: Seatbelts in cars (you keep moving forward when car stops)
+
+**Newton's Second Law (F = ma)**:
+- Force = mass × acceleration
+- Greater force = greater acceleration
+- Greater mass = less acceleration (same force)
+- Example: Pushing a heavy box is harder than light box
+
+**Newton's Third Law (Action-Reaction)**:
+- For every action, there is an equal and opposite reaction
+- Forces come in pairs
+- Example: When you push wall, wall pushes back`,
+    examples: [
+      "First Law: Ball keeps rolling unless friction stops it",
+      "Second Law: F = ma, so 10N = 5kg × 2m/s²",
+      "Third Law: Rocket pushes gas down, gas pushes rocket up",
+      "Inertia: Passengers lurch forward when car brakes suddenly"
+    ],
+    commonMistakes: [
+      "❌ Objects naturally slow down → ✅ Friction causes slowing (First Law)",
+      "❌ More mass = more acceleration → ✅ More mass = less acceleration (F=ma)"
+    ],
+    keyPoints: [
+      "First Law: Objects resist changes in motion (inertia)",
+      "Second Law: F = ma (force, mass, acceleration relationship)",
+      "Third Law: Action and reaction forces are equal and opposite"
+    ],
+    source: "NGSS - Middle School Physical Science",
+    lastVerified: "2025-01-04"
+  },
+
+  // Chemical Reactions (High School)
+  {
+    id: "sci-high-chemical-reactions",
+    subject: "science",
+    topic: "Chemical Reactions",
+    topicKo: "화학 반응",
+    gradeLevel: "10",
+    schoolLevel: "high",
+    content: `Chemical reactions form new substances with different properties.
+
+**Signs of chemical reaction**:
+- Color change
+- Gas production (bubbles)
+- Precipitate formation (solid forms)
+- Temperature change
+- Light emission
+
+**Types of reactions**:
+1. Synthesis: A + B → AB (combine)
+2. Decomposition: AB → A + B (break apart)
+3. Single replacement: A + BC → AC + B
+4. Double replacement: AB + CD → AD + CB
+5. Combustion: fuel + O₂ → CO₂ + H₂O + energy
+
+**Balancing equations**:
+- Law of conservation of mass
+- Same number of each atom on both sides
+- Example: 2H₂ + O₂ → 2H₂O`,
+    examples: [
+      "Synthesis: 2H₂ + O₂ → 2H₂O",
+      "Decomposition: 2H₂O → 2H₂ + O₂",
+      "Combustion: CH₄ + 2O₂ → CO₂ + 2H₂O",
+      "Rust formation: 4Fe + 3O₂ → 2Fe₂O₃"
+    ],
+    commonMistakes: [
+      "❌ Changing subscripts to balance → ✅ Change coefficients only",
+      "❌ Unequal atoms on both sides → ✅ Must balance equation"
+    ],
+    keyPoints: [
+      "Chemical reactions create new substances",
+      "Matter is conserved (same atoms before and after)",
+      "Equations must be balanced"
+    ],
+    source: "Next Generation Science Standards - High School Chemistry",
+    lastVerified: "2025-01-04"
+  },
+
+  // DNA and Genetics (High School)
+  {
+    id: "sci-high-dna-genetics",
+    subject: "science",
+    topic: "DNA and Genetics",
+    topicKo: "DNA와 유전학",
+    gradeLevel: "11",
+    schoolLevel: "high",
+    content: `DNA carries genetic information and determines traits.
+
+**DNA Structure**:
+- Double helix shape (twisted ladder)
+- Made of nucleotides: A, T, G, C
+- Base pairing rules: A pairs with T, G pairs with C
+- Contains genes (instructions for traits)
+
+**DNA → RNA → Protein**:
+- Transcription: DNA → mRNA (in nucleus)
+- Translation: mRNA → protein (at ribosome)
+- Proteins determine traits
+
+**Inheritance patterns**:
+- Dominant allele: expressed if present (A)
+- Recessive allele: only expressed if two copies (a)
+- Genotype: genetic makeup (AA, Aa, aa)
+- Phenotype: physical appearance
+
+**Punnett squares**:
+- Predict offspring traits
+- Cross parents' genotypes
+- Calculate probability of traits`,
+    examples: [
+      "DNA bases: Adenine, Thymine, Guanine, Cytosine",
+      "If A = brown eyes (dominant), a = blue eyes (recessive)",
+      "AA or Aa = brown eyes, aa = blue eyes",
+      "Punnett square: Aa × Aa → 25% AA, 50% Aa, 25% aa"
+    ],
+    commonMistakes: [
+      "❌ A pairs with G → ✅ A pairs with T, G pairs with C",
+      "❌ One copy of recessive shows trait → ✅ Need two copies (homozygous)"
+    ],
+    keyPoints: [
+      "DNA is a double helix with specific base pairing",
+      "DNA → RNA → Protein (Central Dogma)",
+      "Dominant alleles mask recessive alleles"
+    ],
+    source: "NGSS - High School Life Science",
+    lastVerified: "2025-01-04"
+  }
+];
+
+/**
  * ════════════════════════════════════════════════════════════════
  * RAG RETRIEVAL FUNCTIONS
  * ════════════════════════════════════════════════════════════════
@@ -1496,7 +1734,11 @@ export async function retrieveVerifiedContent(
 ): Promise<RetrievedContext> {
   try {
     // Get verified content database
-    const database = subject === 'english' ? ENGLISH_VERIFIED_CONTENT : MATH_VERIFIED_CONTENT;
+    const database =
+      subject === 'english' ? ENGLISH_VERIFIED_CONTENT :
+      subject === 'math' ? MATH_VERIFIED_CONTENT :
+      subject === 'science' ? SCIENCE_VERIFIED_CONTENT :
+      [];
 
     // Use AI to identify relevant topics
     const relevantTopics = await identifyRelevantTopics(question, subject);
@@ -1679,7 +1921,11 @@ export function getVerifiedContentByTopic(
   topic: string,
   subject: Subject
 ): VerifiedContent | undefined {
-  const database = subject === 'english' ? ENGLISH_VERIFIED_CONTENT : MATH_VERIFIED_CONTENT;
+  const database =
+    subject === 'english' ? ENGLISH_VERIFIED_CONTENT :
+    subject === 'math' ? MATH_VERIFIED_CONTENT :
+    subject === 'science' ? SCIENCE_VERIFIED_CONTENT :
+    [];
 
   return database.find(vc =>
     vc.topic.toLowerCase() === topic.toLowerCase() ||

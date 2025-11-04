@@ -12,7 +12,7 @@
  */
 
 export type SchoolLevel = 'elementary' | 'middle' | 'high' | 'university';
-export type Subject = 'english' | 'math';
+export type Subject = 'english' | 'math' | 'science' | 'social-studies';
 
 export interface CurriculumTopic {
   id: string;
@@ -1110,6 +1110,89 @@ export const MATH_CURRICULUM: GradeCurriculum[] = [
 
 /**
  * ════════════════════════════════════════════════════════════════
+ * SCIENCE CURRICULUM DATABASE
+ * ════════════════════════════════════════════════════════════════
+ */
+
+export const SCIENCE_CURRICULUM: GradeCurriculum[] = [
+  // Elementary School (Grades 3-6)
+  {
+    grade: "3",
+    schoolLevel: "elementary",
+    subject: "science",
+    topics: [
+      {
+        id: "sci-elem-3-states-matter",
+        name: "States of Matter",
+        nameKo: "물질의 상태",
+        description: "Solid, liquid, gas properties and changes",
+        keywords: ["matter", "solid", "liquid", "gas", "물질", "고체", "액체", "기체"],
+        examples: ["What is matter?", "What are the states of matter?"]
+      },
+      {
+        id: "sci-elem-3-plants",
+        name: "Plants and Life Cycles",
+        nameKo: "식물과 생명 주기",
+        description: "Plant parts, growth, and life cycles",
+        keywords: ["plant", "life cycle", "growth", "식물", "생명주기"],
+        examples: ["What do plants need?", "How do plants grow?"]
+      }
+    ]
+  },
+
+  // Middle School
+  {
+    grade: "7",
+    schoolLevel: "middle",
+    subject: "science",
+    topics: [
+      {
+        id: "sci-mid-7-cell-biology",
+        name: "Cell Structure and Function",
+        nameKo: "세포 구조와 기능",
+        description: "Cell organelles, plant vs animal cells",
+        keywords: ["cell", "organelle", "nucleus", "mitochondria", "세포"],
+        examples: ["What is a cell?", "What are organelles?"]
+      },
+      {
+        id: "sci-mid-7-forces",
+        name: "Forces and Motion",
+        nameKo: "힘과 운동",
+        description: "Newton's laws, gravity, friction",
+        keywords: ["force", "motion", "gravity", "Newton", "힘", "운동"],
+        examples: ["What is Newton's first law?", "What is gravity?"]
+      }
+    ]
+  },
+
+  // High School
+  {
+    grade: "10",
+    schoolLevel: "high",
+    subject: "science",
+    topics: [
+      {
+        id: "sci-high-10-chemistry-basics",
+        name: "Chemical Reactions",
+        nameKo: "화학 반응",
+        description: "Types of reactions, balancing equations",
+        keywords: ["chemistry", "reaction", "equation", "화학", "반응"],
+        examples: ["What is a chemical reaction?", "How to balance equations?"]
+      },
+      {
+        id: "sci-high-10-biology",
+        name: "Genetics and DNA",
+        nameKo: "유전학과 DNA",
+        description: "DNA structure, inheritance, genetics",
+        keywords: ["DNA", "genetics", "inheritance", "유전", "유전학"],
+        examples: ["What is DNA?", "How does inheritance work?"]
+      }
+    ]
+  }
+];
+
+/**
+ * ════════════════════════════════════════════════════════════════
  * CURRICULUM LOOKUP FUNCTIONS
  * ════════════════════════════════════════════════════════════════
  */
@@ -1121,7 +1204,11 @@ export function getCurriculum(
   grade: string,
   subject: Subject
 ): GradeCurriculum | undefined {
-  const database = subject === 'english' ? ENGLISH_CURRICULUM : MATH_CURRICULUM;
+  const database =
+    subject === 'english' ? ENGLISH_CURRICULUM :
+    subject === 'math' ? MATH_CURRICULUM :
+    subject === 'science' ? SCIENCE_CURRICULUM :
+    [];
   return database.find(c => c.grade === grade && c.subject === subject);
 }
 
@@ -1132,7 +1219,11 @@ export function getTopicsByLevel(
   schoolLevel: SchoolLevel,
   subject: Subject
 ): CurriculumTopic[] {
-  const database = subject === 'english' ? ENGLISH_CURRICULUM : MATH_CURRICULUM;
+  const database =
+    subject === 'english' ? ENGLISH_CURRICULUM :
+    subject === 'math' ? MATH_CURRICULUM :
+    subject === 'science' ? SCIENCE_CURRICULUM :
+    [];
   return database
     .filter(c => c.schoolLevel === schoolLevel)
     .flatMap(c => c.topics);
@@ -1198,6 +1289,7 @@ export function getTopicGrade(
 export function getAllCurriculum() {
   return {
     english: ENGLISH_CURRICULUM,
-    math: MATH_CURRICULUM
+    math: MATH_CURRICULUM,
+    science: SCIENCE_CURRICULUM
   };
 }
