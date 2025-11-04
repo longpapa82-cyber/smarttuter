@@ -7,6 +7,8 @@ import { contentLevelDetector } from "@/lib/tutor/content-level-detector";
 import { getRandomGuidanceMessage } from "@/lib/tutor/guidance-messages";
 import { trackLearningEvent } from "@/lib/learning-progress/progress-tracker";
 import type { LearningEvent } from "@/lib/learning-progress/types";
+import { classifyQuestion, isObviouslyOffTopic } from "@/lib/tutor/question-classifier";
+import { filterBySubject } from "@/lib/tutor/response-filter";
 
 // Initialize Gemini client
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
@@ -44,6 +46,63 @@ export async function POST(req: NextRequest) {
         JSON.stringify({ error: "User profile not found. Please complete onboarding." }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
+    }
+
+    // 🎯 Week 1: Subject Classification - Quick pre-filter
+    if (isObviouslyOffTopic(message, 'math')) {
+      const encoder = new TextEncoder();
+      const quickFilterStream = new ReadableStream({
+        start(controller) {
+          const redirectMsg = `🔢 수학 관련 질문은 **Math Park**에서 도와드릴 수 있어요!
+
+저는 수학 전문 튜터예요. 수학 계산, 문제 풀이, 개념 설명을 도와드려요! 🧮`;
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: redirectMsg })}\n\n`));
+          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+          controller.close();
+        },
+      });
+
+      return new Response(quickFilterStream, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          "Connection": "keep-alive",
+          "X-Subject-Filter": "off-topic-quick",
+        },
+      });
+    }
+
+    // 🎯 Week 1: AI-based Subject Classification
+    const classification = await classifyQuestion(message, 'math');
+    const filterResult = filterBySubject(classification, 'math');
+
+    if (!filterResult.shouldRespond) {
+      const encoder = new TextEncoder();
+      const filterStream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: filterResult.redirectMessage })}\n\n`));
+          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+          controller.close();
+        },
+      });
+
+      // Log filter event
+      console.log('[Subject Filter] Math Tutor:', {
+        message: message.substring(0, 50),
+        detected: classification.subject,
+        confidence: classification.confidence,
+        filtered: true
+      });
+
+      return new Response(filterStream, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          "Connection": "keep-alive",
+          "X-Subject-Filter": classification.subject,
+          "X-Filter-Confidence": classification.confidence.toString(),
+        },
+      });
     }
 
     // Content level detection
