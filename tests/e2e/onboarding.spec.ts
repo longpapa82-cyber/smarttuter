@@ -7,7 +7,7 @@ test.describe('Onboarding Flow', () => {
 
     // Check initial state - Welcome screen
     await expect(page).toHaveTitle(/AI Park/);
-    await expect(page.locator('text=SmartTutor에')).toBeVisible();
+    await expect(page.locator('text=AI Park')).toBeVisible();
 
     // Click through Welcome screen (Step 0)
     await page.click('button:has-text("시작하기")');

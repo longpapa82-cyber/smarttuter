@@ -19,7 +19,7 @@ export type ModuleType =
 /**
  * 학습 주제 (과목별)
  */
-export type Subject = 'math' | 'english';
+export type Subject = 'english' | 'math' | 'science' | 'social-studies';
 
 /**
  * 수학 주제

@@ -126,7 +126,7 @@ class ResponseCache {
 
     // 정확한 매치 없으면 유사 질문 찾기
     if (!entry) {
-      entry = this.findSimilarEntry(question, subject, gradeLevel);
+      entry = this.findSimilarEntry(question, subject, gradeLevel) || undefined;
     }
 
     // 캐시 히트

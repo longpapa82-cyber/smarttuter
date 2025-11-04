@@ -78,6 +78,32 @@ const LEARNING_KEYWORDS = {
     'adjective', 'adverb', 'preposition', 'conjunction',
     'listen', 'speak', 'read', 'write', 'conversation',
   ],
+
+  science: [
+    // 한글
+    '과학', '물리', '화학', '생물', '실험', '이론', '법칙', '원리',
+    '광합성', '세포', '원소', '반응', '에너지', '힘', '운동',
+    '분자', '원자', '유전', '진화', '생태계', '지구', '우주',
+
+    // 영어
+    'science', 'physics', 'chemistry', 'biology', 'experiment',
+    'theory', 'law', 'principle', 'photosynthesis', 'cell',
+    'element', 'reaction', 'energy', 'force', 'motion',
+    'molecule', 'atom', 'genetics', 'evolution', 'ecosystem',
+  ],
+
+  'social-studies': [
+    // 한글
+    '사회', '역사', '지리', '정치', '경제', '문화', '사건', '인물',
+    '전쟁', '조약', '혁명', '민주주의', '제도', '헌법', '시장',
+    '무역', '지도', '기후', '인구', '도시', '국가', '세계',
+
+    // 영어
+    'social', 'history', 'geography', 'politics', 'economy',
+    'culture', 'event', 'war', 'treaty', 'revolution',
+    'democracy', 'system', 'constitution', 'market', 'trade',
+    'map', 'climate', 'population', 'city', 'nation', 'world',
+  ],
 };
 
 /**

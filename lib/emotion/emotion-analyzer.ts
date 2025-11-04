@@ -1,6 +1,6 @@
 // lib/emotion/emotion-analyzer.ts
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { vertexAIClient } from '@/lib/ai/vertex-client';
 import type {
   EmotionAnalysis,
   EmotionAnalysisRequest,
@@ -11,21 +11,11 @@ import type {
 import { EMOTION_RESPONSE_TEMPLATES } from '@/types/emotion';
 
 /**
- * Gemini API를 활용한 감정 분석 엔진
+ * Vertex AI를 활용한 감정 분석 엔진
  */
 export class EmotionAnalyzer {
-  private genAI: GoogleGenerativeAI;
-  private model: any;
-  private apiKey: string;
-
-  constructor(apiKey: string) {
-    if (!apiKey || apiKey.trim() === '') {
-      throw new Error('GEMINI_API_KEY is required for emotion analysis');
-    }
-
-    this.apiKey = apiKey;
-    this.genAI = new GoogleGenerativeAI(apiKey);
-    this.model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
+  constructor(apiKey?: string) {
+    // API key no longer needed - using Vertex AI
   }
 
   /**
@@ -35,9 +25,21 @@ export class EmotionAnalyzer {
     const prompt = this.buildAnalysisPrompt(request);
 
     try {
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
+      // Use Vertex AI with flash tier (fast emotion analysis)
+      const streamIterator = await vertexAIClient.generateContentStream(
+        prompt,
+        'flash',
+        {
+          temperature: 0.3,
+          maxTokens: 256,
+        }
+      );
+
+      // Collect streaming response
+      let text = '';
+      for await (const chunk of streamIterator) {
+        text += chunk;
+      }
 
       // JSON 응답 파싱
       const emotionData = this.parseEmotionResponse(text);
@@ -144,7 +146,7 @@ Return ONLY the JSON, no markdown formatting.`;
   }
 
   /**
-   * Gemini API 응답 파싱
+   * Gemini API 응답 파싱 (강건한 JSON 추출)
    */
   private parseEmotionResponse(responseText: string): Omit<EmotionAnalysis, 'timestamp' | 'source'> {
     try {
@@ -152,7 +154,19 @@ Return ONLY the JSON, no markdown formatting.`;
       let jsonText = responseText.trim();
       jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
 
-      const parsed = JSON.parse(jsonText);
+      // Try to extract JSON object using regex (more robust)
+      const jsonMatch = jsonText.match(/\{[^{}]*"primary"[^{}]*\}/s);
+      if (!jsonMatch) {
+        console.warn('[Emotion] No valid JSON found in response, using fallback');
+        return this.getFallbackEmotion();
+      }
+
+      // Fix common issues: single quotes to double quotes
+      const cleanJson = jsonMatch[0]
+        .replace(/'/g, '"')
+        .replace(/(\w+):/g, '"$1":');
+
+      const parsed = JSON.parse(cleanJson);
 
       return {
         primary: parsed.primary as EmotionCategory,

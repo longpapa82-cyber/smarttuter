@@ -49,6 +49,8 @@ export async function POST(req: NextRequest) {
       return new Response(
         JSON.stringify({ error: "User profile not found. Please complete onboarding." }),
         { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
 
     // 🚀 Phase 1: Check smart cache first (saves 4 API calls if hit)
     const gradeStr = String(userProfile.gradeLevelDetail || '5');
@@ -99,8 +101,6 @@ export async function POST(req: NextRequest) {
           "X-Subject-Filter": "off-topic-quick-no-api",
         },
       });
-    }
-      );
     }
 
     // 🎯 Week 1: Subject Classification - Quick pre-filter

@@ -5,12 +5,10 @@
  * Khan Academy Khanmigo의 주제 필터링 시스템을 참고하여 구현했습니다.
  */
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+import { vertexAIClient } from '@/lib/ai/vertex-client';
 
 export interface QuestionClassification {
-  subject: 'english' | 'math' | 'science' | 'social' | 'other';
+  subject: 'english' | 'math' | 'science' | 'social-studies' | 'other';
   confidence: number; // 0-100
   isOnTopic: boolean;
   reason: string;
@@ -26,18 +24,9 @@ export interface QuestionClassification {
  */
 export async function classifyQuestion(
   question: string,
-  expectedSubject: 'english' | 'math'
+  expectedSubject: 'english' | 'math' | 'science' | 'social-studies'
 ): Promise<QuestionClassification> {
   try {
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.0-flash-exp',
-      generationConfig: {
-        temperature: 0.1, // 낮은 temperature로 일관된 분류
-        topP: 0.8,
-        topK: 40,
-      }
-    });
-
     const prompt = `당신은 교육 전문가입니다. 다음 질문이 어느 교과에 해당하는지 정확하게 분류하세요.
 
 질문: "${question}"
@@ -92,16 +81,42 @@ JSON 형식으로만 응답하세요:
   "detectedKeywords": ["감지된 키워드들"]
 }`;
 
-    const result = await model.generateContent(prompt);
-    const responseText = result.response.text();
+    // Use Vertex AI with flash tier (fast classification)
+    const streamIterator = await vertexAIClient.generateContentStream(
+      prompt,
+      'flash',
+      {
+        temperature: 0.1, // Low temperature for consistent classification
+        maxTokens: 256,
+      }
+    );
 
-    // JSON 추출 (```json ``` 마크다운 제거)
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error('Failed to parse AI response');
+    // Collect streaming response
+    let responseText = '';
+    for await (const text of streamIterator) {
+      responseText += text;
     }
 
-    const classification = JSON.parse(jsonMatch[0]);
+    // JSON 추출 (강건한 매칭 - 마크다운 및 설명 텍스트 허용)
+    let jsonMatch = responseText.match(/\{[\s\S]*?\}/);
+
+    // Try alternative pattern if first fails (markdown code block)
+    if (!jsonMatch) {
+      jsonMatch = responseText.match(/```json\s*(\{[\s\S]*?\})\s*```/);
+      if (jsonMatch) jsonMatch[0] = jsonMatch[1];
+    }
+
+    if (!jsonMatch) {
+      console.warn('[Classifier] No JSON found in response, using fallback');
+      return fallbackClassification(question, expectedSubject);
+    }
+
+    // Fix common JSON issues
+    const cleanJson = jsonMatch[0]
+      .replace(/'/g, '"')
+      .replace(/(\w+):/g, '"$1":');
+
+    const classification = JSON.parse(cleanJson);
 
     return {
       subject: classification.subject,
@@ -126,7 +141,7 @@ JSON 형식으로만 응답하세요:
  */
 function fallbackClassification(
   question: string,
-  expectedSubject: 'english' | 'math'
+  expectedSubject: 'english' | 'math' | 'science' | 'social-studies'
 ): QuestionClassification {
   const lowerQuestion = question.toLowerCase();
 

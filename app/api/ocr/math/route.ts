@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+import { vertexAIClient } from '@/lib/ai/vertex-client';
 
 export async function POST(req: NextRequest) {
   let ocrText = '';
@@ -17,18 +15,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Gemini 2.0 Flash 모델 사용 (무료)
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
-
     let mathText = '';
 
-    // Strategy 1: If we have image, use Gemini Vision to extract math directly
+    // Strategy 1: If we have image, use Vertex AI Vision directly (most accurate)
     if (imageBase64) {
-      const prompt = `
-이 이미지에 있는 수학 문제나 수식을 정확하게 텍스트로 변환해주세요.
+      const prompt = `이 이미지에 있는 수학 문제나 수식을 정확하게 텍스트로 변환해주세요.
 
 변환 규칙:
-1. 수식은 명확하게 표기 (예: x^2 + 2x + 1)
+1. 수식은 명확하게 표기 (예: x² + 2x + 1)
 2. 분수는 a/b 형식 또는 (분자)/(분모) 형식
 3. 제곱근은 √ 또는 sqrt() 사용
 4. 적분은 ∫ 또는 integral() 사용
@@ -43,27 +37,21 @@ export async function POST(req: NextRequest) {
 
 예시:
 입력 이미지: "1. x² + 2x + 1 = 0을 풀어라"
-출력: "1. x² + 2x + 1 = 0을 풀어라"
+출력: "1. x² + 2x + 1 = 0을 풀어라"`;
 
-입력 이미지: "∫(2x + 3)dx를 구하시오"
-출력: "∫(2x + 3)dx를 구하시오"
-`;
+      mathText = await vertexAIClient.analyzeImage(
+        imageBase64,
+        prompt,
+        'flash',
+        { temperature: 0.3, maxTokens: 512 }
+      );
 
-      const imagePart = {
-        inlineData: {
-          data: imageBase64,
-          mimeType: 'image/jpeg',
-        },
-      };
-
-      const result = await model.generateContent([prompt, imagePart]);
-      mathText = result.response.text().trim();
+      console.log('[OCR] Vertex AI Vision extracted:', mathText.substring(0, 100));
     }
 
-    // Strategy 2: If only OCR text, enhance it for math notation
-    else if (ocrText) {
-      const prompt = `
-다음은 수학 문제를 OCR로 인식한 텍스트입니다. 이를 수학 표기법에 맞게 정리해주세요.
+    // Strategy 2: Fallback to enhancing Tesseract OCR text if no image or vision failed
+    if (!mathText && ocrText) {
+      const prompt = `다음은 수학 문제를 OCR로 인식한 텍스트입니다. 이를 수학 표기법에 맞게 정리해주세요.
 
 OCR 텍스트:
 ${ocrText}
@@ -76,11 +64,26 @@ ${ocrText}
 5. 수식 기호 정리: <=, >=, !=, +-, inf 등을 ≤, ≥, ≠, ±, ∞로 변환
 6. 문제 번호 유지 (1., 2., etc.)
 
-출력은 정리된 텍스트만 제공하고, 추가 설명은 하지 마세요.
-`;
+출력은 정리된 텍스트만 제공하고, 추가 설명은 하지 마세요.`;
 
-      const result = await model.generateContent(prompt);
-      mathText = result.response.text().trim();
+      // Use Vertex AI Flash tier
+      const streamIterator = await vertexAIClient.generateContentStream(
+        prompt,
+        'flash',
+        {
+          temperature: 0.3,
+          maxTokens: 512,
+        }
+      );
+
+      // Collect streaming response
+      let fullResponse = '';
+      for await (const text of streamIterator) {
+        fullResponse += text;
+      }
+
+      mathText = fullResponse.trim();
+      console.log('[OCR] Enhanced from Tesseract:', mathText.substring(0, 100));
     }
 
     // Clean up the result

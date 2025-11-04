@@ -23,7 +23,7 @@ interface UseEmotionDetectionOptions {
   includeVoiceTone?: boolean;
 
   /** 학습 컨텍스트 */
-  subject?: 'math' | 'english';
+  subject?: 'english' | 'math' | 'science' | 'social-studies';
   difficulty?: string;
 }
 

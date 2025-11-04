@@ -178,7 +178,8 @@ class VertexAIClient {
   ): Promise<string> {
     let fullText = '';
 
-    for await (const chunk of this.generateContentStream(prompt, tier, options)) {
+    const stream = await this.generateContentStream(prompt, tier, options);
+    for await (const chunk of stream) {
       fullText += chunk;
     }
 
@@ -220,6 +221,62 @@ class VertexAIClient {
       }));
 
       return model.startChat({ history: history_gemini });
+    }
+  }
+
+  /**
+   * 이미지 분석 (Vision API)
+   */
+  async analyzeImage(
+    imageBase64: string,
+    prompt: string,
+    tier: ModelTier = 'flash',
+    options: GenerationOptions = {}
+  ): Promise<string> {
+    if (!this.isEnabled || !this.vertexAI) {
+      console.log('ℹ️  Vertex AI not available for image analysis');
+      return '';
+    }
+
+    const modelName = tier === 'pro'
+      ? 'gemini-2.5-pro'
+      : 'gemini-2.5-flash';
+
+    const model = this.vertexAI.getGenerativeModel({
+      model: modelName,
+      generationConfig: {
+        maxOutputTokens: options.maxTokens || 1024,
+        temperature: options.temperature || 0.3,
+        topP: options.topP || 0.8,
+        topK: options.topK || 40,
+      },
+    });
+
+    try {
+      const request: GenerateContentRequest = {
+        contents: [{
+          role: 'user',
+          parts: [
+            { text: prompt },
+            {
+              inlineData: {
+                mimeType: 'image/jpeg',
+                data: imageBase64,
+              },
+            },
+          ],
+        }],
+      };
+
+      const result = await model.generateContent(request);
+      const response = result.response;
+      const text = response.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+      console.log(`✅ Vertex AI Vision ${modelName} analysis complete`);
+      return text;
+    } catch (error) {
+      console.error('❌ Vertex AI Vision analysis failed:', error);
+      return '';
     }
   }
 

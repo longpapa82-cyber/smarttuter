@@ -14,7 +14,7 @@
  * - AI Hallucination Prevention 2025: Verified content retrieval
  */
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { vertexAIClient } from '@/lib/ai/vertex-client';
 import {
   getCurriculum,
   searchTopics,
@@ -22,8 +22,6 @@ import {
   type SchoolLevel,
   type CurriculumTopic
 } from './curriculum-database';
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 /**
  * ════════════════════════════════════════════════════════════════
@@ -44,6 +42,7 @@ export interface VerifiedContent {
   keyPoints: string[]; // Key learning points
   source: string; // Source of verification (Common Core, textbook, etc.)
   lastVerified: string; // ISO date
+  confidence?: number; // Confidence score (0-1) - optional for backward compatibility
 }
 
 /**
@@ -3585,14 +3584,6 @@ async function identifyRelevantTopics(
   subject: Subject
 ): Promise<string[]> {
   try {
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.0-flash-exp',
-      generationConfig: {
-        temperature: 0.2,
-        topP: 0.8,
-      }
-    });
-
     const prompt = `Identify the main educational topics in this ${subject} question. Return ONLY the topic names, one per line.
 
 Question: "${question}"
@@ -3601,8 +3592,21 @@ Example response:
 present tense
 verb conjugation`;
 
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
+    // Use Vertex AI with flash tier
+    const streamIterator = await vertexAIClient.generateContentStream(
+      prompt,
+      'flash',
+      {
+        temperature: 0.2,
+        maxTokens: 128,
+      }
+    );
+
+    // Collect streaming response
+    let text = '';
+    for await (const chunk of streamIterator) {
+      text += chunk;
+    }
 
     // Parse topics (one per line)
     const topics = text

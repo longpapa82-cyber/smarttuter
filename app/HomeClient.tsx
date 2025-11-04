@@ -9,9 +9,9 @@ export function HomeClient() {
   const handleCTAClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
 
-    // 비로그인 상태: 로그인 페이지로 이동 (온보딩 콜백)
+    // 비로그인 상태: 빠른 온보딩으로 바로 이동 (게스트 모드)
     if (!isAuthenticated) {
-      window.location.href = '/login?callbackUrl=/onboarding/quick';
+      window.location.href = '/onboarding/quick';
       return;
     }
 

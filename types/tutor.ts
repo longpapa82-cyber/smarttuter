@@ -8,7 +8,7 @@
 // ============================================================================
 
 export type GradeLevel = 'elementary' | 'middle' | 'high' | 'university';
-export type Subject = 'english' | 'math';
+export type Subject = 'english' | 'math' | 'science' | 'social-studies';
 export type CEFRLevel = 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
 
 export interface GradeLevelDetail {
@@ -311,3 +311,12 @@ export const DEFAULT_TUTOR_CONFIG: TutorConfig = {
   enableCaching: true,
   cacheTTL: 3600, // 1 hour
 };
+
+// ============================================================================
+// Message Types
+// ============================================================================
+
+export interface Message {
+  role: 'user' | 'assistant';
+  content: string;
+}

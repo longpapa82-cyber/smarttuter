@@ -2,7 +2,7 @@
 
 export interface LearningSession {
   id: string;
-  subject: "math" | "english";
+  subject: "math" | "english" | "science" | "social-studies";
   gradeLevel: string;
   startTime: Date;
   endTime: Date;
@@ -19,6 +19,8 @@ export interface DailyReport {
   subjectBreakdown: {
     math: number;
     english: number;
+    science: number;
+    "social-studies": number;
   };
   topicsCount: number;
   averagePerformance: number;
@@ -43,7 +45,7 @@ const STORAGE_KEYS = {
 
 // 현재 세션 시작
 export function startSession(
-  subject: "math" | "english",
+  subject: "english" | "math" | "science" | "social-studies",
   gradeLevel: string
 ): string {
   const sessionId = `session_${Date.now()}`;
@@ -127,6 +129,12 @@ export function getTodayReport(): DailyReport {
   const englishTime = todaySessions
     .filter((s) => s.subject === "english")
     .reduce((sum, s) => sum + s.duration, 0);
+  const scienceTime = todaySessions
+    .filter((s) => s.subject === "science")
+    .reduce((sum, s) => sum + s.duration, 0);
+  const socialStudiesTime = todaySessions
+    .filter((s) => s.subject === "social-studies")
+    .reduce((sum, s) => sum + s.duration, 0);
 
   const allTopics = todaySessions.flatMap((s) => s.topicsDiscussed);
   const uniqueTopics = [...new Set(allTopics)];
@@ -144,6 +152,8 @@ export function getTodayReport(): DailyReport {
     subjectBreakdown: {
       math: mathTime,
       english: englishTime,
+      science: scienceTime,
+      "social-studies": socialStudiesTime,
     },
     topicsCount: uniqueTopics.length,
     averagePerformance: Math.round(avgPerformance),
@@ -181,6 +191,12 @@ export function getWeeklyReport(): WeeklyReport {
       const englishTime = daySessions
         .filter((s) => s.subject === "english")
         .reduce((sum, s) => sum + s.duration, 0);
+      const scienceTime = daySessions
+        .filter((s) => s.subject === "science")
+        .reduce((sum, s) => sum + s.duration, 0);
+      const socialStudiesTime = daySessions
+        .filter((s) => s.subject === "social-studies")
+        .reduce((sum, s) => sum + s.duration, 0);
 
       const allTopics = daySessions.flatMap((s) => s.topicsDiscussed);
       const uniqueTopics = [...new Set(allTopics)];
@@ -196,6 +212,8 @@ export function getWeeklyReport(): WeeklyReport {
         subjectBreakdown: {
           math: mathTime,
           english: englishTime,
+          science: scienceTime,
+          "social-studies": socialStudiesTime,
         },
         topicsCount: uniqueTopics.length,
         averagePerformance: Math.round(avgPerformance),
