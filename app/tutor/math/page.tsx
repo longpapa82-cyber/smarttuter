@@ -3,7 +3,9 @@
 import dynamic from 'next/dynamic';
 import { Suspense } from 'react';
 
-export const runtime = 'edge';
+// Changed from 'edge' to 'nodejs' for stable client-side state initialization
+// Edge runtime causes issues with localStorage/window access in production
+export const runtime = 'nodejs';
 
 function LoadingSpinner() {
   return (
