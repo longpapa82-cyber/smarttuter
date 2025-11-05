@@ -50,6 +50,7 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const createdAssistantMessagesRef = useRef<Set<string>>(new Set()); // Track created message sessions
 
   // Voice settings - subject-specific defaults + grade level optimization
   const [voiceSettings, setVoiceSettings] = useState<VoiceSettingsConfig>(() => {
@@ -498,9 +499,12 @@ ${scenario.initialMessage}`,
                       assistantMessageLength: assistantMessage.length,
                     });
 
-                    // CRITICAL FIX: Check if we already have an assistant message with this session ID
+                    // CRITICAL FIX: Use ref to track which sessions have created messages
+                    // This prevents React Strict Mode double-render from creating duplicates
                     const lastMessage = prev[prev.length - 1];
-                    const secondLastMessage = prev[prev.length - 2];
+
+                    // Check if we already created a message for this session
+                    const alreadyCreated = createdAssistantMessagesRef.current.has(streamingSessionId);
 
                     // Case 1: Last message is assistant with our session ID - just update it
                     if (lastMessage && lastMessage.role === 'assistant' &&
@@ -512,21 +516,11 @@ ${scenario.initialMessage}`,
                       ];
                     }
 
-                    // Case 2: Second-to-last is user, last is assistant with our session ID
-                    // This happens in React Strict Mode double-render
-                    if (secondLastMessage && secondLastMessage.role === 'user' &&
-                        lastMessage && lastMessage.role === 'assistant' &&
-                        lastMessage.streamingSessionId === streamingSessionId) {
-                      console.log('✏️ Updating existing assistant message (found in last position)');
-                      return [
-                        ...prev.slice(0, -1),
-                        { ...lastMessage, content: assistantMessage }
-                      ];
-                    }
-
-                    // Case 3: Last message is user - create new assistant message with session ID
-                    if (lastMessage && lastMessage.role === 'user') {
-                      console.log('➕ Creating NEW assistant message with session ID');
+                    // Case 2: Last message is user AND we haven't created message for this session yet
+                    if (lastMessage && lastMessage.role === 'user' && !alreadyCreated) {
+                      console.log('➕ Creating NEW assistant message with session ID (first time)');
+                      // Mark this session as having created a message
+                      createdAssistantMessagesRef.current.add(streamingSessionId);
                       return [...prev, {
                         role: 'assistant',
                         content: assistantMessage,
@@ -534,10 +528,28 @@ ${scenario.initialMessage}`,
                       }];
                     }
 
+                    // Case 3: Already created for this session (React Strict Mode double-render)
+                    if (lastMessage && lastMessage.role === 'user' && alreadyCreated) {
+                      console.log('🚫 Skipping duplicate creation (Strict Mode double-render detected)');
+                      // Find and update the existing assistant message
+                      const existingAssistantIndex = prev.findIndex(
+                        m => m.role === 'assistant' && m.streamingSessionId === streamingSessionId
+                      );
+                      if (existingAssistantIndex !== -1) {
+                        const newMessages = [...prev];
+                        newMessages[existingAssistantIndex] = {
+                          ...newMessages[existingAssistantIndex],
+                          content: assistantMessage
+                        };
+                        return newMessages;
+                      }
+                      // If not found, return unchanged
+                      return prev;
+                    }
+
                     // Case 4: Last message is assistant but different session - still update
-                    // (shouldn't normally happen, but handle it)
                     if (lastMessage && lastMessage.role === 'assistant') {
-                      console.log('⚠️ Updating assistant message (different session - unexpected)');
+                      console.log('⚠️ Updating assistant message (different or no session)');
                       return [
                         ...prev.slice(0, -1),
                         { ...lastMessage, content: assistantMessage, streamingSessionId }
@@ -558,6 +570,12 @@ ${scenario.initialMessage}`,
       }
 
       console.log('✅ Streaming session complete:', streamingSessionId);
+
+      // Clean up the ref after a short delay to prevent memory leaks
+      setTimeout(() => {
+        createdAssistantMessagesRef.current.delete(streamingSessionId);
+        console.log('🧹 Cleaned up session ref:', streamingSessionId);
+      }, 1000);
 
       console.log('✅ Streaming complete. Final assistant message length:', assistantMessage.length);
 
