@@ -53,19 +53,45 @@ export default function QuickOnboardingPage() {
     // 서버에 프로필 저장 (로그인 사용자만)
     if (session?.user) {
       try {
+        // gradeLevel에서 gradeDetail 자동 생성
+        const gradeDetailMap: Record<GradeLevel, string> = {
+          elementary: '초등학교 6학년',
+          middle: '중학교 3학년',
+          high: '고등학교 3학년',
+          university: '대학교 4학년',
+        };
+
         const response = await fetch('/api/user/profile', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             gradeLevel: gradeLevel,
+            gradeDetail: gradeDetailMap[gradeLevel!],
             preferredSubjects: [selectedSubject],
           }),
         });
 
         if (!response.ok) {
           console.error('서버 프로필 저장 실패:', await response.text());
+          // 저장 실패 시에도 계속 진행 (localStorage 프로필 사용)
         } else {
           console.log('✅ 서버 프로필 저장 성공');
+
+          // 프로필 저장 확인 (재시도 로직)
+          let retries = 0;
+          const maxRetries = 3;
+          while (retries < maxRetries) {
+            await new Promise(resolve => setTimeout(resolve, 300));
+            const checkResponse = await fetch('/api/user/profile');
+            if (checkResponse.ok) {
+              const { user } = await checkResponse.json();
+              if (user?.gradeLevel && user?.gradeDetail) {
+                console.log('✅ 프로필 확인 완료');
+                break;
+              }
+            }
+            retries++;
+          }
         }
       } catch (error) {
         console.error('프로필 저장 API 오류:', error);
@@ -73,9 +99,7 @@ export default function QuickOnboardingPage() {
     }
 
     // 대시보드로 이동
-    setTimeout(() => {
-      router.push('/dashboard');
-    }, 500);
+    router.push('/dashboard');
   };
 
   return (
