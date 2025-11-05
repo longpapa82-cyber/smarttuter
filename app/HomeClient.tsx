@@ -9,30 +9,16 @@ export function HomeClient() {
   const handleCTAClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
 
-    // Check for guest mode cookie
-    const hasGuestCookie = typeof document !== 'undefined' &&
-      document.cookie.split('; ').some(cookie => cookie.startsWith('aipark_guest_mode=true'));
-
-    // 완전 로그아웃 상태 (NextAuth 세션도 없고 게스트 쿠키도 없음)
-    if (!isAuthenticated && !hasGuestCookie) {
-      // 로그인 페이지로 이동 (회원가입 유도)
+    // 로그아웃 상태: 로그인 페이지로 이동
+    if (!isAuthenticated) {
       window.location.href = '/login';
-      return;
-    }
-
-    // 게스트 모드 활성화 상태
-    if (!isAuthenticated && hasGuestCookie) {
-      // 프로필 확인 후 적절한 페이지로 이동
-      if (typeof window !== 'undefined') {
-        const hasProfile = localStorage.getItem('aipark_user_profile');
-        window.location.href = hasProfile ? '/dashboard' : '/onboarding/quick';
-      }
       return;
     }
 
     // 로그인 상태: 프로필 확인
     if (typeof window !== 'undefined') {
       const hasProfile = localStorage.getItem('aipark_user_profile');
+      // 프로필 없으면 온보딩, 있으면 대시보드
       window.location.href = hasProfile ? '/dashboard' : '/onboarding/quick';
     }
   };
