@@ -36,6 +36,7 @@ import { parseGraphInfo, type GraphInfo } from '@/lib/math/graph-parser';
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+  streamingSessionId?: string; // Optional: Used to prevent duplicates in React Strict Mode
 }
 
 interface SimpleChatInterfaceProps {
@@ -375,6 +376,13 @@ ${scenario.initialMessage}`,
   };
 
   const handleSubmit = async (e?: React.FormEvent, messageText?: string) => {
+    console.log('🚀 ===== handleSubmit CALLED =====', {
+      timestamp: new Date().toISOString(),
+      messageText,
+      inputValue: input,
+      isLoading,
+    });
+
     e?.preventDefault();
 
     // Mark that user has interacted (enables autoplay)
@@ -411,6 +419,11 @@ ${scenario.initialMessage}`,
 
     // 새 사용자 메시지를 추가한 업데이트된 히스토리 생성
     const updatedMessages: Message[] = [...messages, { role: 'user' as const, content: userMessage }];
+    console.log('📝 Adding user message to state:', {
+      previousCount: messages.length,
+      newCount: updatedMessages.length,
+      userMessage: userMessage.substring(0, 50),
+    });
     setMessages(updatedMessages);
     setIsLoading(true);
 
@@ -453,13 +466,19 @@ ${scenario.initialMessage}`,
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
       let assistantMessage = '';
+      // Generate unique session ID for this streaming response
+      const streamingSessionId = `stream_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      console.log('🆔 Starting new streaming session:', streamingSessionId);
 
       if (reader) {
+        let chunkCount = 0;
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
 
           const chunk = decoder.decode(value);
+          chunkCount++;
+          console.log(`📦 Chunk ${chunkCount} received:`, chunk.substring(0, 100));
           const lines = chunk.split('\n');
 
           for (const line of lines) {
@@ -472,36 +491,62 @@ ${scenario.initialMessage}`,
                 if (parsed.text) {
                   assistantMessage += parsed.text;
                   setMessages(prev => {
-                    const newMessages = [...prev];
-                    const lastMessage = newMessages[newMessages.length - 1];
-
                     console.log('🔍 DEBUG - Before update:', {
+                      sessionId: streamingSessionId,
                       prevLength: prev.length,
-                      lastRole: lastMessage?.role,
+                      lastRole: prev[prev.length - 1]?.role,
                       assistantMessageLength: assistantMessage.length,
                     });
 
-                    // CRITICAL: Trust the messages array state, not local flags
-                    // Check if the last message is already an assistant message
-                    if (lastMessage && lastMessage.role === 'assistant') {
-                      // Update the existing assistant message
-                      newMessages[newMessages.length - 1] = {
-                        ...lastMessage,
-                        content: assistantMessage,
-                      };
-                      console.log('✏️ Updated existing assistant message');
-                    } else if (lastMessage && lastMessage.role === 'user') {
-                      // Create new assistant message only if last message is from user
-                      newMessages.push({ role: 'assistant', content: assistantMessage });
-                      console.log('➕ Created NEW assistant message');
+                    // CRITICAL FIX: Check if we already have an assistant message with this session ID
+                    const lastMessage = prev[prev.length - 1];
+                    const secondLastMessage = prev[prev.length - 2];
+
+                    // Case 1: Last message is assistant with our session ID - just update it
+                    if (lastMessage && lastMessage.role === 'assistant' &&
+                        lastMessage.streamingSessionId === streamingSessionId) {
+                      console.log('✏️ Updating existing assistant message (same session)');
+                      return [
+                        ...prev.slice(0, -1),
+                        { ...lastMessage, content: assistantMessage }
+                      ];
                     }
 
-                    console.log('📊 After update:', {
-                      newLength: newMessages.length,
-                      messages: newMessages.map(m => ({ role: m.role, contentLength: m.content.length }))
-                    });
+                    // Case 2: Second-to-last is user, last is assistant with our session ID
+                    // This happens in React Strict Mode double-render
+                    if (secondLastMessage && secondLastMessage.role === 'user' &&
+                        lastMessage && lastMessage.role === 'assistant' &&
+                        lastMessage.streamingSessionId === streamingSessionId) {
+                      console.log('✏️ Updating existing assistant message (found in last position)');
+                      return [
+                        ...prev.slice(0, -1),
+                        { ...lastMessage, content: assistantMessage }
+                      ];
+                    }
 
-                    return newMessages;
+                    // Case 3: Last message is user - create new assistant message with session ID
+                    if (lastMessage && lastMessage.role === 'user') {
+                      console.log('➕ Creating NEW assistant message with session ID');
+                      return [...prev, {
+                        role: 'assistant',
+                        content: assistantMessage,
+                        streamingSessionId
+                      }];
+                    }
+
+                    // Case 4: Last message is assistant but different session - still update
+                    // (shouldn't normally happen, but handle it)
+                    if (lastMessage && lastMessage.role === 'assistant') {
+                      console.log('⚠️ Updating assistant message (different session - unexpected)');
+                      return [
+                        ...prev.slice(0, -1),
+                        { ...lastMessage, content: assistantMessage, streamingSessionId }
+                      ];
+                    }
+
+                    // Case 5: Unexpected state - return prev unchanged
+                    console.log('⚠️ Unexpected state, returning prev unchanged');
+                    return prev;
                   });
                 }
               } catch (e) {
@@ -511,6 +556,8 @@ ${scenario.initialMessage}`,
           }
         }
       }
+
+      console.log('✅ Streaming session complete:', streamingSessionId);
 
       console.log('✅ Streaming complete. Final assistant message length:', assistantMessage.length);
 
