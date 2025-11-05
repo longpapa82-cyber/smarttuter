@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { dbUser } from '@/lib/auth/db';
+import { dbUser } from '@/lib/auth/db-redis';
 import { hashPassword, validatePassword, validateEmail, isDisposableEmail } from '@/lib/auth/password';
 import type { SignUpData } from '@/types/auth';
 

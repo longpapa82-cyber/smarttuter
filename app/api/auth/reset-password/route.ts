@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { dbUser, dbVerificationToken } from '@/lib/auth/db';
+import { dbUser, dbVerificationToken } from '@/lib/auth/db-redis';
 import { hashPassword, validatePassword } from '@/lib/auth/password';
 
 /**

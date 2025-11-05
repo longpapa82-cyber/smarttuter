@@ -30,6 +30,7 @@ export function useProfileSync() {
   useEffect(() => {
     // Only sync for authenticated users
     if (status !== 'authenticated' || !session?.user?.email) {
+      console.log('👤 Guest mode - skipping profile sync');
       return;
     }
 
@@ -60,10 +61,16 @@ export function useProfileSync() {
             console.log('✅ Profile synced from server to localStorage');
           }
         }
-      } catch (error) {
-        // Log error but don't block the app
+      } catch (error: any) {
+        // 404 or 401 errors are expected for guests or during initial compilation
+        if (error?.statusCode === 404 || error?.statusCode === 401) {
+          console.log('ℹ️ Profile sync skipped (not authenticated or API not ready)');
+          return; // Silently ignore
+        }
+
+        // Log unexpected errors
         const errorMessage = getErrorMessage(error);
-        console.error('Profile sync error:', errorMessage);
+        console.warn('⚠️ Unexpected profile sync error:', errorMessage);
 
         // Silently fail - profile sync is not critical for app functionality
         // User can still use the app with localStorage data or create new profile
