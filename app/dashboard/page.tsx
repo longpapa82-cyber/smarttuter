@@ -239,15 +239,15 @@ function DashboardContent() {
           </div>
 
           {/* All Subjects Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-fr">
             {/* English Summary */}
-            <Link href="/dashboard/english">
+            <Link href="/dashboard/english" className="h-full">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
                 whileHover={{ scale: 1.02, y: -4 }}
-                className="bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600 rounded-2xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all"
+                className="h-full bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600 rounded-2xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all flex flex-col"
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
@@ -345,13 +345,13 @@ function DashboardContent() {
             </Link>
 
             {/* Math Summary */}
-            <Link href="/dashboard/math">
+            <Link href="/dashboard/math" className="h-full">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.1 }}
                 whileHover={{ scale: 1.02, y: -4 }}
-                className="bg-gradient-to-br from-purple-500 via-pink-600 to-rose-600 rounded-2xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all"
+                className="h-full bg-gradient-to-br from-purple-500 via-pink-600 to-rose-600 rounded-2xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all flex flex-col"
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
@@ -444,13 +444,13 @@ function DashboardContent() {
             </Link>
 
             {/* Science Summary */}
-            <Link href="/dashboard/science">
+            <Link href="/dashboard/science" className="h-full">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.2 }}
                 whileHover={{ scale: 1.02, y: -4 }}
-                className="bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-600 rounded-2xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all"
+                className="h-full bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-600 rounded-2xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all flex flex-col"
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
@@ -501,18 +501,55 @@ function DashboardContent() {
                       </motion.div>
                     </div>
                   </div>
+                  <div className="grid grid-cols-2 gap-2 pt-2">
+                    <motion.div
+                      className="bg-white/10 rounded-lg p-3 backdrop-blur-sm"
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.9, duration: 0.3 }}
+                    >
+                      <div className="flex items-center gap-1.5 text-xs text-white/70 mb-1.5">
+                        <PulseIndicator color="green" size="sm" />
+                        완료한 단원
+                      </div>
+                      <div className="text-lg font-bold flex items-baseline gap-1">
+                        <AnimatedCounter value={1} duration={1.2} delay={1.1} />
+                        <span className="text-sm text-white/60">/</span>
+                        <span className="text-sm">4</span>
+                      </div>
+                    </motion.div>
+                    <motion.div
+                      className="bg-white/10 rounded-lg p-3 backdrop-blur-sm"
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 1.0, duration: 0.3 }}
+                    >
+                      <div className="flex items-center gap-1.5 text-xs text-white/70 mb-1.5">
+                        <PulseIndicator color="blue" size="sm" />
+                        학습 중
+                      </div>
+                      <motion.div
+                        className="text-sm font-bold"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 1.2, duration: 0.3 }}
+                      >
+                        화학반응
+                      </motion.div>
+                    </motion.div>
+                  </div>
                 </div>
               </motion.div>
             </Link>
 
             {/* Social Studies Summary */}
-            <Link href="/dashboard/social">
+            <Link href="/dashboard/social" className="h-full">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.3 }}
                 whileHover={{ scale: 1.02, y: -4 }}
-                className="bg-gradient-to-br from-orange-500 via-amber-600 to-yellow-600 rounded-2xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all"
+                className="h-full bg-gradient-to-br from-orange-500 via-amber-600 to-yellow-600 rounded-2xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all flex flex-col"
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
@@ -562,6 +599,43 @@ function DashboardContent() {
                         />
                       </motion.div>
                     </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 pt-2">
+                    <motion.div
+                      className="bg-white/10 rounded-lg p-3 backdrop-blur-sm"
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 1.0, duration: 0.3 }}
+                    >
+                      <div className="flex items-center gap-1.5 text-xs text-white/70 mb-1.5">
+                        <PulseIndicator color="green" size="sm" />
+                        완료한 단원
+                      </div>
+                      <div className="text-lg font-bold flex items-baseline gap-1">
+                        <AnimatedCounter value={1} duration={1.2} delay={1.2} />
+                        <span className="text-sm text-white/60">/</span>
+                        <span className="text-sm">4</span>
+                      </div>
+                    </motion.div>
+                    <motion.div
+                      className="bg-white/10 rounded-lg p-3 backdrop-blur-sm"
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 1.1, duration: 0.3 }}
+                    >
+                      <div className="flex items-center gap-1.5 text-xs text-white/70 mb-1.5">
+                        <PulseIndicator color="blue" size="sm" />
+                        학습 중
+                      </div>
+                      <motion.div
+                        className="text-sm font-bold"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 1.3, duration: 0.3 }}
+                      >
+                        한국사
+                      </motion.div>
+                    </motion.div>
                   </div>
                 </div>
               </motion.div>
