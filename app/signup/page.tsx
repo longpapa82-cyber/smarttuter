@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -24,6 +24,12 @@ export default function SignUpPage() {
   const [loading, setLoading] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>('weak');
   const [passwordScore, setPasswordScore] = useState(0);
+
+  useEffect(() => {
+    // Clear guest mode cookie when entering signup page
+    // Users on signup page are choosing to create a proper account
+    document.cookie = 'aipark_guest_mode=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+  }, []);
 
   // Password strength color mapping
   const strengthColors = {

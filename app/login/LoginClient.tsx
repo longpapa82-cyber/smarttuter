@@ -21,6 +21,10 @@ export function LoginClient() {
   const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
+    // Clear guest mode cookie when entering login page
+    // Users on login page are choosing to authenticate properly
+    document.cookie = 'aipark_guest_mode=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+
     // Check for signup success
     if (searchParams.get('signup') === 'success') {
       setSuccessMessage('회원가입이 완료되었습니다! 로그인해주세요.');
