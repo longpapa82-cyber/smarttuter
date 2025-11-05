@@ -37,6 +37,7 @@ interface Message {
   role: 'user' | 'assistant';
   content: string;
   streamingSessionId?: string; // Optional: Used to prevent duplicates in React Strict Mode
+  messageId: string; // Unique ID for each message
 }
 
 interface SimpleChatInterfaceProps {
@@ -202,6 +203,7 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
         {
           role: 'assistant',
           content: getWelcomeMessage(),
+          messageId: `welcome-${Date.now()}`,
         },
       ]);
     }
@@ -226,6 +228,18 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
 
   useEffect(() => {
     scrollToBottom();
+    // DEBUG: Log messages array to check for duplicates
+    console.log('📋 Current messages array:', {
+      totalCount: messages.length,
+      details: messages.map((m, i) => ({
+        index: i,
+        role: m.role,
+        messageId: m.messageId,
+        contentStart: m.content.substring(0, 50),
+        contentLength: m.content.length,
+        sessionId: m.streamingSessionId
+      }))
+    });
   }, [messages]);
 
   // Auto-play TTS for assistant responses (only after user interaction)
@@ -419,7 +433,11 @@ ${scenario.initialMessage}`,
     stop();
 
     // 새 사용자 메시지를 추가한 업데이트된 히스토리 생성
-    const updatedMessages: Message[] = [...messages, { role: 'user' as const, content: userMessage }];
+    const updatedMessages: Message[] = [...messages, {
+      role: 'user' as const,
+      content: userMessage,
+      messageId: `user-${Date.now()}`
+    }];
     console.log('📝 Adding user message to state:', {
       previousCount: messages.length,
       newCount: updatedMessages.length,
@@ -524,7 +542,8 @@ ${scenario.initialMessage}`,
                       return [...prev, {
                         role: 'assistant',
                         content: assistantMessage,
-                        streamingSessionId
+                        streamingSessionId,
+                        messageId: `assistant-${streamingSessionId}`
                       }];
                     }
 
@@ -552,7 +571,12 @@ ${scenario.initialMessage}`,
                       console.log('⚠️ Updating assistant message (different or no session)');
                       return [
                         ...prev.slice(0, -1),
-                        { ...lastMessage, content: assistantMessage, streamingSessionId }
+                        {
+                          ...lastMessage,
+                          content: assistantMessage,
+                          streamingSessionId,
+                          messageId: lastMessage.messageId || `assistant-${streamingSessionId}`
+                        }
                       ];
                     }
 
@@ -654,6 +678,7 @@ ${scenario.initialMessage}`,
         {
           role: 'assistant',
           content: errorMessage,
+          messageId: `error-${Date.now()}`,
         },
       ]);
     } finally {
@@ -769,10 +794,10 @@ ${scenario.initialMessage}`,
             </div>
           )}
 
-          <AnimatePresence mode="popLayout">
+          <AnimatePresence mode="sync">
             {messages.map((message, index) => (
               <motion.div
-                key={index}
+                key={message.messageId}
                 initial={{ opacity: 0, y: 20, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
@@ -803,16 +828,8 @@ ${scenario.initialMessage}`,
 
                         return cleanContent && (
                           <p className="whitespace-pre-wrap leading-relaxed">
-                            {/* Show typing effect only for the last message when not streaming */}
-                            {index === messages.length - 1 ? (
-                              <TypingEffect
-                                text={cleanContent}
-                                speed={20}
-                                isStreaming={isLoading}
-                              />
-                            ) : (
-                              cleanContent
-                            )}
+                            {/* TEMP FIX: Disable TypingEffect to test for duplicates */}
+                            {cleanContent}
                           </p>
                         );
                       })()}
