@@ -6,7 +6,7 @@ import type { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import KakaoProvider from 'next-auth/providers/kakao';
-import { dbUser, dbSession, dbAccount } from './db';
+import { dbUser, dbSession, dbAccount } from './db-redis';
 import { verifyPassword } from './password';
 
 export const authOptions: NextAuthOptions = {

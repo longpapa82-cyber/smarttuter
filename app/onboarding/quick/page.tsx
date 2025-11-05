@@ -44,6 +44,12 @@ export default function QuickOnboardingPage() {
     // localStorage에 저장
     saveUserProfile(userProfile);
 
+    // 게스트 모드 쿠키 설정 (로그인하지 않은 경우)
+    if (!session?.user) {
+      document.cookie = 'aipark_guest_mode=true; path=/; max-age=31536000; SameSite=Lax';
+      console.log('✅ Guest mode cookie set');
+    }
+
     // 서버에 프로필 저장 (로그인 사용자만)
     if (session?.user) {
       try {
