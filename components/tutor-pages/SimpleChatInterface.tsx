@@ -475,6 +475,12 @@ ${scenario.initialMessage}`,
                     const newMessages = [...prev];
                     const lastMessage = newMessages[newMessages.length - 1];
 
+                    console.log('🔍 DEBUG - Before update:', {
+                      prevLength: prev.length,
+                      lastRole: lastMessage?.role,
+                      assistantMessageLength: assistantMessage.length,
+                    });
+
                     // CRITICAL: Trust the messages array state, not local flags
                     // Check if the last message is already an assistant message
                     if (lastMessage && lastMessage.role === 'assistant') {
@@ -483,10 +489,18 @@ ${scenario.initialMessage}`,
                         ...lastMessage,
                         content: assistantMessage,
                       };
+                      console.log('✏️ Updated existing assistant message');
                     } else if (lastMessage && lastMessage.role === 'user') {
                       // Create new assistant message only if last message is from user
                       newMessages.push({ role: 'assistant', content: assistantMessage });
+                      console.log('➕ Created NEW assistant message');
                     }
+
+                    console.log('📊 After update:', {
+                      newLength: newMessages.length,
+                      messages: newMessages.map(m => ({ role: m.role, contentLength: m.content.length }))
+                    });
+
                     return newMessages;
                   });
                 }
@@ -497,6 +511,8 @@ ${scenario.initialMessage}`,
           }
         }
       }
+
+      console.log('✅ Streaming complete. Final assistant message length:', assistantMessage.length);
 
       // After streaming is complete, detect graph in math subject
       if (subject === 'math' && assistantMessage) {
