@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/config';
-import { dbUser } from '@/lib/auth/db';
+import { dbUser } from '@/lib/auth/db-redis';
 import { createErrorResponse } from '@/lib/api/error-handler';
 
 // GET /api/user/profile - Get current user's profile
