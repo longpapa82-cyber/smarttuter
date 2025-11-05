@@ -307,6 +307,7 @@ ${scenario.objectives.map((obj, i) => `${i + 1}. ${obj}`).join('\n')}
 ---
 
 ${scenario.initialMessage}`,
+      messageId: `roleplay-${Date.now()}`,
     }]);
   };
 

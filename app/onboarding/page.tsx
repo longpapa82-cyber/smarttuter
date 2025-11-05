@@ -26,6 +26,17 @@ export default function OnboardingPage() {
   const [nickname, setNickname] = useState('');
   const [redirecting, setRedirecting] = useState(true);
 
+  // 진행 상황 불러오기
+  useEffect(() => {
+    const progress = getOnboardingProgress();
+    if (progress) {
+      setCurrentStep(progress.currentStep);
+      if (progress.data.gradeLevel) setGradeLevel(progress.data.gradeLevel);
+      if (progress.data.preferredSubjects) setSubjects(progress.data.preferredSubjects);
+      if (progress.data.nickname) setNickname(progress.data.nickname);
+    }
+  }, []);
+
   // 자동 리다이렉트: 빠른 온보딩으로 이동
   useEffect(() => {
     setRedirecting(true);
@@ -43,17 +54,6 @@ export default function OnboardingPage() {
       </div>
     );
   }
-
-  // 진행 상황 불러오기
-  useEffect(() => {
-    const progress = getOnboardingProgress();
-    if (progress) {
-      setCurrentStep(progress.currentStep);
-      if (progress.data.gradeLevel) setGradeLevel(progress.data.gradeLevel);
-      if (progress.data.preferredSubjects) setSubjects(progress.data.preferredSubjects);
-      if (progress.data.nickname) setNickname(progress.data.nickname);
-    }
-  }, []);
 
   const handleNextStep = () => {
     advanceOnboardingStep();
