@@ -110,7 +110,7 @@ export default function OnboardingPage() {
                 <div
                   key={step}
                   className={`h-2 rounded-full transition-all ${
-                    currentStep >= step
+                    currentStep > step
                       ? 'w-12 bg-gradient-to-r from-purple-600 to-pink-600'
                       : 'w-8 bg-gray-300'
                   }`}

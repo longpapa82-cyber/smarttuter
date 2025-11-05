@@ -88,7 +88,7 @@ export default function QuickOnboardingPage() {
               <div
                 key={step}
                 className={`h-2 rounded-full transition-all ${
-                  currentStep >= step
+                  currentStep > step
                     ? 'w-16 bg-gradient-to-r from-purple-600 to-pink-600'
                     : 'w-12 bg-gray-300'
                 }`}
@@ -96,7 +96,7 @@ export default function QuickOnboardingPage() {
             ))}
           </div>
           <div className="text-center text-sm text-gray-600">
-            빠른 시작 {currentStep + 1}/2
+            {currentStep + 1}/2 단계 완료
           </div>
         </div>
 
