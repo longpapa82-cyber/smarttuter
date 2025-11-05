@@ -98,8 +98,10 @@ export default function QuickOnboardingPage() {
       }
     }
 
-    // 대시보드로 이동
-    router.push('/dashboard');
+    // 선택한 과목의 대시보드로 이동
+    // 'social-studies' → 'social' URL로 변환
+    const dashboardPath = selectedSubject === 'social-studies' ? 'social' : selectedSubject;
+    router.push(`/dashboard/${dashboardPath}`);
   };
 
   return (

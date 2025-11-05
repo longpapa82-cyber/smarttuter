@@ -24,11 +24,25 @@ export default function OnboardingPage() {
   const [gradeLevel, setGradeLevel] = useState<GradeLevel | null>(null);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [nickname, setNickname] = useState('');
+  const [redirecting, setRedirecting] = useState(true);
 
   // 자동 리다이렉트: 빠른 온보딩으로 이동
   useEffect(() => {
+    setRedirecting(true);
     router.replace('/onboarding/quick');
   }, [router]);
+
+  // 리다이렉트 중일 때는 빈 화면 표시
+  if (redirecting) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">잠시만 기다려주세요...</p>
+        </div>
+      </div>
+    );
+  }
 
   // 진행 상황 불러오기
   useEffect(() => {

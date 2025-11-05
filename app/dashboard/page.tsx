@@ -238,8 +238,8 @@ function DashboardContent() {
             </div>
           </div>
 
-          {/* English & Math Summary Cards */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* All Subjects Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* English Summary */}
             <Link href="/dashboard/english">
               <motion.div
@@ -438,6 +438,130 @@ function DashboardContent() {
                         이차방정식
                       </motion.div>
                     </motion.div>
+                  </div>
+                </div>
+              </motion.div>
+            </Link>
+
+            {/* Science Summary */}
+            <Link href="/dashboard/science">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.2 }}
+                whileHover={{ scale: 1.02, y: -4 }}
+                className="bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-600 rounded-2xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                      <Beaker className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold">과학 학습</h3>
+                      <p className="text-sm text-white/80">Science Dashboard</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold">중2</div>
+                    <div className="text-xs text-white/80">Grade Level</div>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm text-white/80 flex items-center gap-2">
+                        <Clock className="w-4 h-4" />
+                        이번 주 학습 시간
+                      </span>
+                      <span className="text-sm font-semibold flex items-center gap-1">
+                        <AnimatedCounter value={5} duration={1.5} delay={0.6} className="font-bold" />
+                        <span className="text-white/60">/</span>
+                        <span>10시간</span>
+                      </span>
+                    </div>
+                    <div className="w-full bg-white/20 rounded-full h-2.5 overflow-hidden">
+                      <motion.div
+                        className="h-full bg-white rounded-full relative shadow-lg"
+                        initial={{ width: 0 }}
+                        animate={{ width: '50%' }}
+                        transition={{ duration: 1.5, delay: 0.4, ease: "easeOut" }}
+                      >
+                        <motion.div
+                          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
+                          initial={{ x: "-100%" }}
+                          animate={{ x: "200%" }}
+                          transition={{
+                            duration: 1.5,
+                            repeat: Infinity,
+                            repeatDelay: 2,
+                            delay: 0.7,
+                          }}
+                        />
+                      </motion.div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </Link>
+
+            {/* Social Studies Summary */}
+            <Link href="/dashboard/social">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.3 }}
+                whileHover={{ scale: 1.02, y: -4 }}
+                className="bg-gradient-to-br from-orange-500 via-amber-600 to-yellow-600 rounded-2xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                      <Landmark className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold">사회 학습</h3>
+                      <p className="text-sm text-white/80">Social Studies Dashboard</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold">중2</div>
+                    <div className="text-xs text-white/80">Grade Level</div>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm text-white/80 flex items-center gap-2">
+                        <Clock className="w-4 h-4" />
+                        이번 주 학습 시간
+                      </span>
+                      <span className="text-sm font-semibold flex items-center gap-1">
+                        <AnimatedCounter value={4} duration={1.5} delay={0.7} className="font-bold" />
+                        <span className="text-white/60">/</span>
+                        <span>10시간</span>
+                      </span>
+                    </div>
+                    <div className="w-full bg-white/20 rounded-full h-2.5 overflow-hidden">
+                      <motion.div
+                        className="h-full bg-white rounded-full relative shadow-lg"
+                        initial={{ width: 0 }}
+                        animate={{ width: '40%' }}
+                        transition={{ duration: 1.5, delay: 0.5, ease: "easeOut" }}
+                      >
+                        <motion.div
+                          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
+                          initial={{ x: "-100%" }}
+                          animate={{ x: "200%" }}
+                          transition={{
+                            duration: 1.5,
+                            repeat: Infinity,
+                            repeatDelay: 2,
+                            delay: 0.8,
+                          }}
+                        />
+                      </motion.div>
+                    </div>
                   </div>
                 </div>
               </motion.div>
