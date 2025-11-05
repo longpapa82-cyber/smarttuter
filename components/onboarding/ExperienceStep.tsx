@@ -12,10 +12,14 @@ export default function ExperienceStep({ onNext, onSkip }: ExperienceStepProps) 
   const router = useRouter();
 
   const handleTryEnglish = () => {
+    // Set guest mode cookie before accessing tutor page
+    document.cookie = 'aipark_guest_mode=true; path=/; max-age=31536000; SameSite=Lax';
     router.push('/tutor/english?demo=true');
   };
 
   const handleTryMath = () => {
+    // Set guest mode cookie before accessing tutor page
+    document.cookie = 'aipark_guest_mode=true; path=/; max-age=31536000; SameSite=Lax';
     router.push('/tutor/math?demo=true');
   };
 
