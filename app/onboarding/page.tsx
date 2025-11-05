@@ -25,6 +25,11 @@ export default function OnboardingPage() {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [nickname, setNickname] = useState('');
 
+  // 자동 리다이렉트: 빠른 온보딩으로 이동
+  useEffect(() => {
+    router.replace('/onboarding/quick');
+  }, [router]);
+
   // 진행 상황 불러오기
   useEffect(() => {
     const progress = getOnboardingProgress();

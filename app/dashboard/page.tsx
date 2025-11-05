@@ -105,12 +105,12 @@ function DashboardContent() {
           return true;
         } catch (error) {
           console.error('Failed to initialize from onboarding data:', error);
-          router.push("/onboarding");
+          router.push("/onboarding/quick");
           return false;
         }
       } else if (!isAuthenticated) {
-        // No onboarding data and not authenticated, redirect to onboarding
-        router.push("/onboarding");
+        // No onboarding data and not authenticated, redirect to quick onboarding
+        router.push("/onboarding/quick");
         return false;
       }
       return false;
