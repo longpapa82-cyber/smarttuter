@@ -453,7 +453,6 @@ ${scenario.initialMessage}`,
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
       let assistantMessage = '';
-      let assistantMessageCreated = false;
 
       if (reader) {
         while (true) {
@@ -476,17 +475,17 @@ ${scenario.initialMessage}`,
                     const newMessages = [...prev];
                     const lastMessage = newMessages[newMessages.length - 1];
 
-                    // Check if assistant message already exists in the messages array
-                    if (assistantMessageCreated && lastMessage && lastMessage.role === 'assistant') {
+                    // CRITICAL: Trust the messages array state, not local flags
+                    // Check if the last message is already an assistant message
+                    if (lastMessage && lastMessage.role === 'assistant') {
                       // Update the existing assistant message
                       newMessages[newMessages.length - 1] = {
                         ...lastMessage,
                         content: assistantMessage,
                       };
                     } else if (lastMessage && lastMessage.role === 'user') {
-                      // Create new assistant message only once after user message
+                      // Create new assistant message only if last message is from user
                       newMessages.push({ role: 'assistant', content: assistantMessage });
-                      assistantMessageCreated = true;
                     }
                     return newMessages;
                   });
