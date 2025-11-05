@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -19,6 +19,17 @@ export default function QuickOnboardingPage() {
   const [currentStep, setCurrentStep] = useState(0); // 0: 학교급, 1: 과목
   const [gradeLevel, setGradeLevel] = useState<GradeLevel | null>(null);
   const [subject, setSubject] = useState<Subject | null>(null);
+
+  // Check if user already has a profile - redirect to dashboard if yes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const hasProfile = localStorage.getItem('aipark_user_profile');
+      if (hasProfile) {
+        console.log('✅ User already has profile, redirecting to dashboard');
+        router.replace('/dashboard');
+      }
+    }
+  }, [router]);
 
   // Step 1: 학교급 선택
   const handleGradeLevel = (level: GradeLevel) => {

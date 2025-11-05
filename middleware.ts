@@ -39,6 +39,7 @@ export async function middleware(request: NextRequest) {
   const strictAuthRoutes = [
     '/profile',
     '/analytics',
+    '/onboarding',
   ]
 
   // Check if the current path requires strict authentication (no guest)
@@ -50,6 +51,11 @@ export async function middleware(request: NextRequest) {
   const isGuestAllowedRoute = guestAllowedRoutes.some(route =>
     pathname.startsWith(route)
   )
+
+  // Redirect /onboarding to /onboarding/quick to prevent flash
+  if (pathname === '/onboarding') {
+    return NextResponse.redirect(new URL('/onboarding/quick', request.url))
+  }
 
   // Define public routes that should redirect to dashboard if authenticated
   const publicRoutes = [

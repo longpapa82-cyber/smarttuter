@@ -652,13 +652,13 @@ function DashboardContent() {
               <Zap className="w-6 h-6 text-yellow-500" />
               빠른 시작
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 auto-rows-fr">
               {/* Continue English */}
-              <Link href="/tutor/english">
+              <Link href="/tutor/english" className="h-full">
                 <motion.div
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all"
+                  className="h-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all flex flex-col justify-between"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -678,11 +678,11 @@ function DashboardContent() {
               </Link>
 
               {/* Continue Math */}
-              <Link href="/tutor/math">
+              <Link href="/tutor/math" className="h-full">
                 <motion.div
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 rounded-xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all"
+                  className="h-full bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 rounded-xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all flex flex-col justify-between"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -702,11 +702,11 @@ function DashboardContent() {
               </Link>
 
               {/* Continue Science */}
-              <Link href="/tutor/science">
+              <Link href="/tutor/science" className="h-full">
                 <motion.div
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 rounded-xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all"
+                  className="h-full bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 rounded-xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all flex flex-col justify-between"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -726,11 +726,11 @@ function DashboardContent() {
               </Link>
 
               {/* Continue Social Studies */}
-              <Link href="/tutor/social-studies">
+              <Link href="/tutor/social-studies" className="h-full">
                 <motion.div
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="bg-gradient-to-r from-orange-600 via-amber-600 to-yellow-600 rounded-xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all"
+                  className="h-full bg-gradient-to-r from-orange-600 via-amber-600 to-yellow-600 rounded-xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all flex flex-col justify-between"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">

@@ -48,6 +48,7 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const assistantMessageCreatedRef = useRef<boolean>(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
 
   // Voice settings - subject-specific defaults + grade level optimization
@@ -188,7 +189,7 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
           } else if (isHigh) {
             return `안녕하세요! AI Park입니다. 오늘은 어떤 사회 주제를 탐구할까요?\n\n역사적 사건, 지리적 특성, 정치 체제 등 무엇이든 질문해주세요. 함께 탐구해봐요! 🌏`;
           } else {
-            return `안녕하세요. AI Park입니다. 어떤 사회과학 주제를 연구하시겠습니까?\n\n고급 역사 이론, 정치학, 경제학, 사회학 등 필요한 부분을 질문해주세요.`;
+            return `안녕하세요. AI Park입니다. 어떤 사회 주제를 공부하시겠습니까?\n\n고급 역사 이론, 정치학, 경제학, 사회학 등 필요한 부분을 질문해주세요.`;
           }
         }
 
@@ -414,6 +415,9 @@ ${scenario.initialMessage}`,
     setMessages(updatedMessages);
     setIsLoading(true);
 
+    // Reset assistant message created flag for new request
+    assistantMessageCreatedRef.current = false;
+
     // 감정 분석을 위한 이벤트 발생
     if (typeof window !== 'undefined') {
       const event = new CustomEvent('tutor-message-sent', {
@@ -475,16 +479,19 @@ ${scenario.initialMessage}`,
                     const newMessages = [...prev];
                     const lastMessage = newMessages[newMessages.length - 1];
 
-                    // Update existing assistant message or create new one
-                    if (lastMessage && lastMessage.role === 'assistant') {
-                      // Update existing assistant message (avoid mutation)
-                      newMessages[newMessages.length - 1] = {
-                        ...lastMessage,
-                        content: assistantMessage,
-                      };
-                    } else {
-                      // Create new assistant message
+                    // Check if we already created an assistant message for this request
+                    if (assistantMessageCreatedRef.current) {
+                      // Update the existing assistant message
+                      if (lastMessage && lastMessage.role === 'assistant') {
+                        newMessages[newMessages.length - 1] = {
+                          ...lastMessage,
+                          content: assistantMessage,
+                        };
+                      }
+                    } else if (lastMessage && lastMessage.role === 'user') {
+                      // Create new assistant message only once after user message
                       newMessages.push({ role: 'assistant', content: assistantMessage });
+                      assistantMessageCreatedRef.current = true;
                     }
                     return newMessages;
                   });

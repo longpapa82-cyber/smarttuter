@@ -17,7 +17,9 @@ import {
   Settings,
   BarChart3,
   LogOut,
-  GraduationCap
+  GraduationCap,
+  Beaker,
+  Landmark
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserStore } from "@/lib/gamification/store";
@@ -200,9 +202,13 @@ function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
     { href: "/", label: "홈", icon: <Home className="w-5 h-5" /> },
     { href: "/tutor/english", label: "English", icon: <BookOpen className="w-5 h-5" /> },
     { href: "/tutor/math", label: "Math", icon: <Calculator className="w-5 h-5" /> },
+    { href: "/tutor/science", label: "Science", icon: <Beaker className="w-5 h-5" /> },
+    { href: "/tutor/social-studies", label: "Social", icon: <Landmark className="w-5 h-5" /> },
     { href: "/dashboard", label: "Total DashBoard", icon: <LayoutDashboard className="w-5 h-5" /> },
     { href: "/dashboard/english", label: "English DashBoard", icon: <BookOpen className="w-5 h-5" /> },
     { href: "/dashboard/math", label: "Math DashBoard", icon: <Calculator className="w-5 h-5" /> },
+    { href: "/dashboard/science", label: "Science DashBoard", icon: <Beaker className="w-5 h-5" /> },
+    { href: "/dashboard/social", label: "Social DashBoard", icon: <Landmark className="w-5 h-5" /> },
   ];
 
   const handleLogout = () => {
@@ -326,6 +332,8 @@ export function TopNavigation() {
     { href: "/dashboard", label: "Total DashBoard", icon: <LayoutDashboard className="w-4 h-4" /> },
     { href: "/dashboard/english", label: "English DashBoard", icon: <BookOpen className="w-4 h-4" /> },
     { href: "/dashboard/math", label: "Math DashBoard", icon: <Calculator className="w-4 h-4" /> },
+    { href: "/dashboard/science", label: "Science DashBoard", icon: <Beaker className="w-4 h-4" /> },
+    { href: "/dashboard/social", label: "Social DashBoard", icon: <Landmark className="w-4 h-4" /> },
   ];
 
   const isDashboardActive = pathname?.startsWith('/dashboard');
@@ -366,6 +374,18 @@ export function TopNavigation() {
                   icon={<Calculator className="w-4 h-4" />}
                   label="Math"
                   isActive={pathname === '/tutor/math'}
+                />
+                <NavItem
+                  href="/tutor/science"
+                  icon={<Beaker className="w-4 h-4" />}
+                  label="Science"
+                  isActive={pathname === '/tutor/science'}
+                />
+                <NavItem
+                  href="/tutor/social-studies"
+                  icon={<Landmark className="w-4 h-4" />}
+                  label="Social"
+                  isActive={pathname === '/tutor/social-studies'}
                 />
                 <NavDropdown
                   label="DashBoard"
