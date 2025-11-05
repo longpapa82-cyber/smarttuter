@@ -26,6 +26,9 @@ export function useAuth() {
       if (typeof window !== 'undefined') {
         localStorage.removeItem('aipark_user_profile');
         localStorage.removeItem('onboarding_data');
+
+        // Clear guest mode cookie
+        document.cookie = 'aipark_guest_mode=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
       }
 
       // Sign out from NextAuth (no redirect, we'll handle it manually)
