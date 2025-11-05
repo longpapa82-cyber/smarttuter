@@ -91,6 +91,11 @@ export default function OnboardingPage() {
   const handleSkipAuth = () => {
     // 게스트 모드로 완료
     completeOnboarding();
+
+    // Set guest mode cookie (1 year expiry)
+    // This allows guest users to access dashboard and tutor without authentication
+    document.cookie = 'aipark_guest_mode=true; path=/; max-age=31536000; SameSite=Lax';
+
     router.push('/dashboard');
   };
 

@@ -24,6 +24,9 @@ export default function ProfilePage() {
   }, [status, router]);
 
   const handleSignOut = async () => {
+    // Remove guest mode cookie before signing out
+    document.cookie = 'aipark_guest_mode=; path=/; max-age=0';
+
     await signOut({ callbackUrl: '/login' });
   };
 

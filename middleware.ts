@@ -23,18 +23,31 @@ export async function middleware(request: NextRequest) {
     secret: process.env.NEXTAUTH_SECRET,
   })
 
-  const isAuthenticated = !!token
+  // Check for guest mode cookie
+  const hasGuestProfile = request.cookies.get('aipark_guest_mode')?.value === 'true'
 
-  // Define protected routes that require authentication
-  const protectedRoutes = [
+  // User is authenticated if they have either NextAuth token OR guest mode cookie
+  const isAuthenticated = !!token || hasGuestProfile
+
+  // Define routes that allow guest access (dashboard and tutor)
+  const guestAllowedRoutes = [
     '/dashboard',
-    '/profile',
-    '/analytics',
     '/tutor',
   ]
 
-  // Check if the current path is a protected route
-  const isProtectedRoute = protectedRoutes.some(route =>
+  // Define routes that strictly require authentication (no guest access)
+  const strictAuthRoutes = [
+    '/profile',
+    '/analytics',
+  ]
+
+  // Check if the current path requires strict authentication (no guest)
+  const isStrictAuthRoute = strictAuthRoutes.some(route =>
+    pathname.startsWith(route)
+  )
+
+  // Check if the current path allows guest access
+  const isGuestAllowedRoute = guestAllowedRoutes.some(route =>
     pathname.startsWith(route)
   )
 
@@ -50,10 +63,17 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith(route)
   )
 
-  // Redirect unauthenticated users trying to access protected routes
-  if (isProtectedRoute && !isAuthenticated) {
+  // Redirect unauthenticated users trying to access strict auth routes
+  // (profile, analytics require real authentication, not guest mode)
+  if (isStrictAuthRoute && !token) {
     const loginUrl = new URL('/login', request.url)
-    // Save the intended destination for redirect after login
+    loginUrl.searchParams.set('callbackUrl', pathname)
+    return NextResponse.redirect(loginUrl)
+  }
+
+  // For guest-allowed routes, redirect only if no authentication AND no guest cookie
+  if (isGuestAllowedRoute && !isAuthenticated) {
+    const loginUrl = new URL('/login', request.url)
     loginUrl.searchParams.set('callbackUrl', pathname)
     return NextResponse.redirect(loginUrl)
   }
