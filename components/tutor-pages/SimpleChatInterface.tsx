@@ -48,7 +48,6 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const assistantMessageCreatedRef = useRef<boolean>(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
 
   // Voice settings - subject-specific defaults + grade level optimization
@@ -415,9 +414,6 @@ ${scenario.initialMessage}`,
     setMessages(updatedMessages);
     setIsLoading(true);
 
-    // Reset assistant message created flag for new request
-    assistantMessageCreatedRef.current = false;
-
     // 감정 분석을 위한 이벤트 발생
     if (typeof window !== 'undefined') {
       const event = new CustomEvent('tutor-message-sent', {
@@ -457,6 +453,7 @@ ${scenario.initialMessage}`,
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
       let assistantMessage = '';
+      let assistantMessageCreated = false;
 
       if (reader) {
         while (true) {
@@ -479,19 +476,17 @@ ${scenario.initialMessage}`,
                     const newMessages = [...prev];
                     const lastMessage = newMessages[newMessages.length - 1];
 
-                    // Check if we already created an assistant message for this request
-                    if (assistantMessageCreatedRef.current) {
+                    // Check if assistant message already exists in the messages array
+                    if (assistantMessageCreated && lastMessage && lastMessage.role === 'assistant') {
                       // Update the existing assistant message
-                      if (lastMessage && lastMessage.role === 'assistant') {
-                        newMessages[newMessages.length - 1] = {
-                          ...lastMessage,
-                          content: assistantMessage,
-                        };
-                      }
+                      newMessages[newMessages.length - 1] = {
+                        ...lastMessage,
+                        content: assistantMessage,
+                      };
                     } else if (lastMessage && lastMessage.role === 'user') {
                       // Create new assistant message only once after user message
                       newMessages.push({ role: 'assistant', content: assistantMessage });
-                      assistantMessageCreatedRef.current = true;
+                      assistantMessageCreated = true;
                     }
                     return newMessages;
                   });
