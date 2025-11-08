@@ -36,10 +36,13 @@ export interface VerifiedContent {
   topicKo: string;
   gradeLevel: string;
   schoolLevel: SchoolLevel;
-  content: string; // Verified educational content
-  examples: string[]; // Verified examples
+  content: string; // Verified educational content (English)
+  contentKo?: string; // Verified educational content (Korean) - optional for backward compatibility
+  examples: string[]; // Verified examples (English)
+  examplesKo?: string[]; // Verified examples (Korean) - optional for backward compatibility
   commonMistakes?: string[]; // Common student mistakes
-  keyPoints: string[]; // Key learning points
+  keyPoints: string[]; // Key learning points (English)
+  keyPointsKo?: string[]; // Key learning points (Korean) - optional for backward compatibility
   source: string; // Source of verification (Common Core, textbook, etc.)
   lastVerified: string; // ISO date
   confidence?: number; // Confidence score (0-1) - optional for backward compatibility
@@ -803,12 +806,36 @@ Strategies:
 - Counting on: Start from larger number, count up
 - Number line: Move right on number line
 - Ten frame: Visual representation`,
+    contentKo: `덧셈은 두 개 이상의 수를 합쳐서 전체를 구하는 것입니다.
+
+기호: + (더하기), = (같다)
+
+기본 개념:
+- 3 + 2 = 5 (3 더하기 2는 5)
+- 사과 3개 + 사과 2개 = 사과 5개
+
+성질:
+1. 교환법칙: 3 + 2 = 2 + 3 (순서를 바꿔도 같음)
+2. 항등원: 5 + 0 = 5 (0을 더해도 변하지 않음)
+3. 결합법칙: (2 + 3) + 4 = 2 + (3 + 4)
+
+전략:
+- 이어 세기: 큰 수부터 시작해서 세기
+- 수직선: 수직선에서 오른쪽으로 이동
+- 십 모형: 시각적으로 표현하기`,
     examples: [
       "5 + 3 = 8 (five plus three equals eight)",
       "10 + 7 = 17 (crossing ten)",
       "4 + 4 = 8 (doubles)",
       "6 + 0 = 6 (adding zero)",
       "2 + 3 + 5 = 10 (adding three numbers)"
+    ],
+    examplesKo: [
+      "5 + 3 = 8 (5 더하기 3은 8)",
+      "10 + 7 = 17 (10을 넘어가는 덧셈)",
+      "4 + 4 = 8 (같은 수 더하기)",
+      "6 + 0 = 6 (0을 더하기)",
+      "2 + 3 + 5 = 10 (세 수 더하기)"
     ],
     commonMistakes: [
       "❌ Forgetting to count the starting number",
@@ -820,8 +847,13 @@ Strategies:
       "Order doesn't matter (3+2 = 2+3)",
       "Adding zero doesn't change the number"
     ],
-    source: "Common Core State Standards - Grade 1 Mathematics",
-    lastVerified: "2025-01-04"
+    keyPointsKo: [
+      "덧셈은 합치는 것입니다",
+      "순서를 바꿔도 답은 같아요 (3+2 = 2+3)",
+      "0을 더하면 그대로예요"
+    ],
+    source: "Common Core State Standards - Grade 1 Mathematics / 2015 개정 교육과정 수학 1학년",
+    lastVerified: "2025-01-08"
   },
 
   // Fractions (Elementary)
@@ -850,12 +882,37 @@ Equivalent fractions:
 Comparing fractions:
 - Same denominator: compare numerators (3/8 < 5/8)
 - Same numerator: smaller denominator is larger (1/3 > 1/4)`,
+    contentKo: `분수는 전체의 일부를 나타냅니다.
+
+구조: 분자/분모
+- 1/2: 분자 = 1 (가진 부분)
+       분모 = 2 (전체를 똑같이 나눈 개수)
+
+종류:
+1. 단위분수: 1/2, 1/3, 1/4 (분자가 1)
+2. 진분수: 3/4, 2/5 (분자 < 분모)
+3. 가분수: 5/4, 7/3 (분자 ≥ 분모)
+
+같은 크기 분수:
+- 1/2 = 2/4 = 3/6 (크기는 같고 형태만 다름)
+- 분자와 분모에 같은 수를 곱하거나 나누기
+
+분수 비교:
+- 분모가 같으면: 분자를 비교 (3/8 < 5/8)
+- 분자가 같으면: 분모가 작을수록 크다 (1/3 > 1/4)`,
     examples: [
       "1/2 (one half) - pizza cut in 2, take 1 piece",
       "3/4 (three fourths) - 3 out of 4 equal parts",
       "1/2 = 2/4 = 4/8 (equivalent fractions)",
       "2/3 > 1/3 (same denominator, compare tops)",
       "1/2 > 1/4 (same numerator, smaller bottom is bigger)"
+    ],
+    examplesKo: [
+      "1/2 (이분의 일) - 피자를 2조각으로 나눠 1조각",
+      "3/4 (사분의 삼) - 4등분 중 3개",
+      "1/2 = 2/4 = 4/8 (같은 크기 분수)",
+      "2/3 > 1/3 (분모 같으면 분자 비교)",
+      "1/2 > 1/4 (분자 같으면 분모 작은 게 커요)"
     ],
     commonMistakes: [
       "❌ Thinking 1/4 > 1/2 (bigger number = bigger fraction)",
@@ -867,8 +924,13 @@ Comparing fractions:
       "Numerator = parts we have",
       "Larger denominator = smaller pieces (1/8 < 1/4)"
     ],
-    source: "Common Core State Standards - Grade 3 Mathematics",
-    lastVerified: "2025-01-04"
+    keyPointsKo: [
+      "분모 = 전체를 나눈 개수",
+      "분자 = 가진 부분의 개수",
+      "분모가 클수록 조각이 작아져요 (1/8 < 1/4)"
+    ],
+    source: "Common Core State Standards - Grade 3 Mathematics / 2015 개정 교육과정 수학 3학년",
+    lastVerified: "2025-01-08"
   },
 
   // Quadratic Equations (Middle School)
@@ -902,12 +964,42 @@ Graph: Parabola (U-shaped curve)
 - Opens up if a > 0
 - Opens down if a < 0
 - Vertex: turning point`,
+    contentKo: `이차방정식: ax² + bx + c = 0 (a ≠ 0)
+
+표준형: ax² + bx + c = 0
+
+풀이 방법:
+1. 인수분해: (x + p)(x + q) = 0
+   예제: x² + 5x + 6 = 0 → (x + 2)(x + 3) = 0
+   해: x = -2 또는 x = -3
+
+2. 근의 공식: x = [-b ± √(b² - 4ac)] / 2a
+   모든 이차방정식에 사용 가능
+
+3. 완전제곱식 만들기
+
+판별식 (b² - 4ac):
+- > 0: 서로 다른 두 실근
+- = 0: 중근 (한 개의 실근)
+- < 0: 실근 없음 (두 허근)
+
+그래프: 포물선 (U자 곡선)
+- a > 0이면 아래로 볼록
+- a < 0이면 위로 볼록
+- 꼭짓점: 방향이 바뀌는 점`,
     examples: [
       "x² + 5x + 6 = 0 → (x+2)(x+3) = 0 → x = -2 or -3",
       "x² - 4 = 0 → (x+2)(x-2) = 0 → x = ±2",
       "x² + 2x - 3 = 0 using formula: a=1, b=2, c=-3",
       "x² - 6x + 9 = 0 → (x-3)² = 0 → x = 3 (double root)",
       "2x² + 3x - 5 = 0 → (2x+5)(x-1) = 0 → x = -5/2 or 1"
+    ],
+    examplesKo: [
+      "x² + 5x + 6 = 0 → (x+2)(x+3) = 0 → x = -2 또는 -3",
+      "x² - 4 = 0 → (x+2)(x-2) = 0 → x = ±2",
+      "x² + 2x - 3 = 0 근의 공식: a=1, b=2, c=-3",
+      "x² - 6x + 9 = 0 → (x-3)² = 0 → x = 3 (중근)",
+      "2x² + 3x - 5 = 0 → (2x+5)(x-1) = 0 → x = -5/2 또는 1"
     ],
     commonMistakes: [
       "❌ Forgetting x² + 5x + 6 has TWO solutions (not just one)",
@@ -921,8 +1013,14 @@ Graph: Parabola (U-shaped curve)
       "Factoring is fastest but doesn't always work",
       "Quadratic formula always works"
     ],
-    source: "Common Core State Standards - Grade 9 Algebra",
-    lastVerified: "2025-01-04"
+    keyPointsKo: [
+      "이차방정식 = 2차 (최고차항이 x²)",
+      "실근이 0개, 1개, 2개 가능",
+      "인수분해가 가장 빠르지만 항상 되는 건 아님",
+      "근의 공식은 항상 사용 가능"
+    ],
+    source: "Common Core State Standards - Grade 9 Algebra / 2015 개정 교육과정 수학 9학년",
+    lastVerified: "2025-01-08"
   },
 
   // Derivatives (High School)
@@ -1007,11 +1105,38 @@ Properties:
 - NOT commutative: 5 - 3 ≠ 3 - 5
 - Subtract 0: number stays same (7 - 0 = 7)
 - Subtract from itself: always 0 (5 - 5 = 0)`,
+    contentKo: `뺄셈은 빼거나 차이를 구하는 것입니다.
+
+기호: 5 - 3 = 2 (5 빼기 3은 2)
+- 5는 피감수 (큰 수)
+- 3은 감수 (빼는 수)
+- 2는 차 (결과)
+
+방법:
+1. 거꾸로 세기: 5 - 3 → 5에서 3만큼 거꾸로: 4, 3, 2
+2. 수직선: 5에서 시작해서 왼쪽으로 3칸
+3. 받아내림: 위 숫자가 작을 때
+
+성질:
+- 순서 바꾸면 안 됨: 5 - 3 ≠ 3 - 5 (덧셈과 다름)
+- 0을 빼면: 그대로 (7 - 0 = 7)
+- 자기 자신 빼기: 항상 0 (5 - 5 = 0)
+
+전략:
+- 거꾸로 세기
+- 손가락 사용
+- 덧셈으로 확인: 5 - 3 = 2이면, 2 + 3 = 5`,
     examples: [
       "8 - 3 = 5",
       "10 - 4 = 6",
       "12 - 7 = 5 (may need fingers)",
       "15 - 8 = 7 (count back or use addition: 8 + ? = 15)"
+    ],
+    examplesKo: [
+      "8 - 3 = 5 (8 빼기 3은 5)",
+      "10 - 4 = 6 (10에서 4를 빼면 6)",
+      "12 - 7 = 5 (손가락으로 세어도 돼요)",
+      "15 - 8 = 7 (거꾸로 세거나 덧셈으로: 8 + ? = 15)"
     ],
     commonMistakes: [
       "❌ 3 - 5 = 2 → ✅ 3 - 5 = -2 (order matters)",
@@ -1021,6 +1146,11 @@ Properties:
       "Subtraction = taking away",
       "Order matters (not like addition)",
       "Can check with addition: 5 - 3 = 2, check: 2 + 3 = 5"
+    ],
+    keyPointsKo: [
+      "뺄셈은 빼는 것이에요",
+      "순서가 중요해요 (덧셈과 달라요)",
+      "덧셈으로 확인: 5 - 3 = 2이면, 2 + 3 = 5"
     ],
     source: "Common Core State Standards - Grade 1 Math",
     lastVerified: "2025-01-04"
@@ -1052,11 +1182,42 @@ Properties:
 
 Multiplication table (times tables):
 - Essential to memorize up to 10 × 10`,
+    contentKo: `곱셈은 같은 수를 여러 번 더하는 것입니다.
+
+기호: 3 × 4 = 12 (3 곱하기 4는 12)
+- 3은 곱하는 수
+- 4는 곱해지는 수
+- 12는 곱 (결과)
+
+이해하기:
+- 3 × 4는 "4가 3개" 또는 "4 + 4 + 4"
+- "3이 4개"로도 생각할 수 있어요
+
+성질:
+1. 교환법칙: 3 × 4 = 4 × 3 (순서 바꿔도 같음)
+2. 곱셈의 항등원: 어떤 수 × 1 = 그 수 (5 × 1 = 5)
+3. 0의 법칙: 어떤 수 × 0 = 0 (8 × 0 = 0)
+
+구구단:
+- 2단부터 9단까지 외워야 해요
+- 10 × 10까지 알면 더 좋아요
+
+전략:
+- 손가락으로 세기
+- 그림 그리기 (3 × 4 = 동그라미 4개씩 3줄)
+- 구구단 노래로 외우기`,
     examples: [
       "2 × 3 = 6 (2 groups of 3: 3 + 3)",
       "5 × 4 = 20 (5 groups of 4)",
       "7 × 1 = 7 (identity)",
       "8 × 0 = 0 (zero property)"
+    ],
+    examplesKo: [
+      "2 × 3 = 6 (3이 2개: 3 + 3)",
+      "5 × 4 = 20 (4가 5개: 4+4+4+4+4)",
+      "7 × 1 = 7 (1을 곱하면 그대로)",
+      "8 × 0 = 0 (0을 곱하면 항상 0)",
+      "3 × 4 = 4 × 3 = 12 (순서 바꿔도 같아요)"
     ],
     commonMistakes: [
       "❌ 3 × 4 = 7 → ✅ 3 × 4 = 12 (multiply, not add)",
@@ -1066,6 +1227,11 @@ Multiplication table (times tables):
       "Multiplication = repeated addition",
       "Memorize times tables",
       "Commutative: order doesn't matter"
+    ],
+    keyPointsKo: [
+      "곱셈은 같은 수를 여러 번 더하기",
+      "구구단을 외워야 해요",
+      "순서를 바꿔도 답은 같아요 (3×4 = 4×3)"
     ],
     source: "Common Core State Standards - Grade 3 Math",
     lastVerified: "2025-01-04"
@@ -1097,11 +1263,42 @@ Properties:
 
 Remainder: leftover when division isn't exact
 - 13 ÷ 4 = 3 remainder 1`,
+    contentKo: `나눗셈은 똑같이 나누는 것입니다.
+
+기호: 12 ÷ 3 = 4 (12 나누기 3은 4)
+- 12는 피제수 (나눠지는 수)
+- 3은 제수 (나누는 수)
+- 4는 몫 (결과)
+
+두 가지 의미:
+1. 나눠주기: 사탕 12개를 3명이 나눠 먹으면 = 한 명당 4개
+2. 묶기: 사탕 12개를 3개씩 묶으면 = 4묶음
+
+성질:
+- 순서 바꾸면 안 됨: 12 ÷ 3 ≠ 3 ÷ 12 (곱셈과 다름)
+- 1로 나누기: 그대로 (8 ÷ 1 = 8)
+- 0으로 나누기: 안 돼요 (불가능)
+
+나머지:
+- 딱 떨어지지 않을 때 남는 것
+- 13 ÷ 4 = 3 나머지 1 (3묶음에 1개 남음)
+
+전략:
+- 곱셈으로 확인: 12 ÷ 3 = 4이면, 4 × 3 = 12
+- 그림 그리기
+- 손가락으로 세기`,
     examples: [
       "15 ÷ 3 = 5 (15 split into 3 groups)",
       "20 ÷ 5 = 4 (20 split into groups of 5)",
       "17 ÷ 5 = 3 R 2 (3 groups with 2 left over)",
       "8 ÷ 8 = 1 (divide by itself = 1)"
+    ],
+    examplesKo: [
+      "15 ÷ 3 = 5 (15개를 3명이 나누면 한 명당 5개)",
+      "20 ÷ 5 = 4 (20개를 5개씩 묶으면 4묶음)",
+      "17 ÷ 5 = 3 나머지 2 (3묶음에 2개 남음)",
+      "8 ÷ 8 = 1 (자기 자신으로 나누면 1)",
+      "12 ÷ 1 = 12 (1로 나누면 그대로)"
     ],
     commonMistakes: [
       "❌ 12 ÷ 0 → ✅ Undefined (cannot divide by zero)",
@@ -1111,6 +1308,11 @@ Remainder: leftover when division isn't exact
       "Division = splitting equally",
       "Check with multiplication: 12 ÷ 3 = 4, check: 4 × 3 = 12",
       "Cannot divide by zero"
+    ],
+    keyPointsKo: [
+      "나눗셈은 똑같이 나누는 것",
+      "곱셈으로 확인: 12 ÷ 3 = 4이면, 4 × 3 = 12",
+      "0으로는 나눌 수 없어요"
     ],
     source: "Common Core State Standards - Grade 4 Math",
     lastVerified: "2025-01-04"
@@ -1141,11 +1343,49 @@ Operations:
 Converting:
 - Fraction to decimal: divide numerator by denominator
 - Decimal to fraction: use place value (0.5 = 5/10 = 1/2)`,
+    contentKo: `소수는 1보다 작은 수를 나타냅니다.
+
+소수점 오른쪽 자리 값:
+- 소수 첫째 자리 (0.1 = 1/10 = 십분의 일)
+- 소수 둘째 자리 (0.01 = 1/100 = 백분의 일)
+- 소수 셋째 자리 (0.001 = 1/1000 = 천분의 일)
+
+읽기: 3.47 = "삼 점 사칠" 또는 "삼과 백분의 사십칠"
+
+계산하기:
+- 덧셈/뺄셈: 소수점을 맞춰서 계산
+  예) 2.3 + 1.4
+      2.3
+    + 1.4
+    -----
+      3.7
+
+- 곱셈: 먼저 곱하고, 소수점 자리수를 세어요
+  예) 0.2 × 0.3 = 0.06 (소수점 2자리)
+
+- 나눗셈: 나누는 수를 정수로 만들어요
+
+변환하기:
+- 분수 → 소수: 분자 ÷ 분모
+  예) 1/2 = 1 ÷ 2 = 0.5
+- 소수 → 분수: 자리값 이용
+  예) 0.5 = 5/10 = 1/2
+
+성질:
+- 오른쪽으로 갈수록 10배씩 작아져요
+- 0.1 = 1/10, 0.01 = 1/100, 0.001 = 1/1000`,
     examples: [
       "0.5 = 5/10 = 1/2 (five tenths)",
       "2.3 + 1.4 = 3.7 (line up decimals)",
       "0.2 × 0.3 = 0.06 (2 decimal places total)",
       "3.75 = 3 + 7/10 + 5/100"
+    ],
+    examplesKo: [
+      "0.5 = 5/10 = 1/2 (십분의 오)",
+      "2.3 + 1.4 = 3.7 (소수점을 맞춰요)",
+      "0.2 × 0.3 = 0.06 (소수점 2자리)",
+      "3.75 = 3 + 7/10 + 5/100 (삼과 백분의 칠십오)",
+      "0.25 = 25/100 = 1/4 (백분의 이십오 = 사분의 일)"
     ],
     commonMistakes: [
       "❌ 0.5 + 0.25 = 0.30 → ✅ 0.5 + 0.25 = 0.75",
@@ -1155,6 +1395,11 @@ Converting:
       "Decimal point separates whole from parts",
       "Line up decimal points for addition/subtraction",
       "Each place is 10 times smaller moving right"
+    ],
+    keyPointsKo: [
+      "소수점은 정수와 소수를 구분해요",
+      "덧셈/뺄셈할 때는 소수점을 맞춰야 해요",
+      "오른쪽으로 갈수록 10배씩 작아져요 (0.1 → 0.01 → 0.001)"
     ],
     source: "Common Core State Standards - Grade 5 Math",
     lastVerified: "2025-01-04"
@@ -1185,11 +1430,46 @@ Percent applications:
 - Discounts: 30% off $60 → save $18
 - Tax: 8% tax on $25 → pay $2 extra
 - Tips: 15% tip on $40 → tip $6`,
+    contentKo: `백분율은 "100 중에 얼마"를 뜻합니다 (%).
+
+뜻: 50% = 50/100 = 0.5 (100 중에 50)
+
+변환하기:
+- 백분율 → 소수: 100으로 나누기
+  예) 25% = 25 ÷ 100 = 0.25
+
+- 소수 → 백분율: 100을 곱하기
+  예) 0.3 = 0.3 × 100 = 30%
+
+- 분수 → 백분율: 먼저 소수로, 그 다음 백분율로
+  예) 1/4 = 0.25 = 25%
+
+백분율 구하기:
+- "80의 20%는?" → 0.20 × 80 = 16
+- 공식: (백분율/100) × 전체 = 부분
+
+실생활 활용:
+- 할인: 60,000원에서 30% 할인 → 18,000원 절약
+- 세금: 25,000원에 8% 세금 → 2,000원 추가
+- 팁: 40,000원 식사에 15% 팁 → 6,000원 팁
+
+자주 쓰는 백분율:
+- 50% = 1/2 (절반)
+- 25% = 1/4 (4분의 1)
+- 75% = 3/4 (4분의 3)
+- 100% = 1 (전부)`,
     examples: [
       "25% = 25/100 = 0.25 = 1/4",
       "Find 20% of 80: 0.20 × 80 = 16",
       "30% off $50: save 0.30 × 50 = $15",
       "What percent is 15 of 60? 15/60 = 0.25 = 25%"
+    ],
+    examplesKo: [
+      "25% = 25/100 = 0.25 = 1/4 (백 중에 이십오)",
+      "80의 20%는? 0.20 × 80 = 16",
+      "50,000원에서 30% 할인: 0.30 × 50,000 = 15,000원 절약",
+      "15는 60의 몇 %? 15/60 = 0.25 = 25%",
+      "100% = 전부, 50% = 절반, 0% = 없음"
     ],
     commonMistakes: [
       "❌ 25% = 25 → ✅ 25% = 0.25",
@@ -1200,6 +1480,11 @@ Percent applications:
       "Percent = out of 100",
       "Convert to decimal by dividing by 100",
       "Use multiplication to find percent of a number"
+    ],
+    keyPointsKo: [
+      "백분율 = 100 중에 얼마",
+      "소수로 바꾸려면 100으로 나눠요 (25% = 0.25)",
+      "백분율 구하기: 곱셈 사용 (80의 20% = 0.20 × 80)"
     ],
     source: "Common Core State Standards - Grade 6 Math",
     lastVerified: "2025-01-04"
@@ -1229,11 +1514,38 @@ Solving steps:
 Properties used:
 - Addition/Subtraction property: add or subtract same amount from both sides
 - Multiplication/Division property: multiply or divide both sides by same number (not zero)`,
+    contentKo: `일차방정식은 차수가 1인 방정식입니다 (최고차항이 x¹).
+
+기본 형태: ax + b = c
+- a, b, c는 상수 (숫자)
+- x는 미지수 (구하려는 값)
+- 목표: x를 구하기 (x만 남기기)
+
+푸는 순서:
+1. 양쪽을 정리하기
+2. x가 있는 항을 한쪽으로 모으기
+3. 숫자 항을 다른 쪽으로 모으기
+4. x의 계수로 양쪽을 나누기
+
+사용하는 성질:
+- 등식의 성질 1: 양쪽에 같은 수를 더하거나 빼도 됨
+- 등식의 성질 2: 양쪽에 같은 수(0 아닌)를 곱하거나 나눠도 됨
+
+이항: 등호를 넘어갈 때 부호가 바뀌어요
+- 2x + 3 = 11 → 2x = 11 - 3 (+ 3을 오른쪽으로 보내면 -3)
+- 2x = 8 → x = 8 ÷ 2 (× 2를 오른쪽으로 보내면 ÷ 2)`,
     examples: [
       "2x + 3 = 11 → 2x = 8 → x = 4",
       "5x - 7 = 3 → 5x = 10 → x = 2",
       "x/3 + 2 = 5 → x/3 = 3 → x = 9",
       "3(x + 2) = 15 → 3x + 6 = 15 → 3x = 9 → x = 3"
+    ],
+    examplesKo: [
+      "2x + 3 = 11 → 2x = 8 → x = 4 (양쪽에서 3 빼기, 2로 나누기)",
+      "5x - 7 = 3 → 5x = 10 → x = 2 (양쪽에 7 더하기, 5로 나누기)",
+      "x/3 + 2 = 5 → x/3 = 3 → x = 9 (양쪽에서 2 빼기, 양쪽에 3 곱하기)",
+      "3(x + 2) = 15 → 3x + 6 = 15 → 3x = 9 → x = 3 (괄호 풀기, 정리하기)",
+      "검산: x = 4일 때, 2(4) + 3 = 8 + 3 = 11 ✓"
     ],
     commonMistakes: [
       "❌ 2x + 3 = 11 → x = 11 - 3 → ✅ 2x = 8, x = 4 (subtract from both sides first)",
@@ -1243,6 +1555,11 @@ Properties used:
       "Do same operation to both sides",
       "Goal: isolate variable",
       "Check answer by substituting back"
+    ],
+    keyPointsKo: [
+      "양쪽에 항상 같은 연산을 해야 해요",
+      "목표는 x만 남기기 (x = 숫자 형태)",
+      "답을 구한 후 원래 식에 대입해서 확인하세요"
     ],
     source: "Common Core State Standards - Grade 7 Algebra",
     lastVerified: "2025-01-04"
@@ -1273,10 +1590,39 @@ Common Pythagorean triples (whole numbers):
 - 3, 4, 5
 - 5, 12, 13
 - 8, 15, 17`,
+    contentKo: `피타고라스 정리는 직각삼각형의 세 변 사이의 관계입니다.
+
+공식: a² + b² = c²
+- a, b는 밑변과 높이 (짧은 두 변)
+- c는 빗변 (가장 긴 변, 직각의 대변)
+
+직각삼각형에서만 사용할 수 있어요 (한 각이 90°).
+
+활용:
+1. 두 변을 알 때 나머지 한 변 구하기
+2. 삼각형이 직각삼각형인지 확인하기
+3. 좌표평면에서 두 점 사이의 거리 구하기
+
+피타고라스 수 (정수로 떨어지는 값):
+- 3, 4, 5 → 3² + 4² = 9 + 16 = 25 = 5²
+- 5, 12, 13 → 5² + 12² = 25 + 144 = 169 = 13²
+- 6, 8, 10 (3-4-5의 2배)
+- 8, 15, 17
+
+기억하기:
+- 직각을 낀 두 변을 제곱해서 더하면
+- 빗변을 제곱한 것과 같아요`,
     examples: [
       "If a=3, b=4: c² = 9 + 16 = 25, so c = 5",
       "If legs are 6 and 8: hypotenuse² = 36 + 64 = 100, so hyp = 10",
       "Is 5, 6, 7 a right triangle? 25 + 36 = 61 ≠ 49, NO"
+    ],
+    examplesKo: [
+      "a=3, b=4일 때: c² = 9 + 16 = 25, c = 5",
+      "밑변 6, 높이 8일 때: 빗변² = 36 + 64 = 100, 빗변 = 10",
+      "5, 6, 7이 직각삼각형? 25 + 36 = 61 ≠ 49, 아니에요",
+      "빗변을 구할 때: c² = a² + b², c = √(a² + b²)",
+      "밑변을 구할 때: a² = c² - b², a = √(c² - b²)"
     ],
     commonMistakes: [
       "❌ Using with non-right triangles",
@@ -1287,6 +1633,11 @@ Common Pythagorean triples (whole numbers):
       "Only for right triangles",
       "Hypotenuse is always longest side",
       "Formula: leg² + leg² = hypotenuse²"
+    ],
+    keyPointsKo: [
+      "직각삼각형에서만 사용해요",
+      "빗변이 항상 가장 긴 변이에요",
+      "공식: (밑변)² + (높이)² = (빗변)²"
     ],
     source: "Common Core State Standards - Grade 8 Geometry",
     lastVerified: "2025-01-04"
@@ -1317,10 +1668,44 @@ Types of functions:
 - Linear: f(x) = mx + b (straight line)
 - Quadratic: f(x) = ax² + bx + c (parabola)
 - Exponential: f(x) = aˣ (growth/decay)`,
+    contentKo: `함수는 각 입력값에 정확히 하나의 출력값을 대응시킵니다.
+
+표기법: f(x) = 2x + 1
+- f는 함수 이름
+- x는 입력값 (독립변수)
+- f(x)는 출력값 (종속변수)
+
+정의역(Domain): 가능한 모든 입력값의 집합
+치역(Range): 가능한 모든 출력값의 집합
+
+수직선 검사:
+- 그래프가 함수인지 확인하는 방법
+- 어떤 수직선도 그래프와 최대 한 점에서만 만나면 함수
+
+함수의 종류:
+- 일차함수: f(x) = mx + b (직선)
+- 이차함수: f(x) = ax² + bx + c (포물선)
+- 지수함수: f(x) = aˣ (증가/감소)
+
+함수의 핵심:
+- 하나의 입력 → 하나의 출력 (일대일 대응)
+- x값이 같으면 f(x)값도 같아야 해요
+- 예) f(3)은 항상 같은 값
+
+함수 계산:
+- f(3)을 구할 때: x에 3을 대입
+- f(x) = 2x + 1이면, f(3) = 2(3) + 1 = 7`,
     examples: [
       "f(x) = 2x + 1, find f(3): f(3) = 2(3) + 1 = 7",
       "Domain of f(x) = √x: x ≥ 0 (can't square root negative)",
       "Is {(1,2), (2,3), (1,4)} a function? NO (1 maps to two outputs)"
+    ],
+    examplesKo: [
+      "f(x) = 2x + 1, f(3) 구하기: f(3) = 2(3) + 1 = 7",
+      "f(x) = √x의 정의역: x ≥ 0 (음수는 제곱근 불가)",
+      "{(1,2), (2,3), (1,4)}는 함수? 아니요 (1이 두 개 값으로)",
+      "f(x) = x² + 1, f(-2) = (-2)² + 1 = 4 + 1 = 5",
+      "y = 2x는 함수 (수직선이 한 점만 통과), x² + y² = 1은 함수 아님"
     ],
     commonMistakes: [
       "❌ f(x) = x² has two outputs for each input → ✅ Each input has ONE output (3² = 9 only)",
@@ -1330,6 +1715,11 @@ Types of functions:
       "Each input → exactly one output",
       "Use vertical line test on graphs",
       "f(x) is output, not f times x"
+    ],
+    keyPointsKo: [
+      "하나의 입력 → 정확히 하나의 출력",
+      "그래프에서 수직선 검사 사용",
+      "f(x)는 출력값이지, f × x가 아니에요"
     ],
     source: "Common Core State Standards - Grade 9 Algebra II",
     lastVerified: "2025-01-04"
@@ -1359,10 +1749,42 @@ Special angles (memorize):
 - sin(30°) = 1/2, cos(30°) = √3/2, tan(30°) = 1/√3
 - sin(45°) = √2/2, cos(45°) = √2/2, tan(45°) = 1
 - sin(60°) = √3/2, cos(60°) = 1/2, tan(60°) = √3`,
+    contentKo: `삼각법은 직각삼각형에서 각과 변 사이의 관계를 연구합니다.
+
+SOH CAH TOA 공식 (외우세요!):
+- SOH: sin(θ) = 대변 / 빗변 (Opposite / Hypotenuse)
+- CAH: cos(θ) = 밑변 / 빗변 (Adjacent / Hypotenuse)
+- TOA: tan(θ) = 대변 / 밑변 (Opposite / Adjacent)
+
+각 θ를 기준으로:
+- 대변(Opposite): θ의 맞은편에 있는 변
+- 밑변(Adjacent): θ에 붙어있는 변 (빗변 제외)
+- 빗변(Hypotenuse): 가장 긴 변 (직각의 맞은편)
+
+특수각 값 (외우기):
+- 30° (π/6): sin = 1/2, cos = √3/2, tan = 1/√3
+- 45° (π/4): sin = √2/2, cos = √2/2, tan = 1
+- 60° (π/3): sin = √3/2, cos = 1/2, tan = √3
+
+기억법:
+- sin은 대변/빗변 (높이/빗변)
+- cos은 밑변/빗변 (밑/빗변)
+- tan은 대변/밑변 (높이/밑)
+
+관계식:
+- sin²θ + cos²θ = 1 (피타고라스 정리)
+- tan θ = sin θ / cos θ`,
     examples: [
       "If opposite=3, hypotenuse=5: sin(θ) = 3/5 = 0.6",
       "If adjacent=4, hypotenuse=5: cos(θ) = 4/5 = 0.8",
       "If opposite=3, adjacent=4: tan(θ) = 3/4 = 0.75"
+    ],
+    examplesKo: [
+      "대변=3, 빗변=5일 때: sin(θ) = 3/5 = 0.6",
+      "밑변=4, 빗변=5일 때: cos(θ) = 4/5 = 0.8",
+      "대변=3, 밑변=4일 때: tan(θ) = 3/4 = 0.75",
+      "3-4-5 직각삼각형: sin(θ)=3/5, cos(θ)=4/5, tan(θ)=3/4",
+      "45°일 때: sin(45°) = cos(45°) = √2/2 ≈ 0.707"
     ],
     commonMistakes: [
       "❌ Mixing up opposite and adjacent",
@@ -1373,6 +1795,11 @@ Special angles (memorize):
       "SOH CAH TOA for right triangles",
       "Identify opposite and adjacent relative to angle",
       "All ratios are side/side (no units)"
+    ],
+    keyPointsKo: [
+      "직각삼각형에서만 SOH CAH TOA 사용",
+      "각을 기준으로 대변과 밑변 구분",
+      "모든 비율은 변/변 (단위 없음)"
     ],
     source: "Common Core State Standards - Grade 10 Geometry",
     lastVerified: "2025-01-04"
@@ -1406,11 +1833,46 @@ Properties:
 Special values:
 - log(1) = 0 (any base)
 - log(base) = 1 (e.g., log₁₀(10) = 1)`,
+    contentKo: `로그는 지수의 역연산입니다.
+
+정의: logₐ(x) = y는 aʸ = x를 의미
+- a는 밑 (base)
+- x는 진수 (argument)
+- y는 로그값
+
+자주 쓰는 로그:
+- log(x) = log₁₀(x) (상용로그, 밑이 10)
+- ln(x) = logₑ(x) (자연로그, 밑이 e ≈ 2.718)
+
+로그의 성질:
+1. 곱셈: log(xy) = log(x) + log(y) (곱하기 → 더하기)
+2. 나눗셈: log(x/y) = log(x) - log(y) (나누기 → 빼기)
+3. 거듭제곱: log(xⁿ) = n·log(x) (지수를 앞으로)
+4. 밑의 변환: logₐ(x) = log(x)/log(a)
+
+특수값:
+- log(1) = 0 (어떤 밑이든)
+- log(밑) = 1 (예: log₁₀(10) = 1, ln(e) = 1)
+- logₐ(a) = 1
+
+로그의 의미:
+- log₂(8) = 3은 "2를 몇 번 곱해야 8?" → 3번
+- log₁₀(100) = 2는 "10을 몇 번 곱해야 100?" → 2번
+
+지수 방정식 풀기:
+- 2ˣ = 16 → x = log₂(16) = log₂(2⁴) = 4`,
     examples: [
       "log₂(8) = 3 because 2³ = 8",
       "log₁₀(100) = 2 because 10² = 100",
       "log(xy) = log(x) + log(y): log(2×5) = log(2) + log(5)",
       "Solve 2ˣ = 16: x = log₂(16) = 4"
+    ],
+    examplesKo: [
+      "log₂(8) = 3 왜냐하면 2³ = 8",
+      "log₁₀(100) = 2 왜냐하면 10² = 100",
+      "log(2×5) = log(2) + log(5) (곱셈은 덧셈으로)",
+      "log(10/2) = log(10) - log(2) (나눗셈은 뺄셈으로)",
+      "log(x³) = 3·log(x) (지수는 앞으로)"
     ],
     commonMistakes: [
       "❌ log(x+y) = log(x) + log(y) → ✅ log(xy) = log(x) + log(y) (product, not sum)",
@@ -1421,6 +1883,11 @@ Special values:
       "Log is inverse of exponent",
       "logₐ(x) = y ⟺ aʸ = x",
       "Product property: add logs, Quotient: subtract logs"
+    ],
+    keyPointsKo: [
+      "로그는 지수의 역연산 (logₐ(x) = y ⟺ aʸ = x)",
+      "곱하기는 더하기로: log(xy) = log(x) + log(y)",
+      "나누기는 빼기로: log(x/y) = log(x) - log(y)"
     ],
     source: "Common Core State Standards - Grade 11 Pre-Calculus",
     lastVerified: "2025-01-04"
@@ -1451,11 +1918,41 @@ Limit laws:
 
 Indeterminate forms (need more work):
 - 0/0, ∞/∞ → use L'Hôpital's rule or factoring`,
+    contentKo: `극한은 입력값이 어떤 값에 가까워질 때 함수의 행동을 나타냅니다.
+
+표기법: lim[x→a] f(x) = L
+- x가 a에 가까워질수록, f(x)는 L에 가까워진다
+
+극한의 종류:
+1. 유한 극한: lim[x→2] (x²) = 4 (값이 4로 수렴)
+2. 무한 극한: lim[x→0] (1/x²) = ∞ (값이 무한대로)
+3. 무한대에서의 극한: lim[x→∞] (1/x) = 0 (x가 무한대일 때)
+
+극한의 법칙:
+- 합: lim(f+g) = lim(f) + lim(g) (각각 극한 구해서 더하기)
+- 곱: lim(fg) = lim(f)·lim(g) (각각 극한 구해서 곱하기)
+- 나눗셈: lim(f/g) = lim(f)/lim(g) (단, lim(g) ≠ 0)
+
+극한의 의미:
+- "가까워진다"는 개념 (정확히 도달하지 않아도 됨)
+- 함수가 그 점에서 정의되지 않아도 극한은 존재할 수 있어요
+
+부정형 (특별한 방법 필요):
+- 0/0: 인수분해하거나 로피탈 정리
+- ∞/∞: 분자/분모를 최고차항으로 나누기
+- 0×∞, ∞-∞: 식 변형 필요`,
     examples: [
       "lim[x→3] (2x+1) = 7 (direct substitution)",
       "lim[x→2] (x²-4)/(x-2) = lim[x→2] (x+2) = 4 (factor first)",
       "lim[x→∞] (1/x) = 0 (approaches zero)",
       "lim[x→0⁺] (1/x) = ∞ (from right)"
+    ],
+    examplesKo: [
+      "lim[x→3] (2x+1) = 2(3)+1 = 7 (직접 대입)",
+      "lim[x→2] (x²-4)/(x-2) = lim[x→2] (x+2) = 4 (인수분해)",
+      "lim[x→∞] (1/x) = 0 (x가 커질수록 1/x는 0에 가까워짐)",
+      "lim[x→0⁺] (1/x) = ∞ (오른쪽에서 접근하면 양의 무한대)",
+      "lim[x→0] (sin x)/x = 1 (중요한 극한)"
     ],
     commonMistakes: [
       "❌ lim[x→2] f(x) = f(2) always → Not if discontinuous",
@@ -1466,6 +1963,11 @@ Indeterminate forms (need more work):
       "Limit = where function is heading",
       "Can exist even if function undefined at that point",
       "0/0 and ∞/∞ need special techniques"
+    ],
+    keyPointsKo: [
+      "극한 = 함수가 어디로 향하는지",
+      "그 점에서 함수가 정의되지 않아도 극한은 존재 가능",
+      "0/0, ∞/∞ 같은 부정형은 특별한 기법 필요"
     ],
     source: "AP Calculus AB Curriculum - College Board",
     lastVerified: "2025-01-04"
@@ -3517,12 +4019,15 @@ export async function retrieveVerifiedContent(
 
     // Use AI to identify relevant topics
     const relevantTopics = await identifyRelevantTopics(question, subject);
+    console.log(`[RAG DEBUG] Question: "${question}"`);
+    console.log(`[RAG DEBUG] AI identified topics:`, relevantTopics);
 
     // Find matching verified content
     const matches: Array<{ content: VerifiedContent; score: number }> = [];
 
     for (const verifiedContent of database) {
       let score = 0;
+      let topicMatched = false;
 
       // Check if any relevant topic matches
       for (const topic of relevantTopics) {
@@ -3532,7 +4037,14 @@ export async function retrieveVerifiedContent(
           verifiedContent.content.toLowerCase().includes(topic.toLowerCase())
         ) {
           score += 30;
+          topicMatched = true;
         }
+      }
+
+      // IMPORTANT: Only continue if topic matched
+      // This prevents irrelevant content from matching based on keywords alone
+      if (!topicMatched) {
+        continue;
       }
 
       // Boost score if grade level is close
@@ -3543,19 +4055,23 @@ export async function retrieveVerifiedContent(
       else if (gradeDiff === 1) score += 20;
       else if (gradeDiff === 2) score += 10;
 
-      // Check keyword overlap
+      // Check keyword overlap (only for already-matched topics)
       const questionWords = question.toLowerCase().split(/\s+/);
       const contentWords = verifiedContent.content.toLowerCase().split(/\s+/);
       const overlap = questionWords.filter(w => contentWords.includes(w)).length;
       score += Math.min(overlap * 2, 30);
 
-      if (score > 20) {
-        matches.push({ content: verifiedContent, score: Math.min(score, 100) });
-      }
+      matches.push({ content: verifiedContent, score: Math.min(score, 100) });
+      console.log(`[RAG DEBUG] Matched: ${verifiedContent.topic} (Grade ${verifiedContent.gradeLevel}) - Score: ${score}`);
     }
 
     // Sort by relevance score
     matches.sort((a, b) => b.score - a.score);
+
+    console.log(`[RAG DEBUG] Total matches: ${matches.length}`);
+    if (matches.length > 0) {
+      console.log(`[RAG DEBUG] Top 3 matches:`, matches.slice(0, 3).map(m => `${m.content.topic} (${m.score})`));
+    }
 
     // Return top results
     const topMatches = matches.slice(0, maxResults);
@@ -3584,13 +4100,25 @@ async function identifyRelevantTopics(
   subject: Subject
 ): Promise<string[]> {
   try {
-    const prompt = `Identify the main educational topics in this ${subject} question. Return ONLY the topic names, one per line.
+    const prompt = `You are an educational content expert. Analyze this ${subject} question and identify the MAIN mathematical/educational topic it's asking about.
+
+IMPORTANT:
+- Identify the SPECIFIC mathematical operation or concept (e.g., "addition", "subtraction", "multiplication", "fractions")
+- For Korean questions about math, provide BOTH the English term AND the complete Korean term
+- Do NOT use generic words like "basic", "fundamental", "simple", "arithmetic"
+- Be PRECISE - for "1+1=2", the topic is "addition" (덧셈), NOT "arithmetic"
 
 Question: "${question}"
 
-Example response:
-present tense
-verb conjugation`;
+Return ONLY specific topic names, one per line. Maximum 3 topics.
+
+Example for "1더하기1은왜2야?" (Korean):
+addition
+덧셈
+
+Example for "What are fractions?" (English):
+fractions
+division`;
 
     // Use Vertex AI with flash tier
     const streamIterator = await vertexAIClient.generateContentStream(
@@ -3608,11 +4136,27 @@ verb conjugation`;
       text += chunk;
     }
 
+    console.log(`[Topic ID DEBUG] Raw AI response:`, text);
+
     // Parse topics (one per line)
     const topics = text
       .split('\n')
       .map(line => line.trim())
-      .filter(line => line.length > 0 && !line.match(/^(example|question|response|topic)/i));
+      .filter(line => {
+        // Filter out empty lines and metadata
+        if (line.length === 0 || line.match(/^(example|question|response|topic)/i)) {
+          return false;
+        }
+        // Filter out overly generic keywords that match too many topics
+        const genericKeywords = ['basic', 'fundamental', 'core', 'simple', 'elementary', 'primary'];
+        if (genericKeywords.some(keyword => line.toLowerCase() === keyword)) {
+          return false;
+        }
+        // Must be at least 2 characters (to avoid partial Korean words)
+        return line.length >= 2;
+      });
+
+    console.log(`[Topic ID DEBUG] Parsed topics:`, topics);
 
     return topics.slice(0, 5); // Max 5 topics
 
