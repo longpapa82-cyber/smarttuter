@@ -1,10 +1,14 @@
 'use client'
 
+import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
+import { VideoModal } from "@/components/demo/VideoModal";
+import { HeroVideoSection } from "@/components/home/HeroVideoSection";
 
 export function HomeClient() {
   const { isAuthenticated, isLoading, navigateProtected } = useAuth();
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
 
   const handleCTAClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -25,100 +29,8 @@ export function HomeClient() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50">
-      {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Left Content */}
-            <div className="space-y-8">
-              <div className="inline-block">
-                <span className="px-4 py-2 bg-primary-100 text-primary-700 rounded-full text-sm font-semibold">
-                  ✨ AI 기반 개인 맞춤 학습
-                </span>
-              </div>
-
-              <h1 className="text-5xl lg:text-6xl font-bold leading-tight" style={{ color: '#111827' }}>
-                당신만의 AI 튜터와
-                <br />
-                <span className="gradient-text">스마트하게 학습하세요</span>
-              </h1>
-
-              <p className="text-xl leading-relaxed" style={{ color: '#374151' }}>
-                초등학교부터 대학교까지, 수학과 영어를 실시간 음성 및 채팅으로 배우는
-                차세대 학습 플랫폼입니다.
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link
-                  href="/onboarding/quick"
-                  onClick={handleCTAClick}
-                  className="px-8 py-4 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-full font-semibold text-lg hover:shadow-2xl hover:scale-105 transform transition-all text-center"
-                >
-                  {isLoading ? "로딩 중..." : "무료로 시작하기 →"}
-                </Link>
-                <a href="#how-it-works" className="px-8 py-4 bg-white border-2 border-gray-200 text-gray-700 rounded-full font-semibold text-lg hover:border-primary-500 hover:text-primary-600 transition-all text-center">
-                  데모 영상 보기 ▶
-                </a>
-              </div>
-
-              <div className="flex items-center space-x-8 pt-4">
-                <div>
-                  <div className="text-3xl font-bold text-primary-600">10,000+</div>
-                  <div className="text-sm" style={{ color: '#4B5563' }}>활성 학습자</div>
-                </div>
-                <div>
-                  <div className="text-3xl font-bold text-secondary-600">50,000+</div>
-                  <div className="text-sm" style={{ color: '#4B5563' }}>해결된 문제</div>
-                </div>
-                <div>
-                  <div className="text-3xl font-bold text-accent-600">4.9/5</div>
-                  <div className="text-sm" style={{ color: '#4B5563' }}>만족도</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Content - Hero Image/Animation */}
-            <div className="relative">
-              <div className="relative w-full h-[500px] bg-gradient-to-br from-primary-500/20 to-secondary-500/20 rounded-3xl flex items-center justify-center animate-float">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-3xl opacity-10 blur-3xl"></div>
-                <div className="relative text-center space-y-6 p-8">
-                  <div className="text-8xl animate-bounce-slow">🤖</div>
-                  <div className="text-2xl font-bold" style={{ color: '#1F2937' }}>AI 튜터가 함께합니다</div>
-                  <div className="flex justify-center space-x-4">
-                    <div className="px-4 py-2 bg-white rounded-full shadow-lg" style={{ color: '#111827' }}>📚 수학</div>
-                    <div className="px-4 py-2 bg-white rounded-full shadow-lg" style={{ color: '#111827' }}>🗣️ 영어</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Floating Cards */}
-              <div className="absolute -top-10 -right-10 w-48 p-4 bg-white rounded-2xl shadow-xl animate-float" style={{ animationDelay: "0.5s" }}>
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                    ✅
-                  </div>
-                  <div>
-                    <div className="font-semibold text-sm" style={{ color: '#111827' }}>정답률</div>
-                    <div className="text-2xl font-bold text-green-600">95%</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="absolute -bottom-10 -left-10 w-48 p-4 bg-white rounded-2xl shadow-xl animate-float" style={{ animationDelay: "1s" }}>
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                    ⚡
-                  </div>
-                  <div>
-                    <div className="font-semibold text-sm" style={{ color: '#111827' }}>학습 시간</div>
-                    <div className="text-2xl font-bold text-blue-600">2.5h</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* NEW: Hero Video Section */}
+      <HeroVideoSection />
 
       {/* Features Section */}
       <section id="features" className="py-20 px-4 bg-white">
@@ -316,6 +228,19 @@ export function HomeClient() {
           </div>
         </div>
       </footer>
+
+      {/* 비디오 모달 */}
+      <VideoModal
+        isOpen={isVideoModalOpen}
+        onClose={() => setIsVideoModalOpen(false)}
+        videoUrl="/videos/demo.mp4"
+        title="AI 튜터와 스마트 학습 체험"
+        description="실시간 음성/채팅으로 수학과 영어를 배우는 과정을 확인하세요"
+        ctaButton={{
+          text: "무료로 시작하기 →",
+          href: "/onboarding/quick"
+        }}
+      />
     </div>
   );
 }
