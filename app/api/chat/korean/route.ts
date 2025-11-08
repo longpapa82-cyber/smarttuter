@@ -196,16 +196,21 @@ ${ragContext ? `\n**검증된 교육 자료**:\n${ragContext}\n` : ''}
         try {
           if (isVertexAIEnabled) {
             // Vertex AI streaming
-            const result = await vertexAIClient.generateContentStream([
-              ...formattedHistory.map((m: any) => ({
-                role: m.role,
-                parts: m.parts
-              })),
-              { role: 'user', parts: [{ text: message }] }
-            ]);
+            const historyText = formattedHistory
+              .map((m: any) => `${m.role === 'user' ? '학생' : '튜터'}: ${m.parts[0].text}`)
+              .join('\n');
 
-            for await (const chunk of result.stream) {
-              const chunkText = chunk.text();
+            const fullPrompt = historyText
+              ? `${historyText}\n학생: ${message}`
+              : message;
+
+            const result = vertexAIClient.generateContentStream(fullPrompt, 'flash', {
+              systemInstruction: systemPrompt,
+              temperature: 0.7,
+              maxTokens: 2048
+            });
+
+            for await (const chunkText of result) {
               if (chunkText) {
                 fullResponse += chunkText;
                 controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: chunkText })}\n\n`));
