@@ -14,7 +14,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 export interface OptimizedClassification {
-  subject: 'english' | 'math' | 'science' | 'social' | 'other';
+  subject: 'english' | 'math' | 'science' | 'social' | 'korean' | 'other';
   confidence: number;
   isOnTopic: boolean;
   reason: string;
@@ -27,20 +27,22 @@ export interface OptimizedClassification {
  */
 export function quickClassify(
   question: string,
-  expectedSubject: 'english' | 'math' | 'science' | 'social'
+  expectedSubject: 'english' | 'math' | 'science' | 'social' | 'korean'
 ): OptimizedClassification | null {
   const lower = question.toLowerCase();
 
   // 명확한 키워드가 있는 경우 즉시 분류
   const keywords = {
-    math: ['수학', '계산', '방정식', 'equation', 'calculate', '더하기', '빼기', '곱하기', '나누기', 
+    math: ['수학', '계산', '방정식', 'equation', 'calculate', '더하기', '빼기', '곱하기', '나누기',
            'algebra', 'geometry', '함수', 'function', '그래프', 'graph', '각도', 'angle'],
     english: ['영어', 'english', 'grammar', '문법', 'vocabulary', '어휘', 'spelling', '철자',
               'pronunciation', '발음', 'reading', '독해', 'writing', '작문'],
     science: ['과학', 'science', '실험', 'experiment', '화학', 'chemistry', '물리', 'physics',
               '생물', 'biology', '원소', 'element', '세포', 'cell', '에너지', 'energy'],
     social: ['사회', 'social', '역사', 'history', '지리', 'geography', '정치', 'politics',
-             '경제', 'economics', '문화', 'culture', '시민', 'civic']
+             '경제', 'economics', '문화', 'culture', '시민', 'civic'],
+    korean: ['국어', 'korean', '문학', 'literature', '시', 'poem', '소설', 'novel',
+             '작가', 'author', '맞춤법', 'spelling', '한글', 'hangul', '독서', 'reading']
   };
 
   // 과목별 키워드 매칭
@@ -49,6 +51,7 @@ export function quickClassify(
     english: keywords.english.filter(kw => lower.includes(kw)).length,
     science: keywords.science.filter(kw => lower.includes(kw)).length,
     social: keywords.social.filter(kw => lower.includes(kw)).length,
+    korean: keywords.korean.filter(kw => lower.includes(kw)).length,
   };
 
   const maxMatches = Math.max(...Object.values(matches));
