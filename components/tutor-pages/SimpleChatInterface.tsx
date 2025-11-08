@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, Volume2, VolumeX, Settings as SettingsIcon, Sparkles, Image as ImageIcon, Mic, TrendingUp, Theater, LineChart } from 'lucide-react';
+import { Send, Volume2, VolumeX, Settings as SettingsIcon, Sparkles, Image as ImageIcon, Mic, TrendingUp, Theater, LineChart, Pencil } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { VoiceButton } from '@/components/voice/VoiceButton';
 import { ContinuousVoiceInput } from '@/components/voice/ContinuousVoiceInput';
@@ -12,8 +12,10 @@ import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
 import { usePuterTTS } from '@/hooks/usePuterTTS';
 import { startSession, updateCurrentSession, endSession } from '@/lib/utils/learningData';
 import { TypingEffect } from '@/components/ui/TypingEffect';
+import Avatar from '@/components/ui/Avatar';
 import EnglishImageUpload from '@/components/chat/EnglishImageUpload';
 import MathImageUpload from '@/components/math/MathImageUpload';
+import MathHandwritingCanvas from '@/components/math/MathHandwritingCanvas';
 import InteractiveMathGraph from '@/components/math/InteractiveMathGraph';
 import StepByStepSolution from '@/components/math/StepByStepSolution';
 import ErrorFeedback from '@/components/math/ErrorFeedback';
@@ -46,6 +48,10 @@ interface SimpleChatInterfaceProps {
 }
 
 export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatInterfaceProps) {
+  // Profile images
+  const TUTOR_PROFILE_IMAGE = '/avatars/tutor-profile.jpg';
+  const USER_PROFILE_IMAGE = '/avatars/user-profile.jpg';
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -87,6 +93,7 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
   const [isTTSEnabled, setIsTTSEnabled] = useState(true);
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
   const [isImageUploadOpen, setIsImageUploadOpen] = useState(false);
+  const [isHandwritingOpen, setIsHandwritingOpen] = useState(false);
   const [isPronunciationOpen, setIsPronunciationOpen] = useState(false);
   const [pronunciationText, setPronunciationText] = useState('');
   const [isLevelAssessmentOpen, setIsLevelAssessmentOpen] = useState(false);
@@ -161,7 +168,7 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
           } else if (isHigh) {
             return `안녕하세요! AI Park입니다. 오늘은 어떤 주제를 공부할까요?\n\n문법, 독해, 작문 등 무엇이든 질문해주세요. 함께 실력을 쌓아봐요! 💡`;
           } else {
-            return `안녕하세요. AI Park입니다. 어떤 주제를 다루시겠습니까?\n\n학술 영어, 전문 분야 등 필요한 부분을 질문해주세요.`;
+            return `안녕하세요. AI Park입니다.\n\n학술 영어, 전문 분야 등 필요한 부분을 질문해주세요.`;
           }
         } else if (subject === 'math') {
           if (isElementary) {
@@ -171,7 +178,7 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
           } else if (isHigh) {
             return `안녕하세요! AI Park입니다. 오늘은 어떤 주제를 공부할까요?\n\n개념 설명이나 문제 풀이, 무엇이든 질문해주세요. 차근차근 풀어봐요! ✓`;
           } else {
-            return `안녕하세요. AI Park입니다. 어떤 주제를 학습하시겠습니까?\n\n고급 수학 개념, 증명, 응용 등 필요한 부분을 질문해주세요.`;
+            return `안녕하세요. AI Park입니다.\n\n고급 수학 개념, 증명, 응용 등 필요한 부분을 질문해주세요.`;
           }
         } else if (subject === 'science') {
           if (isElementary) {
@@ -181,7 +188,7 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
           } else if (isHigh) {
             return `안녕하세요! AI Park입니다. 오늘은 어떤 과학 주제를 탐구할까요?\n\n실험 원리, 개념 설명, 현상 분석 등 무엇이든 질문해주세요. 함께 탐구해봐요! 🔭`;
           } else {
-            return `안녕하세요. AI Park입니다. 어떤 과학 주제를 연구하시겠습니까?\n\n고급 과학 이론, 실험 설계, 연구 방법론 등 필요한 부분을 질문해주세요.`;
+            return `안녕하세요. AI Park입니다.\n\n고급 과학 이론, 실험 설계, 연구 방법론 등 필요한 부분을 질문해주세요.`;
           }
         } else if (subject === 'social-studies') {
           if (isElementary) {
@@ -191,7 +198,7 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
           } else if (isHigh) {
             return `안녕하세요! AI Park입니다. 오늘은 어떤 사회 주제를 탐구할까요?\n\n역사적 사건, 지리적 특성, 정치 체제 등 무엇이든 질문해주세요. 함께 탐구해봐요! 🌏`;
           } else {
-            return `안녕하세요. AI Park입니다. 어떤 사회 주제를 공부하시겠습니까?\n\n고급 역사 이론, 정치학, 경제학, 사회학 등 필요한 부분을 질문해주세요.`;
+            return `안녕하세요. AI Park입니다.\n\n고급 역사 이론, 정치학, 경제학, 사회학 등 필요한 부분을 질문해주세요.`;
           }
         }
 
@@ -211,11 +218,16 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
     // End session on unmount
     return () => {
       if (typeof window !== 'undefined' && sessionId) {
-        endSession();
-        console.log(`✅ Learning session ended: ${sessionId}`);
+        // endSession is async, but cleanup functions can't be async
+        // So we call it without await
+        endSession().then(() => {
+          console.log(`✅ Learning session ended: ${sessionId}`);
+        }).catch((error) => {
+          console.error('⚠️ Error ending session:', error);
+        });
       }
     };
-  }, [subject, gradeLevel]);
+  }, [subject, gradeLevel, sessionId]);
 
   // Update session when messages change
   useEffect(() => {
@@ -550,12 +562,13 @@ ${scenario.initialMessage}`,
 
                     // Case 3: Already created for this session (React Strict Mode double-render)
                     if (lastMessage && lastMessage.role === 'user' && alreadyCreated) {
-                      console.log('🚫 Skipping duplicate creation (Strict Mode double-render detected)');
+                      console.log('🚫 Duplicate creation detected (Strict Mode) - searching for message');
                       // Find and update the existing assistant message
                       const existingAssistantIndex = prev.findIndex(
                         m => m.role === 'assistant' && m.streamingSessionId === streamingSessionId
                       );
                       if (existingAssistantIndex !== -1) {
+                        console.log('✅ Found existing message at index:', existingAssistantIndex);
                         const newMessages = [...prev];
                         newMessages[existingAssistantIndex] = {
                           ...newMessages[existingAssistantIndex],
@@ -563,8 +576,14 @@ ${scenario.initialMessage}`,
                         };
                         return newMessages;
                       }
-                      // If not found, return unchanged
-                      return prev;
+                      // If not found, create it anyway (safety fallback)
+                      console.log('⚠️ Message not found, creating anyway as fallback');
+                      return [...prev, {
+                        role: 'assistant',
+                        content: assistantMessage,
+                        streamingSessionId,
+                        messageId: `assistant-${streamingSessionId}`
+                      }];
                     }
 
                     // Case 4: Last message is assistant but different session - still update
@@ -796,29 +815,49 @@ ${scenario.initialMessage}`,
           )}
 
           <AnimatePresence mode="sync">
-            {messages.map((message, index) => (
-              <motion.div
-                key={message.messageId}
-                initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{
-                  duration: 0.3,
-                  ease: 'easeOut',
-                  delay: index === messages.length - 1 ? 0 : 0
-                }}
-                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
+            {messages.map((message, index) => {
+              // Check if previous message is from same sender
+              const prevMessage = index > 0 ? messages[index - 1] : null;
+              const showAvatar = !prevMessage || prevMessage.role !== message.role;
+
+              return (
                 <motion.div
-                  initial={message.role === 'assistant' ? { x: -10 } : { x: 10 }}
-                  animate={{ x: 0 }}
-                  transition={{ duration: 0.3, ease: 'easeOut' }}
-                  className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                    message.role === 'user'
-                      ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md'
-                      : 'bg-white text-gray-900 shadow-md border border-gray-100'
-                  }`}
+                  key={message.messageId}
+                  initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{
+                    duration: 0.3,
+                    ease: 'easeOut',
+                    delay: index === messages.length - 1 ? 0 : 0
+                  }}
+                  className={`flex gap-3 items-start ${message.role === 'user' ? 'flex-row-reverse' : ''}`}
                 >
+                  {/* Avatar */}
+                  {showAvatar ? (
+                    <Avatar
+                      type={message.role === 'user' ? 'user' : 'tutor'}
+                      subject={subject}
+                      src={message.role === 'user' ? undefined : TUTOR_PROFILE_IMAGE}
+                      alt={message.role === 'user' ? '사용자' : 'AI 튜터'}
+                      size="md"
+                      showOnline={message.role === 'assistant'}
+                    />
+                  ) : (
+                    <div className="w-10 flex-shrink-0" />
+                  )}
+
+                  {/* Message Bubble */}
+                  <motion.div
+                    initial={message.role === 'assistant' ? { x: -10 } : { x: 10 }}
+                    animate={{ x: 0 }}
+                    transition={{ duration: 0.3, ease: 'easeOut' }}
+                    className={`max-w-[calc(100%-64px)] rounded-2xl px-4 py-3 ${
+                      message.role === 'user'
+                        ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md'
+                        : 'bg-white text-gray-900 shadow-md border border-gray-100'
+                    }`}
+                  >
                   {message.role === 'assistant' ? (
                     <>
                       {/* Extract clean content (without error diagnosis formatting) */}
@@ -860,9 +899,10 @@ ${scenario.initialMessage}`,
                   ) : (
                     <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
                   )}
+                  </motion.div>
                 </motion.div>
-              </motion.div>
-            ))}
+              );
+            })}
           </AnimatePresence>
 
           {isLoading && (
@@ -984,8 +1024,8 @@ ${scenario.initialMessage}`,
               </div>
             )}
 
-            {/* Image Upload Button (English only) */}
-            {subject === 'english' && (
+            {/* Image Upload Button (English only) - DISABLED */}
+            {/* {subject === 'english' && (
               <button
                 type="button"
                 onClick={() => setIsImageUploadOpen(!isImageUploadOpen)}
@@ -999,7 +1039,7 @@ ${scenario.initialMessage}`,
               >
                 <ImageIcon className="w-5 h-5" />
               </button>
-            )}
+            )} */}
 
             {/* Image Upload Button (Math only) */}
             {subject === 'math' && (
@@ -1015,6 +1055,23 @@ ${scenario.initialMessage}`,
                 title="수학 문제 사진 업로드"
               >
                 <ImageIcon className="w-5 h-5" />
+              </button>
+            )}
+
+            {/* Handwriting Input Button (Math only) - FREE! */}
+            {subject === 'math' && (
+              <button
+                type="button"
+                onClick={() => setIsHandwritingOpen(true)}
+                disabled={isLoading}
+                className={`shrink-0 p-3 rounded-xl transition-all ${
+                  isHandwritingOpen
+                    ? 'bg-gradient-to-br from-green-500 to-teal-500 text-white shadow-lg'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
+                title="수식 필기 입력 (무료!)"
+              >
+                <Pencil className="w-5 h-5" />
               </button>
             )}
 
@@ -1231,6 +1288,37 @@ ${scenario.initialMessage}`,
               setDetectedGraph(null);
             }}
           />
+        )}
+      </AnimatePresence>
+
+      {/* Handwriting Input Modal (Math only) - FREE! */}
+      <AnimatePresence>
+        {isHandwritingOpen && subject === 'math' && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setIsHandwritingOpen(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6"
+            >
+              <MathHandwritingCanvas
+                onTextRecognized={(recognizedText) => {
+                  console.log('✅ Handwriting recognized:', recognizedText);
+                  setInput(recognizedText);
+                  setIsHandwritingOpen(false);
+                  setHasUserInteracted(true);
+                }}
+                onClose={() => setIsHandwritingOpen(false)}
+              />
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
 

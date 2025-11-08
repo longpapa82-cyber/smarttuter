@@ -7,8 +7,8 @@ import EmotionEnhancedChat from './EmotionEnhancedChat';
 
 function LoadingSpinner() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
-      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-teal-50">
+      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-500"></div>
     </div>
   );
 }
@@ -23,7 +23,6 @@ export default function ScienceTutorClient() {
 
   useEffect(() => {
     setIsMounted(true);
-    // Give store a moment to hydrate, then proceed regardless
     const timer = setTimeout(() => {
       setIsReady(true);
     }, 100);

@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import confetti from 'canvas-confetti';
 import { Sparkles, TrendingUp } from 'lucide-react';
 
@@ -55,6 +55,7 @@ export function XPAnimation({
 
       return () => clearTimeout(timer);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [show, quality, onComplete]);
 
   const triggerConfetti = () => {

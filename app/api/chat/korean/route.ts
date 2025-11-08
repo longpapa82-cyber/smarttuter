@@ -204,7 +204,7 @@ ${ragContext ? `\n**검증된 교육 자료**:\n${ragContext}\n` : ''}
               ? `${historyText}\n학생: ${message}`
               : message;
 
-            const result = vertexAIClient.generateContentStream(fullPrompt, 'flash', {
+            const result = await vertexAIClient.generateContentStream(fullPrompt, 'flash', {
               systemInstruction: systemPrompt,
               temperature: 0.7,
               maxTokens: 2048

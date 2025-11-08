@@ -12,7 +12,7 @@
  */
 
 export type SchoolLevel = 'elementary' | 'middle' | 'high' | 'university';
-export type Subject = 'english' | 'math' | 'science' | 'social-studies';
+export type Subject = 'english' | 'math' | 'science' | 'social-studies' | 'korean';
 
 export interface CurriculumTopic {
   id: string;

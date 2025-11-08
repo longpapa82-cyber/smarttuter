@@ -5,6 +5,8 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { BookOpen, ArrowRight, TrendingUp, Target, Award, Mic, Book, Gamepad2, FileEdit } from "lucide-react";
 import { useUserStore } from "@/lib/gamification/store";
+import { EmptySubjectDashboard } from "@/components/dashboard/EmptySubjectDashboard";
+import type { EnglishDetailedStats } from "@/types/learning-stats";
 
 function LoadingSpinner() {
   return (
@@ -16,31 +18,62 @@ function LoadingSpinner() {
 
 function EnglishDashboardContent() {
   const profile = useUserStore((state) => state.profile);
-  const [lastSession, setLastSession] = useState({
-    topic: "Travel Conversation",
-    date: "2024-01-15",
-    duration: 15
-  });
-  const [nextTopic, setNextTopic] = useState("Ordering at a Restaurant");
-  const [cefrLevel, setCefrLevel] = useState({ current: "A2", target: "B1", progress: 42 });
-  const [monthlyHours, setMonthlyHours] = useState({ current: 12, target: 20 });
-  const [completedTopics, setCompletedTopics] = useState(15);
-  const [masteredGrammar, setMasteredGrammar] = useState([
-    "현재시제", "과거시제", "현재진행형"
-  ]);
+  const [stats, setStats] = useState<EnglishDetailedStats | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Mastery data
-  const [mastery, setMastery] = useState({
-    listening: 80,
-    speaking: 60,
-    reading: 100,
-    writing: 40
-  });
+  // Fetch English learning stats from API
+  useEffect(() => {
+    async function loadStats() {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/user/learning-stats?subject=english');
 
-  // Strengths and weaknesses
-  const strengths = ["듣기 이해력", "기본 문법", "단어 암기"];
-  const weaknesses = ["발음 (R, TH)", "고급 어휘", "긴 문장 작문"];
+        if (!response.ok) {
+          throw new Error('Failed to fetch stats');
+        }
 
+        const result = await response.json();
+
+        if (result.success && result.data) {
+          setStats(result.data);
+        } else {
+          setStats(null);
+        }
+      } catch (error) {
+        console.error('Error loading English stats:', error);
+        setStats(null);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadStats();
+
+    // Auto-refresh every 60 seconds
+    const interval = setInterval(loadStats, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Loading state
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
+  // Empty state - no learning data
+  const hasData = stats && (
+    stats.lastSession !== null ||
+    stats.completedTopics > 0 ||
+    stats.mastery.listening > 0 ||
+    stats.mastery.speaking > 0 ||
+    stats.mastery.reading > 0 ||
+    stats.mastery.writing > 0
+  );
+
+  if (!hasData) {
+    return <EmptySubjectDashboard subject="english" />;
+  }
+
+  // Data exists - render dashboard with real data
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -76,14 +109,18 @@ function EnglishDashboardContent() {
                       </div>
                     </div>
                     <div className="space-y-2 ml-20">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-white/70">마지막 주제:</span>
-                        <span className="font-semibold">&ldquo;{lastSession.topic}&rdquo;</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-white/70">다음 추천:</span>
-                        <span className="font-semibold">&ldquo;{nextTopic}&rdquo;</span>
-                      </div>
+                      {stats.lastSession && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-white/70">마지막 주제:</span>
+                          <span className="font-semibold">&ldquo;{stats.lastSession.topic}&rdquo;</span>
+                        </div>
+                      )}
+                      {stats.nextTopic && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-white/70">다음 추천:</span>
+                          <span className="font-semibold">&ldquo;{stats.nextTopic}&rdquo;</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -109,32 +146,34 @@ function EnglishDashboardContent() {
 
             <div className="space-y-6">
               {/* CEFR Level Progress */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700">CEFR Level</span>
-                  <span className="text-sm text-gray-600">{cefrLevel.current} → {cefrLevel.target} 진행 중</span>
+              {stats.cefrLevel && (
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-700">CEFR Level</span>
+                    <span className="text-sm text-gray-600">{stats.cefrLevel.current} → {stats.cefrLevel.target} 진행 중</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div
+                      className="bg-gradient-to-r from-blue-500 to-indigo-600 h-3 rounded-full transition-all duration-500"
+                      style={{ width: `${stats.cefrLevel.progress}%` }}
+                    />
+                  </div>
+                  <div className="text-right mt-1">
+                    <span className="text-xs font-semibold text-blue-600">{stats.cefrLevel.progress}%</span>
+                  </div>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div
-                    className="bg-gradient-to-r from-blue-500 to-indigo-600 h-3 rounded-full transition-all duration-500"
-                    style={{ width: `${cefrLevel.progress}%` }}
-                  />
-                </div>
-                <div className="text-right mt-1">
-                  <span className="text-xs font-semibold text-blue-600">{cefrLevel.progress}%</span>
-                </div>
-              </div>
+              )}
 
               {/* Monthly Hours */}
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-gray-700">이번 달 학습 시간</span>
-                  <span className="text-sm text-gray-600">{monthlyHours.current}시간 / 목표 {monthlyHours.target}시간</span>
+                  <span className="text-sm text-gray-600">{stats.monthlyHours.current}시간 / 목표 {stats.monthlyHours.target}시간</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-3">
                   <div
                     className="bg-gradient-to-r from-green-500 to-emerald-600 h-3 rounded-full transition-all duration-500"
-                    style={{ width: `${(monthlyHours.current / monthlyHours.target) * 100}%` }}
+                    style={{ width: `${(stats.monthlyHours.current / stats.monthlyHours.target) * 100}%` }}
                   />
                 </div>
               </div>
@@ -143,16 +182,20 @@ function EnglishDashboardContent() {
               <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200">
                 <div>
                   <p className="text-sm text-gray-600">완료한 주제</p>
-                  <p className="text-2xl font-bold text-gray-900">{completedTopics}개</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.completedTopics}개</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">마스터한 문법</p>
                   <div className="flex flex-wrap gap-1 mt-1">
-                    {masteredGrammar.map((grammar, i) => (
-                      <span key={i} className="px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
-                        {grammar}
-                      </span>
-                    ))}
+                    {stats.masteredGrammar.length > 0 ? (
+                      stats.masteredGrammar.map((grammar, i) => (
+                        <span key={i} className="px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
+                          {grammar}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-xs text-gray-500">학습을 시작하면 표시됩니다</span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -172,7 +215,7 @@ function EnglishDashboardContent() {
             </h3>
 
             <div className="space-y-4">
-              {Object.entries(mastery).map(([skill, progress]) => (
+              {Object.entries(stats.mastery).map(([skill, progress]) => (
                 <div key={skill}>
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
@@ -204,9 +247,14 @@ function EnglishDashboardContent() {
               <p className="text-sm font-medium text-gray-700 mb-2">종합 점수</p>
               <div className="flex items-end gap-2">
                 <span className="text-3xl font-bold text-gray-900">
-                  {Math.round(Object.values(mastery).reduce((a, b) => a + b, 0) / 4)}%
+                  {Math.round(Object.values(stats.mastery).reduce((a, b) => a + b, 0) / 4)}%
                 </span>
-                <span className="text-lg text-gray-600 mb-1">(B+)</span>
+                <span className="text-lg text-gray-600 mb-1">
+                  ({Math.round(Object.values(stats.mastery).reduce((a, b) => a + b, 0) / 4) >= 90 ? 'A' :
+                    Math.round(Object.values(stats.mastery).reduce((a, b) => a + b, 0) / 4) >= 80 ? 'B+' :
+                    Math.round(Object.values(stats.mastery).reduce((a, b) => a + b, 0) / 4) >= 70 ? 'B' :
+                    Math.round(Object.values(stats.mastery).reduce((a, b) => a + b, 0) / 4) >= 60 ? 'C+' : 'C'})
+                </span>
               </div>
             </div>
           </motion.div>
@@ -316,12 +364,16 @@ function EnglishDashboardContent() {
                   <h4 className="font-semibold text-gray-900">강점</h4>
                 </div>
                 <ul className="space-y-2">
-                  {strengths.map((strength, i) => (
-                    <li key={i} className="flex items-center gap-2 text-sm text-gray-700">
-                      <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                      {strength}
-                    </li>
-                  ))}
+                  {stats.analysis.strengths.length > 0 ? (
+                    stats.analysis.strengths.map((strength, i) => (
+                      <li key={i} className="flex items-center gap-2 text-sm text-gray-700">
+                        <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                        {strength}
+                      </li>
+                    ))
+                  ) : (
+                    <li className="text-sm text-gray-500">학습 데이터가 쌓이면 분석이 표시됩니다</li>
+                  )}
                 </ul>
               </div>
 
@@ -334,12 +386,16 @@ function EnglishDashboardContent() {
                   <h4 className="font-semibold text-gray-900">약점 (개선 필요)</h4>
                 </div>
                 <ul className="space-y-2">
-                  {weaknesses.map((weakness, i) => (
-                    <li key={i} className="flex items-center gap-2 text-sm text-gray-700">
-                      <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />
-                      {weakness}
-                    </li>
-                  ))}
+                  {stats.analysis.weaknesses.length > 0 ? (
+                    stats.analysis.weaknesses.map((weakness, i) => (
+                      <li key={i} className="flex items-center gap-2 text-sm text-gray-700">
+                        <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+                        {weakness}
+                      </li>
+                    ))
+                  ) : (
+                    <li className="text-sm text-gray-500">학습 데이터가 쌓이면 분석이 표시됩니다</li>
+                  )}
                 </ul>
               </div>
             </div>
@@ -349,14 +405,16 @@ function EnglishDashboardContent() {
               <div className="bg-blue-50 rounded-lg p-4">
                 <p className="text-sm font-medium text-blue-900 mb-1">💡 AI 추천</p>
                 <p className="text-sm text-blue-700">
-                  발음 집중 연습 2주 과정을 추천합니다. R과 TH 발음을 마스터하면 말하기 점수가 크게 향상될 것입니다.
+                  {stats.analysis.aiRecommendation}
                 </p>
-                <Link
-                  href="/pronunciation-practice"
-                  className="inline-block mt-3 text-sm font-semibold text-blue-600 hover:text-blue-800"
-                >
-                  발음 연습 시작하기 →
-                </Link>
+                {stats.analysis.weaknesses.length > 0 && (
+                  <Link
+                    href="/tutor/english"
+                    className="inline-block mt-3 text-sm font-semibold text-blue-600 hover:text-blue-800"
+                  >
+                    영어 튜터 시작하기 →
+                  </Link>
+                )}
               </div>
             </div>
           </motion.div>

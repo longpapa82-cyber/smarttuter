@@ -6,6 +6,7 @@ export interface LearningSession {
   gradeLevel: string;
   startTime: Date;
   endTime: Date;
+  date: string; // YYYY-MM-DD format for easy filtering
   duration: number; // minutes
   messageCount: number;
   topicsDiscussed: string[];
@@ -49,12 +50,14 @@ export function startSession(
   gradeLevel: string
 ): string {
   const sessionId = `session_${Date.now()}`;
+  const now = new Date();
   const session: LearningSession = {
     id: sessionId,
     subject,
     gradeLevel,
-    startTime: new Date(),
-    endTime: new Date(),
+    startTime: now,
+    endTime: now,
+    date: now.toISOString().split('T')[0], // YYYY-MM-DD
     duration: 0,
     messageCount: 0,
     topicsDiscussed: [],
@@ -92,7 +95,7 @@ export function updateCurrentSession(data: {
 }
 
 // 세션 종료 및 저장
-export function endSession() {
+export async function endSession() {
   const sessionData = localStorage.getItem(STORAGE_KEYS.CURRENT_SESSION);
   if (!sessionData) return;
 
@@ -100,8 +103,44 @@ export function endSession() {
   const sessions = getAllSessions();
   sessions.push(session);
 
+  // LocalStorage에 저장
   localStorage.setItem(STORAGE_KEYS.SESSIONS, JSON.stringify(sessions));
   localStorage.removeItem(STORAGE_KEYS.CURRENT_SESSION);
+
+  // Redis에도 동기화 (서버에 학습 데이터 저장)
+  // 의미 있는 학습 세션만 저장 (최소 1분 이상)
+  if (session.duration > 0) {
+    try {
+      const response = await fetch('/api/user/save-learning-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          subject: session.subject,
+          gradeLevel: session.gradeLevel,
+          duration: session.duration,
+          messageCount: session.messageCount,
+          topicsDiscussed: session.topicsDiscussed,
+          performance: session.performance,
+          startTime: new Date(session.startTime).toISOString(),
+          endTime: new Date(session.endTime).toISOString(),
+        }),
+      });
+
+      if (response.ok) {
+        console.log('✅ 학습 데이터가 서버에 저장되었습니다');
+      } else {
+        const errorData = await response.json();
+        console.warn('⚠️  학습 데이터 저장 실패:', errorData);
+      }
+    } catch (error) {
+      console.error('⚠️ 학습 데이터 서버 저장 실패:', error);
+      // LocalStorage에는 이미 저장되었으므로 에러를 throw하지 않음
+    }
+  } else {
+    console.log('ℹ️  학습 시간이 너무 짧아 서버에 저장하지 않습니다 (duration:', session.duration, 'minutes)');
+  }
 }
 
 // 모든 세션 가져오기
@@ -352,6 +391,8 @@ export function generateDemoData() {
     const date = new Date(now);
     date.setDate(date.getDate() - i);
 
+    const dateString = date.toISOString().split('T')[0];
+
     // 수학 세션
     demoSessions.push({
       id: `demo_math_${i}`,
@@ -359,6 +400,7 @@ export function generateDemoData() {
       gradeLevel: "고등학교",
       startTime: new Date(date.setHours(14, 0, 0)),
       endTime: new Date(date.setHours(14, 30, 0)),
+      date: dateString,
       duration: 30,
       messageCount: 15 + Math.floor(Math.random() * 10),
       topicsDiscussed: ["이차방정식", "인수분해"],
@@ -373,6 +415,7 @@ export function generateDemoData() {
         gradeLevel: "고등학교",
         startTime: new Date(date.setHours(16, 0, 0)),
         endTime: new Date(date.setHours(16, 20, 0)),
+        date: dateString,
         duration: 20,
         messageCount: 20 + Math.floor(Math.random() * 15),
         topicsDiscussed: ["일상 대화", "문법"],

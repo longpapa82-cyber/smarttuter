@@ -58,7 +58,7 @@ export class ContentLevelDetector {
     const inputLower = input.toLowerCase();
 
     // 금지된 키워드 추출
-    const forbiddenKeywords = this.getForbiddenKeywords(subject, constraints);
+    const forbiddenKeywords = this.getForbiddenKeywords(subject, constraints, gradeLevel, gradeLevelDetail);
 
     // 감지된 키워드 찾기
     const detectedKeywords = forbiddenKeywords.filter((keyword) =>
@@ -94,7 +94,9 @@ export class ContentLevelDetector {
    */
   private getForbiddenKeywords(
     subject: Subject,
-    constraints: any
+    constraints: any,
+    gradeLevel?: GradeLevel,
+    gradeLevelDetail?: GradeLevelDetail
   ): string[] {
     if (subject === 'english' && constraints.englishConstraints) {
       return [
@@ -106,6 +108,72 @@ export class ContentLevelDetector {
 
     if (subject === 'math' && constraints.mathConstraints) {
       return constraints.mathConstraints.topicScope.forbiddenTopics;
+    }
+
+    if (subject === 'korean') {
+      return this.getKoreanForbiddenKeywords(gradeLevel, gradeLevelDetail);
+    }
+
+    return [];
+  }
+
+  /**
+   * 국어 과목 학년별 금지 키워드
+   */
+  private getKoreanForbiddenKeywords(
+    gradeLevel: GradeLevel,
+    gradeLevelDetail?: GradeLevelDetail
+  ): string[] {
+    // 초등학교: 중/고등 문법 용어 금지
+    if (gradeLevel === 'elementary') {
+      return [
+        '형태소', '음운', '음절', '음소', '형태론', '통사론', '의미론',
+        '문법론', '어문 규정', '표준어 규정', '외래어 표기법',
+        '국어사', '고전 문법', '중세 국어', '근대 국어',
+        '품사론', '문장 성분', '주성분', '부속성분', '독립성분',
+        '안은문장', '안긴문장', '관형절', '명사절', '부사절', '서술절', '인용절',
+        '능동', '피동', '사동', '이중 피동', '이중 사동',
+        '겹문장', '이어진문장', '연결어미', '전성어미',
+        // 고급 문학 이론
+        '소설론', '시론', '극론', '수필론',
+        '서사', '서정', '극', '교술',
+        '내재율', '외재율', '모음조화',
+        '동화', '탈락', '축약', '첨가',
+        '시점', '이인칭', '작중화자', '전지적 시점',
+        '복선', '반어', '역설', '풍자', '상징', '알레고리'
+      ];
+    }
+
+    // 중학교: 고급 문법/고전문학 금지
+    if (gradeLevel === 'middle') {
+      return [
+        '국어사', '고전 문법', '중세 국어', '근대 국어',
+        '음운 변동', '동화', '탈락', '축약', '첨가', '도치',
+        '형태소 분석', '형태론', '통사론',
+        '표준어 규정', '외래어 표기법', '로마자 표기법',
+        '이중 피동', '이중 사동',
+        '고전 시가론', '향가', '고려가요', '시조', '가사',
+        '고소설', '한문학', '판소리', '민요',
+        '구조주의', '형식주의', '신비평',
+        '정신분석 비평', '마르크스 비평'
+      ];
+    }
+
+    // 고등학교: 대학 전공 수준 금지
+    if (gradeLevel === 'high') {
+      return [
+        '생성문법', '변형문법', '촘스키',
+        '구조주의 언어학', '소쉬르',
+        '화용론', '담화 분석', '텍스트 언어학',
+        '역사 언어학', '비교 언어학',
+        '심리언어학', '사회언어학', '응용언어학',
+        '음성학', '음운론 이론',
+        // 고급 문학 이론
+        '탈구조주의', '해체주의', '포스트모더니즘',
+        '페미니즘 비평', '후기 식민주의 비평',
+        '신역사주의', '문화 연구',
+        '정전론', '캐논', '이데올로기 비평'
+      ];
     }
 
     return [];

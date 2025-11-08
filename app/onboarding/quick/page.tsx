@@ -6,18 +6,21 @@ import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GRADE_LEVEL_OPTIONS, SUBJECT_OPTIONS, type GradeLevel, type Subject } from '@/types/user';
 import { createUserProfile, saveUserProfile } from '@/lib/user/user-profile';
+import { GradeDetailStep, getGradeLevelKorean } from '@/components/onboarding/GradeDetailStep';
 
 /**
- * 빠른 온보딩 페이지 (2단계)
- * - Step 1: 학교급 선택
+ * 빠른 온보딩 페이지 (3단계)
+ * - Step 0: 학교급 선택
+ * - Step 1: 학년 선택
  * - Step 2: 과목 선택
  * - 게스트 모드로 즉시 시작
  */
 export default function QuickOnboardingPage() {
   const router = useRouter();
   const { data: session } = useSession();
-  const [currentStep, setCurrentStep] = useState(0); // 0: 학교급, 1: 과목
+  const [currentStep, setCurrentStep] = useState(0); // 0: 학교급, 1: 학년, 2: 과목
   const [gradeLevel, setGradeLevel] = useState<GradeLevel | null>(null);
+  const [gradeDetail, setGradeDetail] = useState<string | null>(null);
   const [subject, setSubject] = useState<Subject | null>(null);
 
   // Check if user already has a profile - redirect to dashboard if yes
@@ -31,11 +34,19 @@ export default function QuickOnboardingPage() {
     }
   }, [router]);
 
-  // Step 1: 학교급 선택
+  // Step 0: 학교급 선택
   const handleGradeLevel = (level: GradeLevel) => {
     setGradeLevel(level);
     setTimeout(() => {
-      setCurrentStep(1);
+      setCurrentStep(1);  // 학년 선택으로 이동
+    }, 300);
+  };
+
+  // Step 1: 학년 선택
+  const handleGradeDetail = (detail: string) => {
+    setGradeDetail(detail);
+    setTimeout(() => {
+      setCurrentStep(2);  // 과목 선택으로 이동
     }, 300);
   };
 
@@ -64,20 +75,15 @@ export default function QuickOnboardingPage() {
     // 서버에 프로필 저장 (로그인 사용자만)
     if (session?.user) {
       try {
-        // gradeLevel에서 gradeDetail 자동 생성
-        const gradeDetailMap: Record<GradeLevel, string> = {
-          elementary: '초등학교 6학년',
-          middle: '중학교 3학년',
-          high: '고등학교 3학년',
-          university: '대학교 4학년',
-        };
+        // 실제 선택한 gradeDetail 사용 (자동 생성 제거)
+        const fullGradeDetail = `${getGradeLevelKorean(gradeLevel!)} ${gradeDetail}`;
 
         const response = await fetch('/api/user/profile', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             gradeLevel: gradeLevel,
-            gradeDetail: gradeDetailMap[gradeLevel!],
+            gradeDetail: fullGradeDetail,  // 실제 선택한 학년 사용
             preferredSubjects: [selectedSubject],
           }),
         });
@@ -97,7 +103,7 @@ export default function QuickOnboardingPage() {
             if (checkResponse.ok) {
               const { user } = await checkResponse.json();
               if (user?.gradeLevel && user?.gradeDetail) {
-                console.log('✅ 프로필 확인 완료');
+                console.log('✅ 프로필 확인 완료:', user.gradeDetail);
                 break;
               }
             }
@@ -121,7 +127,7 @@ export default function QuickOnboardingPage() {
         {/* Progress Bar */}
         <div className="mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
-            {[0, 1].map((step) => (
+            {[0, 1, 2].map((step) => (
               <div
                 key={step}
                 className={`h-2 rounded-full transition-all ${
@@ -133,17 +139,21 @@ export default function QuickOnboardingPage() {
             ))}
           </div>
           <div className="text-center text-sm text-gray-600">
-            {currentStep + 1}/2 단계 완료
+            {currentStep + 1}/3 단계 완료
           </div>
         </div>
 
         {/* Step Content */}
         <AnimatePresence mode="wait">
           {currentStep === 0 && (
-            <GradeLevelQuickStep key="grade" onSelect={handleGradeLevel} />
+            <GradeLevelQuickStep key="grade-level" onSelect={handleGradeLevel} />
           )}
 
-          {currentStep === 1 && (
+          {currentStep === 1 && gradeLevel && (
+            <GradeDetailStep key="grade-detail" gradeLevel={gradeLevel} onSelect={handleGradeDetail} />
+          )}
+
+          {currentStep === 2 && (
             <SubjectQuickStep key="subject" onSelect={handleSubject} />
           )}
         </AnimatePresence>

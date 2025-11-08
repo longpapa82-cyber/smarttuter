@@ -84,6 +84,7 @@ export default function PronunciationPractice({ targetText, onClose, gradeLevel 
         recognitionRef.current.abort();
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Levenshtein Distance 계산

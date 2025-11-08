@@ -1,0 +1,305 @@
+================================================================================
+DASHBOARD HARDCODED DATA - QUICK REFERENCE SUMMARY
+================================================================================
+
+SCOPE: All dashboard files and components in smartTuter project
+DATE: 2025-11-08
+STATUS: Requires immediate remediation before production launch
+
+================================================================================
+CRITICAL ISSUES (Must Fix Immediately)
+================================================================================
+
+1. MAIN DASHBOARD QUICK START SECTION
+   Location: /app/dashboard/page.tsx:753, 777, 801, 825
+   Problem: 4 hardcoded topic strings
+   - Line 753: "Daily Conversation" (English)
+   - Line 777: "이차방정식 풀이" (Math)
+   - Line 801: "물질의 상태" (Science)
+   - Line 825: "세계 지리" (Social Studies)
+   Impact: Users see same topics regardless of their actual learning history
+   Fix: Fetch from /api/user/last-session endpoint
+
+2. ENGLISH DASHBOARD - COMPLETE FAKE DATA
+   Location: /app/dashboard/english/page.tsx:19-42
+   Problem: 8 hardcoded data objects never updated
+   - lastSession: { topic, date, duration } (line 19-23)
+   - nextTopic: "Ordering at a Restaurant" (line 24)
+   - cefrLevel: { current: "A2", target: "B1", progress: 42 } (line 25)
+   - monthlyHours: { current: 12, target: 20 } (line 26)
+   - completedTopics: 15 (line 27)
+   - masteredGrammar: ["현재시제", "과거시제", "현재진행형"] (line 28-30)
+   Impact: Misleads users into thinking they've completed content they haven't
+   Fix: Use useEffect to fetch from /api/user/learning-stats
+
+3. MATH DASHBOARD - COMPLETE FAKE DATA
+   Location: /app/dashboard/math/page.tsx:19-39
+   Problem: 9 hardcoded data objects never updated
+   - lastSession: { topic: "이차방정식 풀이", ... } (line 19-23)
+   - nextTopic: "이차함수 그래프" (line 24)
+   - gradeProgress: { level: "중2 수학", progress: 68 } (line 25)
+   - monthlyHours: { current: 8, target: 15 } (line 26)
+   - chapters: 5 chapters with fixed progress (line 29-35)
+   Impact: User sees predetermined course structure instead of their progress
+   Fix: Use useEffect to fetch from /api/progress/summary
+
+================================================================================
+HIGH PRIORITY ISSUES (Must Fix Before Launch)
+================================================================================
+
+4. ENGLISH DASHBOARD - HARDCODED MASTERY SCORES
+   Location: /app/dashboard/english/page.tsx:33-38
+   Problem: Skill percentages are fake
+   - listening: 80%
+   - speaking: 60%
+   - reading: 100%
+   - writing: 40%
+   Impact: Provides false assessment of user's English abilities
+
+5. ENGLISH DASHBOARD - HARDCODED STRENGTHS/WEAKNESSES
+   Location: /app/dashboard/english/page.tsx:41-42
+   Problem: Generic lists not based on user data
+   - Strengths: ["듣기 이해력", "기본 문법", "단어 암기"]
+   - Weaknesses: ["발음 (R, TH)", "고급 어휘", "긴 문장 작문"]
+   Impact: Users don't get personalized feedback
+
+6. MATH TOPIC PROGRESS - RANDOM DATA GENERATION
+   Location: /components/dashboard/MathTopicProgress.tsx:42-46
+   Problem: Uses Math.random() to generate fake progress
+   ```
+   progress: Math.random() * 100,  // 0-100% completely random!
+   mastery: [...][Math.floor(Math.random() * 4)],  // Random mastery level!
+   ```
+   Impact: Different number every time user visits dashboard
+   Fix: Replace with API call to /api/progress/summary
+
+================================================================================
+AFFECTED FILES
+================================================================================
+
+FILE 1: /app/dashboard/page.tsx
+  Severity: CRITICAL (4 hardcoded topics in Quick Start)
+  Status: Partially working
+  Connected to API: Yes (but hardcoded fallback text)
+  Fix Effort: 2-3 hours
+
+FILE 2: /app/dashboard/english/page.tsx
+  Severity: CRITICAL (entire component is hardcoded)
+  Status: Completely fake
+  Connected to API: No
+  Fix Effort: 3-4 hours
+
+FILE 3: /app/dashboard/math/page.tsx
+  Severity: CRITICAL (entire component is hardcoded)
+  Status: Completely fake
+  Connected to API: No
+  Fix Effort: 3-4 hours
+
+FILE 4: /components/dashboard/MathTopicProgress.tsx
+  Severity: HIGH (random data generation)
+  Status: Partially working
+  Connected to API: No
+  Fix Effort: 1-2 hours
+
+================================================================================
+HARDCODED VALUES COUNT BY TYPE
+================================================================================
+
+Hardcoded Strings: 15+
+  - Topic names (4)
+  - CEFR levels (2)
+  - Grammar names (3)
+  - Chapter names (5)
+  - Other text (1+)
+
+Hardcoded Numbers: 15+
+  - Progress percentages (12)
+  - Learning hours (2)
+  - Skill scores (4)
+  - Duration values (2)
+  - Topic counts (1+)
+
+Hardcoded Arrays: 3+
+  - masteredGrammar (1)
+  - chapters (1)
+  - strengths/weaknesses (4)
+
+Hardcoded Objects: 4+
+  - lastSession (2)
+  - cefrLevel (1)
+  - monthlyHours (2)
+  - gradeProgress (1)
+
+Random Generation: 4+
+  - topic.progress (Math.random())
+  - topic.mastery (random array selection)
+
+TOTAL HARDCODED ITEMS: 35+ instances across 4 files
+
+================================================================================
+API INTEGRATION STATUS
+================================================================================
+
+IMPLEMENTED & WORKING:
+  ✓ /api/difficulty - DifficultyIndicator fetches data correctly
+  ✓ /api/progress/summary - Main dashboard uses this properly
+
+NOT IMPLEMENTED:
+  ✗ /api/user/last-session - Missing
+  ✗ /api/user/recommended-topic - Missing
+  ✗ /api/user/completed-topics - Missing
+  ✗ /api/progress/math-chapters - Missing
+  ✗ /api/progress/topic-progress - Missing
+
+PARTIALLY IMPLEMENTED:
+  ⚠ /api/user/learning-stats - Returns hardcoded zero values
+    Line 23: // TODO: 실제 Redis/DB에서 학습 데이터 조회
+
+================================================================================
+ANTI-PATTERNS DETECTED
+================================================================================
+
+ANTI-PATTERN 1: useState with hardcoded initial values
+  Problem: Initial state never updated after mounting
+  Location: English/Math dashboards
+  Fix: Use useEffect with API fetch
+
+ANTI-PATTERN 2: Const array with mock data
+  Problem: Data never changes, misleads users
+  Location: MathTopicProgress, English/Math dashboards
+  Fix: Fetch real data from API
+
+ANTI-PATTERN 3: Math.random() for "data"
+  Problem: Different number every page load
+  Location: MathTopicProgress.tsx:42-46
+  Fix: Replace with API response
+
+ANTI-PATTERN 4: No empty states for new users
+  Problem: Shows fake data instead of encouraging learning
+  Location: English/Math dashboards
+  Fix: Add proper empty state handling
+
+GOOD PATTERNS (To emulate):
+  ✓ DifficultyIndicator.tsx - Proper useEffect pattern
+  ✓ EmptyLearningCard.tsx - Good empty state handling
+  ✓ WeaknessAnalysis.tsx - Handles both data and no-data states
+
+================================================================================
+MISSING API ENDPOINTS NEEDED
+================================================================================
+
+ENDPOINT 1: Get Last Session
+  Path: /api/user/last-session
+  Params: ?subject=string&userId=string
+  Returns: { topic, date, duration, difficulty }
+
+ENDPOINT 2: Get Recommended Topic
+  Path: /api/user/recommended-topic
+  Params: ?subject=string&userId=string
+  Returns: { topic, reason, difficulty }
+
+ENDPOINT 3: Get Completed Topics
+  Path: /api/user/completed-topics
+  Params: ?subject=string&userId=string
+  Returns: { completed: number, total: number, topics: string[] }
+
+ENDPOINT 4: Get Math Chapters Progress
+  Path: /api/progress/math-chapters
+  Params: ?gradeLevel=string&userId=string
+  Returns: { chapters: Array<{name, progress, status}> }
+
+ENDPOINT 5: Get Topic Progress
+  Path: /api/progress/topic-progress
+  Params: ?gradeLevel=string&subject=string
+  Returns: { topics: Array<{name, progress, mastery}> }
+
+================================================================================
+IMPLEMENTATION ROADMAP
+================================================================================
+
+PHASE 1: CRITICAL FIXES (Week 1)
+  Task 1.1: Implement /api/user/last-session endpoint (4h)
+  Task 1.2: Implement /api/user/recommended-topic endpoint (3h)
+  Task 1.3: Update English dashboard to fetch from API (3h)
+  Task 1.4: Update Math dashboard to fetch from API (3h)
+  Task 1.5: Update main dashboard Quick Start section (2h)
+  Total: 15 hours
+
+PHASE 2: HIGH PRIORITY (Week 2)
+  Task 2.1: Implement /api/progress/math-chapters endpoint (4h)
+  Task 2.2: Rewrite MathTopicProgress to use API (2h)
+  Task 2.3: Add loading states to all dashboards (3h)
+  Task 2.4: Add proper error handling (3h)
+  Task 2.5: Add empty states for new users (3h)
+  Total: 15 hours
+
+PHASE 3: MEDIUM PRIORITY (Week 3+)
+  Task 3.1: Implement /api/progress/topic-progress endpoint (3h)
+  Task 3.2: Implement strength/weakness analysis (5h)
+  Task 3.3: Make learning goals user-configurable (4h)
+  Total: 12 hours
+
+TOTAL EFFORT: ~42 hours (1.5 weeks for 2 developers)
+
+================================================================================
+TESTING REQUIREMENTS
+================================================================================
+
+MUST TEST BEFORE LAUNCH:
+  [ ] New users see empty state, not fake data
+  [ ] After first lesson, real data appears within 30 seconds
+  [ ] Data updates on every page refresh
+  [ ] No random numbers in dashboard
+  [ ] All dates in ISO 8601 format
+  [ ] Progress percentages consistent across refreshes
+  [ ] API errors handled gracefully with fallback UI
+  [ ] Loading states show while fetching data
+  [ ] Mobile view works with dynamic data
+  [ ] Performance acceptable with API calls
+
+LOAD TESTING:
+  [ ] Dashboard loads in <2 seconds with API calls
+  [ ] No N+1 query problems
+  [ ] API responses cached appropriately
+  [ ] Multiple simultaneous users work correctly
+
+================================================================================
+RISK ASSESSMENT
+================================================================================
+
+CURRENT STATE RISKS:
+  HIGH: Users think they've learned content they haven't
+  HIGH: Fake progress data could decrease engagement
+  HIGH: No way to track actual learning progression
+  MEDIUM: Misleading recommendations based on fake skills
+
+IF NOT FIXED BEFORE LAUNCH:
+  - User trust degradation when they realize data is fake
+  - Inability to provide personalized recommendations
+  - Wasted development time on unused dashboard features
+  - Potential negative user reviews
+
+================================================================================
+RECOMMENDATIONS
+================================================================================
+
+IMMEDIATE (Do Now):
+  1. Mark English/Math dashboards as "BETA" or "Not Available"
+  2. Redirect users to main dashboard until fixed
+  3. Create dashboard TODO items in project management
+  4. Allocate 2 developers for 1.5 weeks minimum
+
+SHORT-TERM (This Sprint):
+  1. Implement Phase 1 critical fixes
+  2. Create comprehensive test suite
+  3. Set up automated testing for hardcoded values
+
+LONG-TERM (Next Sprint):
+  1. Implement remaining API endpoints
+  2. Add data visualization improvements
+  3. Implement caching strategy for performance
+
+================================================================================
+END OF SUMMARY
+================================================================================
+For detailed analysis, see: DASHBOARD_HARDCODED_DATA_INVENTORY.md

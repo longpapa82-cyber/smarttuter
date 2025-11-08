@@ -41,6 +41,7 @@ export function PronunciationAnalyzerComponent({ targetText, onAnalysisComplete 
         analyzer.dispose();
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const updateWaveform = () => {

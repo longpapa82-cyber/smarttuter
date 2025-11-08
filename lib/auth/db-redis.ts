@@ -335,4 +335,9 @@ export const dbVerificationToken = {
   },
 };
 
+// Export Redis client for direct access (e.g., learning data storage)
+export async function getAuthDb() {
+  return redis;
+}
+
 console.log('✅ Redis-based authentication database initialized');

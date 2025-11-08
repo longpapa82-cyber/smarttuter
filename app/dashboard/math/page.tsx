@@ -5,6 +5,8 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Calculator, ArrowRight, TrendingUp, Target, Award, BarChart3, BookOpen, Gamepad2, FileEdit } from "lucide-react";
 import { useUserStore } from "@/lib/gamification/store";
+import { EmptySubjectDashboard } from "@/components/dashboard/EmptySubjectDashboard";
+import type { MathDetailedStats } from "@/types/learning-stats";
 
 function LoadingSpinner() {
   return (
@@ -16,28 +18,59 @@ function LoadingSpinner() {
 
 function MathDashboardContent() {
   const profile = useUserStore((state) => state.profile);
-  const [lastSession, setLastSession] = useState({
-    topic: "이차방정식 풀이",
-    date: "2024-01-15",
-    duration: 20
-  });
-  const [nextTopic, setNextTopic] = useState("이차함수 그래프");
-  const [gradeProgress, setGradeProgress] = useState({ level: "중2 수학", progress: 68 });
-  const [monthlyHours, setMonthlyHours] = useState({ current: 8, target: 15 });
+  const [stats, setStats] = useState<MathDetailedStats | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Chapter Progress
-  const [chapters, setChapters] = useState([
-    { name: "일차방정식", progress: 100, status: "completed" as const },
-    { name: "일차함수", progress: 100, status: "completed" as const },
-    { name: "이차방정식", progress: 65, status: "in_progress" as const },
-    { name: "이차함수", progress: 0, status: "not_started" as const },
-    { name: "통계", progress: 0, status: "not_started" as const },
-  ]);
+  // Fetch Math learning stats from API
+  useEffect(() => {
+    async function loadStats() {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/user/learning-stats?subject=math');
 
-  // Strengths and weaknesses
-  const strengths = ["계산 능력", "기본 개념 이해", "공식 암기"];
-  const weaknesses = ["복잡한 응용문제", "기하학적 직관", "문제 해석"];
+        if (!response.ok) {
+          throw new Error('Failed to fetch stats');
+        }
 
+        const result = await response.json();
+
+        if (result.success && result.data) {
+          setStats(result.data);
+        } else {
+          setStats(null);
+        }
+      } catch (error) {
+        console.error('Error loading Math stats:', error);
+        setStats(null);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadStats();
+
+    // Auto-refresh every 60 seconds
+    const interval = setInterval(loadStats, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Loading state
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
+  // Empty state - no learning data
+  const hasData = stats && (
+    stats.lastSession !== null ||
+    stats.chapters.length > 0 ||
+    stats.gradeProgress !== null
+  );
+
+  if (!hasData) {
+    return <EmptySubjectDashboard subject="math" />;
+  }
+
+  // Data exists - render dashboard with real data
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-rose-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -73,14 +106,18 @@ function MathDashboardContent() {
                       </div>
                     </div>
                     <div className="space-y-2 ml-20">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-white/70">마지막 주제:</span>
-                        <span className="font-semibold">&ldquo;{lastSession.topic}&rdquo;</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-white/70">다음 추천:</span>
-                        <span className="font-semibold">&ldquo;{nextTopic}&rdquo;</span>
-                      </div>
+                      {stats.lastSession && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-white/70">마지막 주제:</span>
+                          <span className="font-semibold">&ldquo;{stats.lastSession.topic}&rdquo;</span>
+                        </div>
+                      )}
+                      {stats.nextTopic && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-white/70">다음 추천:</span>
+                          <span className="font-semibold">&ldquo;{stats.nextTopic}&rdquo;</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -106,69 +143,73 @@ function MathDashboardContent() {
 
             <div className="space-y-6">
               {/* Grade Level Progress */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700">학년별 진행도</span>
-                  <span className="text-sm text-gray-600">{gradeProgress.level} 완료</span>
+              {stats.gradeProgress && (
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-700">학년별 진행도</span>
+                    <span className="text-sm text-gray-600">{stats.gradeProgress.level} 완료</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div
+                      className="bg-gradient-to-r from-purple-500 to-pink-600 h-3 rounded-full transition-all duration-500"
+                      style={{ width: `${stats.gradeProgress.progress}%` }}
+                    />
+                  </div>
+                  <div className="text-right mt-1">
+                    <span className="text-xs font-semibold text-purple-600">{stats.gradeProgress.progress}%</span>
+                  </div>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div
-                    className="bg-gradient-to-r from-purple-500 to-pink-600 h-3 rounded-full transition-all duration-500"
-                    style={{ width: `${gradeProgress.progress}%` }}
-                  />
-                </div>
-                <div className="text-right mt-1">
-                  <span className="text-xs font-semibold text-purple-600">{gradeProgress.progress}%</span>
-                </div>
-              </div>
+              )}
 
               {/* Monthly Hours */}
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-gray-700">이번 달 학습 시간</span>
-                  <span className="text-sm text-gray-600">{monthlyHours.current}시간 / 목표 {monthlyHours.target}시간</span>
+                  <span className="text-sm text-gray-600">{stats.monthlyHours.current}시간 / 목표 {stats.monthlyHours.target}시간</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-3">
                   <div
                     className="bg-gradient-to-r from-green-500 to-emerald-600 h-3 rounded-full transition-all duration-500"
-                    style={{ width: `${(monthlyHours.current / monthlyHours.target) * 100}%` }}
+                    style={{ width: `${(stats.monthlyHours.current / stats.monthlyHours.target) * 100}%` }}
                   />
                 </div>
               </div>
 
               {/* Chapter Progress */}
-              <div className="pt-4 border-t border-gray-200">
-                <p className="text-sm font-medium text-gray-700 mb-3">마스터한 단원</p>
-                <div className="space-y-2">
-                  {chapters.map((chapter, i) => (
-                    <div key={i} className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        {chapter.status === 'completed' && (
-                          <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
-                            <span className="text-white text-xs">✓</span>
-                          </div>
-                        )}
-                        {chapter.status === 'in_progress' && (
-                          <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center">
-                            <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                          </div>
-                        )}
-                        {chapter.status === 'not_started' && (
-                          <div className="w-5 h-5 rounded-full bg-gray-300" />
-                        )}
-                        <span className={`text-sm ${
-                          chapter.status === 'completed' ? 'text-green-700 font-medium' :
-                          chapter.status === 'in_progress' ? 'text-blue-700 font-medium' :
-                          'text-gray-500'
-                        }`}>
-                          {chapter.name}
-                        </span>
+              {stats.chapters.length > 0 && (
+                <div className="pt-4 border-t border-gray-200">
+                  <p className="text-sm font-medium text-gray-700 mb-3">마스터한 단원</p>
+                  <div className="space-y-2">
+                    {stats.chapters.map((chapter, i) => (
+                      <div key={i} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {chapter.status === 'completed' && (
+                            <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
+                              <span className="text-white text-xs">✓</span>
+                            </div>
+                          )}
+                          {chapter.status === 'in_progress' && (
+                            <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center">
+                              <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                            </div>
+                          )}
+                          {chapter.status === 'not_started' && (
+                            <div className="w-5 h-5 rounded-full bg-gray-300" />
+                          )}
+                          <span className={`text-sm ${
+                            chapter.status === 'completed' ? 'text-green-700 font-medium' :
+                            chapter.status === 'in_progress' ? 'text-blue-700 font-medium' :
+                            'text-gray-500'
+                          }`}>
+                            {chapter.name}
+                          </span>
+                        </div>
+                        <span className="text-xs text-gray-500">{chapter.progress}%</span>
                       </div>
-                      <span className="text-xs text-gray-500">{chapter.progress}%</span>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </motion.div>
 
@@ -277,12 +318,16 @@ function MathDashboardContent() {
                   <h4 className="font-semibold text-gray-900">강점</h4>
                 </div>
                 <ul className="space-y-2">
-                  {strengths.map((strength, i) => (
-                    <li key={i} className="flex items-center gap-2 text-sm text-gray-700">
-                      <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                      {strength}
-                    </li>
-                  ))}
+                  {stats.analysis.strengths.length > 0 ? (
+                    stats.analysis.strengths.map((strength, i) => (
+                      <li key={i} className="flex items-center gap-2 text-sm text-gray-700">
+                        <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                        {strength}
+                      </li>
+                    ))
+                  ) : (
+                    <li className="text-sm text-gray-500">학습 데이터가 쌓이면 분석이 표시됩니다</li>
+                  )}
                 </ul>
               </div>
 
@@ -295,12 +340,16 @@ function MathDashboardContent() {
                   <h4 className="font-semibold text-gray-900">약점 (개선 필요)</h4>
                 </div>
                 <ul className="space-y-2">
-                  {weaknesses.map((weakness, i) => (
-                    <li key={i} className="flex items-center gap-2 text-sm text-gray-700">
-                      <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />
-                      {weakness}
-                    </li>
-                  ))}
+                  {stats.analysis.weaknesses.length > 0 ? (
+                    stats.analysis.weaknesses.map((weakness, i) => (
+                      <li key={i} className="flex items-center gap-2 text-sm text-gray-700">
+                        <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+                        {weakness}
+                      </li>
+                    ))
+                  ) : (
+                    <li className="text-sm text-gray-500">학습 데이터가 쌓이면 분석이 표시됩니다</li>
+                  )}
                 </ul>
               </div>
             </div>
@@ -310,14 +359,16 @@ function MathDashboardContent() {
               <div className="bg-purple-50 rounded-lg p-4">
                 <p className="text-sm font-medium text-purple-900 mb-1">💡 AI 추천</p>
                 <p className="text-sm text-purple-700">
-                  시각화 도구로 기하학 개념을 익히면 공간 감각이 향상됩니다. 이차함수 그래프를 직접 조작하며 배워보세요.
+                  {stats.analysis.aiRecommendation}
                 </p>
-                <Link
-                  href="/math-visualization"
-                  className="inline-block mt-3 text-sm font-semibold text-purple-600 hover:text-purple-800"
-                >
-                  그래프 시각화 시작하기 →
-                </Link>
+                {stats.analysis.weaknesses.length > 0 && (
+                  <Link
+                    href="/tutor/math"
+                    className="inline-block mt-3 text-sm font-semibold text-purple-600 hover:text-purple-800"
+                  >
+                    수학 튜터 시작하기 →
+                  </Link>
+                )}
               </div>
             </div>
           </motion.div>

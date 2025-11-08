@@ -51,14 +51,14 @@ export function usePuterTTS({
   const speak = useCallback(
     async (text: string) => {
       if (!window.puter?.ai?.txt2speech) {
-        const errorMsg = 'Puter.js not loaded yet';
-        console.error(errorMsg);
-        setError(errorMsg);
+        // Silently skip if Puter.js not loaded - will use Web Speech API
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Puter.js TTS not available, skipping');
+        }
         return;
       }
 
       if (!text || text.length === 0) {
-        console.warn('Empty text provided to Puter TTS');
         return;
       }
 
@@ -132,21 +132,65 @@ export function usePuterTTS({
         }
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-        console.error('Failed to speak with Puter.js:', errorMessage);
-        setError(errorMessage);
-        setIsSpeaking(false);
+        // Only log to console in development, don't show user-facing error
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Puter.js TTS unavailable, using Web Speech API fallback');
+        }
+
+        // Silently fallback to Web Speech API
+        try {
+          if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = language;
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+
+            utterance.onend = () => {
+              setIsSpeaking(false);
+            };
+
+            utterance.onerror = (event) => {
+              // Silently fail - TTS is not critical functionality
+              if (process.env.NODE_ENV === 'development') {
+                console.warn('Web Speech API error:', event.error);
+              }
+              setIsSpeaking(false);
+            };
+
+            window.speechSynthesis.speak(utterance);
+          } else {
+            // TTS not available, continue silently
+            setIsSpeaking(false);
+          }
+        } catch (fallbackError) {
+          // Silently fail - TTS is not critical functionality
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('TTS fallback failed:', fallbackError);
+          }
+          setIsSpeaking(false);
+        }
+
         audioRef.current = null;
+        // Don't set error state - TTS failure shouldn't block UI
       }
     },
     [engine, language, voice]
   );
 
   const stop = useCallback(() => {
+    // Stop Puter.js audio
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current = null;
       setIsSpeaking(false);
       console.log('🎤 Puter.js TTS stopped');
+    }
+
+    // Stop Web Speech API
+    if ('speechSynthesis' in window && window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      console.log('🎤 Web Speech API stopped');
     }
   }, []);
 

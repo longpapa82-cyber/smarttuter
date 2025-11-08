@@ -2,21 +2,27 @@
 
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, X, Camera, Loader2, Check, AlertCircle } from 'lucide-react';
-import Tesseract from 'tesseract.js';
+import { Upload, X, Camera, Loader2, Check, AlertCircle, Sparkles, Zap, Pen } from 'lucide-react';
+import { smartOCR, getAvailableEngines, hasPremiumOCR } from '@/lib/ocr/smart-ocr';
+import MathHandwritingCanvas from './MathHandwritingCanvas';
 
 interface MathImageUploadProps {
   onTextRecognized: (text: string) => void;
   onClose: () => void;
 }
 
+type TabType = 'photo' | 'handwriting';
+
 export default function MathImageUpload({ onTextRecognized, onClose }: MathImageUploadProps) {
+  const [activeTab, setActiveTab] = useState<TabType>('photo');
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [recognizedText, setRecognizedText] = useState('');
   const [error, setError] = useState('');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [ocrEngine, setOcrEngine] = useState<string>('');
+  const [confidence, setConfidence] = useState<number>(0);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -68,26 +74,23 @@ export default function MathImageUpload({ onTextRecognized, onClose }: MathImage
     setPreviewUrl(url);
 
     try {
-      // Step 1: OCR with Tesseract.js
-      setProgress(10);
-      const worker = await Tesseract.createWorker('eng', 1, {
-        logger: (m) => {
-          if (m.status === 'recognizing text') {
-            setProgress(10 + Math.floor(m.progress * 60)); // 10-70%
-          }
-        },
-      });
+      // IMPROVED: Use Smart OCR with automatic fallback
+      setProgress(20);
+      console.log('🚀 Starting Smart OCR...');
 
-      const { data } = await worker.recognize(file);
-      await worker.terminate();
+      const result = await smartOCR(file);
 
-      setProgress(75);
+      console.log(`✅ OCR complete via ${result.engine} (confidence: ${Math.round(result.confidence * 100)}%)`);
 
-      // Step 2: Convert to math-friendly format using Gemini
-      const convertedText = await convertToMathFormat(data.text, file);
+      setProgress(80);
+      setOcrEngine(result.engine);
+      setConfidence(result.confidence);
+
+      // If we got LaTeX, convert it to plain text for better readability
+      const displayText = result.latex ? result.latex : result.text;
 
       setProgress(100);
-      setRecognizedText(convertedText);
+      setRecognizedText(displayText);
 
       // Small delay to show 100% completion
       setTimeout(() => {
@@ -101,48 +104,6 @@ export default function MathImageUpload({ onTextRecognized, onClose }: MathImage
     }
   };
 
-  const convertToMathFormat = async (ocrText: string, imageFile: File): Promise<string> => {
-    try {
-      // Convert image to base64
-      const base64 = await fileToBase64(imageFile);
-
-      // Call API to convert with Gemini
-      const response = await fetch('/api/ocr/math', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ocrText,
-          imageBase64: base64,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('수식 변환 실패');
-      }
-
-      const result = await response.json();
-      return result.mathText || ocrText;
-
-    } catch (err) {
-      console.error('수식 변환 오류:', err);
-      // Fallback to original OCR text
-      return ocrText;
-    }
-  };
-
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        resolve(result.split(',')[1]); // Remove data:image/...;base64, prefix
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  };
 
   const handleSendToTutor = () => {
     if (recognizedText) {
@@ -177,11 +138,17 @@ export default function MathImageUpload({ onTextRecognized, onClose }: MathImage
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-3xl">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-pink-500 flex items-center justify-center">
-              <Camera className="w-5 h-5 text-white" />
+              {activeTab === 'photo' ? (
+                <Camera className="w-5 h-5 text-white" />
+              ) : (
+                <Pen className="w-5 h-5 text-white" />
+              )}
             </div>
             <div>
-              <h2 className="text-lg font-bold text-gray-900">수학 문제 업로드</h2>
-              <p className="text-sm text-gray-500">사진을 찍거나 업로드하세요</p>
+              <h2 className="text-lg font-bold text-gray-900">수학 문제 입력</h2>
+              <p className="text-sm text-gray-500">
+                {activeTab === 'photo' ? '사진을 찍거나 업로드하세요' : '화면에 수식을 그려주세요'}
+              </p>
             </div>
           </div>
           <button
@@ -192,8 +159,58 @@ export default function MathImageUpload({ onTextRecognized, onClose }: MathImage
           </button>
         </div>
 
+        {/* Tab Navigation */}
+        <div className="flex border-b border-gray-200 px-6">
+          <button
+            onClick={() => setActiveTab('photo')}
+            className={`flex items-center gap-2 px-6 py-3 font-medium text-sm transition-all relative ${
+              activeTab === 'photo'
+                ? 'text-orange-600'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <Camera className="w-4 h-4" />
+            사진 업로드
+            {activeTab === 'photo' && (
+              <motion.div
+                layoutId="activeTab"
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-orange-500 to-pink-500"
+                initial={false}
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              />
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab('handwriting')}
+            className={`flex items-center gap-2 px-6 py-3 font-medium text-sm transition-all relative ${
+              activeTab === 'handwriting'
+                ? 'text-purple-600'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <Pen className="w-4 h-4" />
+            필기 입력
+            {activeTab === 'handwriting' && (
+              <motion.div
+                layoutId="activeTab"
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-500 to-pink-500"
+                initial={false}
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              />
+            )}
+          </button>
+        </div>
+
         {/* Content */}
         <div className="p-6 space-y-6">
+          {/* Handwriting Mode */}
+          {activeTab === 'handwriting' && (
+            <MathHandwritingCanvas onTextRecognized={onTextRecognized} onClose={onClose} />
+          )}
+
+          {/* Photo Upload Mode */}
+          {activeTab === 'photo' && (
+            <>
           {/* Upload Area */}
           {!previewUrl && !isProcessing && (
             <div
@@ -244,6 +261,7 @@ export default function MathImageUpload({ onTextRecognized, onClose }: MathImage
               {/* Preview Image */}
               {previewUrl && (
                 <div className="rounded-xl overflow-hidden border border-gray-200">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={previewUrl}
                     alt="Preview"
@@ -270,7 +288,7 @@ export default function MathImageUpload({ onTextRecognized, onClose }: MathImage
 
                 <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>무료 OCR 처리 중... (Tesseract.js)</span>
+                  <span>스마트 OCR 처리 중...</span>
                 </div>
               </div>
             </div>
@@ -281,6 +299,7 @@ export default function MathImageUpload({ onTextRecognized, onClose }: MathImage
             <div className="space-y-6">
               {/* Preview Image */}
               <div className="rounded-xl overflow-hidden border border-gray-200">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={previewUrl}
                   alt="Preview"
@@ -290,9 +309,27 @@ export default function MathImageUpload({ onTextRecognized, onClose }: MathImage
 
               {/* Recognized Text */}
               <div className="bg-green-50 border border-green-200 rounded-xl p-4 space-y-3">
-                <div className="flex items-center gap-2 text-green-700">
-                  <Check className="w-5 h-5" />
-                  <span className="font-semibold">인식 완료!</span>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-green-700">
+                    <Check className="w-5 h-5" />
+                    <span className="font-semibold">인식 완료!</span>
+                  </div>
+                  {ocrEngine && (
+                    <div className="flex items-center gap-2">
+                      {ocrEngine === 'mathpix' && <Sparkles className="w-4 h-4 text-purple-500" />}
+                      {ocrEngine === 'google-vision' && <Zap className="w-4 h-4 text-blue-500" />}
+                      <span className="text-xs text-gray-600">
+                        {ocrEngine === 'mathpix' ? 'Mathpix (프리미엄)' :
+                         ocrEngine === 'google-vision' ? 'Google Vision' :
+                         'Tesseract (무료)'}
+                      </span>
+                      {confidence > 0 && (
+                        <span className="text-xs font-semibold text-green-600">
+                          {Math.round(confidence * 100)}%
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="bg-white rounded-lg p-4 border border-green-100">
@@ -347,6 +384,8 @@ export default function MathImageUpload({ onTextRecognized, onClose }: MathImage
                 <li>• 손글씨보다 인쇄된 문제가 인식률이 높아요</li>
               </ul>
             </div>
+          )}
+          </>
           )}
         </div>
       </motion.div>

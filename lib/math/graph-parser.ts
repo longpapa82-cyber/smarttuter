@@ -14,9 +14,39 @@ export interface GraphInfo {
 }
 
 /**
+ * Check if content has explicit graph visualization marker
+ */
+export function hasGraphVisualizationMarker(content: string): boolean {
+  const markers = [
+    '### GRAPH:',
+    '### 그래프:',
+    '[GRAPH]',
+    '[그래프]',
+    '📊 그래프',
+    '📈 시각화',
+  ];
+
+  return markers.some(marker => content.includes(marker));
+}
+
+/**
  * Check if message contains graph-related content
+ * IMPROVED: Only detect graphs when explicit markers OR (equation + keyword) exist
  */
 export function hasGraphContent(content: string): boolean {
+  // 1. Check for explicit graph visualization markers first
+  if (hasGraphVisualizationMarker(content)) {
+    return true;
+  }
+
+  // 2. Check if there's an actual equation (y =, f(x) =, etc.)
+  const hasEquation = /y\s*=|f\(x\)\s*=|g\(x\)\s*=/.test(content);
+
+  if (!hasEquation) {
+    return false; // No equation, no graph
+  }
+
+  // 3. Only if equation exists, check for graph keywords
   const graphKeywords = [
     '그래프',
     'graph',
@@ -39,7 +69,10 @@ export function hasGraphContent(content: string): boolean {
   ];
 
   const contentLower = content.toLowerCase();
-  return graphKeywords.some(keyword => contentLower.includes(keyword.toLowerCase()));
+  const hasKeyword = graphKeywords.some(keyword => contentLower.includes(keyword.toLowerCase()));
+
+  // Both equation AND keyword must exist
+  return hasEquation && hasKeyword;
 }
 
 /**
@@ -217,22 +250,6 @@ function extractParameters(equation: string, type: GraphType): Record<string, nu
   }
 
   return Object.keys(params).length > 0 ? params : undefined;
-}
-
-/**
- * Check if content has explicit graph visualization marker
- */
-export function hasGraphVisualizationMarker(content: string): boolean {
-  const markers = [
-    '### GRAPH:',
-    '### 그래프:',
-    '[GRAPH]',
-    '[그래프]',
-    '📊 그래프',
-    '📈 시각화',
-  ];
-
-  return markers.some(marker => content.includes(marker));
 }
 
 /**

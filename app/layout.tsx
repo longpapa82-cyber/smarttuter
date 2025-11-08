@@ -92,6 +92,7 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        {/* Puter.js - Async loading to comply with Next.js best practices */}
         <script src="https://js.puter.com/v2/" async></script>
       </head>
       <body className="antialiased">

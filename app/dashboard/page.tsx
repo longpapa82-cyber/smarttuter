@@ -26,6 +26,8 @@ import {
 import type { LearningProgressSummary } from "@/lib/learning-progress/types";
 import { useAuth } from "@/hooks/useAuth";
 import { SkeletonDashboard } from "@/components/ui/Skeleton";
+import { EmptyLearningCard } from "@/components/dashboard/EmptyLearningCard";
+import type { LearningStats } from "@/types/learning-stats";
 
 function LoadingDashboard() {
   return (
@@ -53,6 +55,10 @@ function DashboardContent() {
 
   // P0: Guest mode detection
   const [isGuestMode, setIsGuestMode] = useState(false);
+
+  // Learning stats for all subjects
+  const [learningStats, setLearningStats] = useState<LearningStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
 
   // Initialize stores from database (authenticated) or localStorage (onboarding)
   useEffect(() => {
@@ -174,6 +180,46 @@ function DashboardContent() {
     return () => clearInterval(interval);
   }, [profile?.username]);
 
+  // Fetch learning stats data from API
+  useEffect(() => {
+    async function loadLearningStats() {
+      if (!isAuthenticated || !user) {
+        // Guest mode - show empty state
+        setLearningStats(null);
+        setStatsLoading(false);
+        return;
+      }
+
+      try {
+        setStatsLoading(true);
+        const response = await fetch('/api/user/learning-stats');
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch learning stats');
+        }
+
+        const result = await response.json();
+
+        if (result.success && result.data) {
+          setLearningStats(result.data);
+        } else {
+          setLearningStats(null);
+        }
+      } catch (error) {
+        console.error('Error loading learning stats:', error);
+        setLearningStats(null);
+      } finally {
+        setStatsLoading(false);
+      }
+    }
+
+    loadLearningStats();
+
+    // Auto-refresh every 60 seconds
+    const interval = setInterval(loadLearningStats, 60000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated, user]);
+
   if (!profile) {
     return <LoadingDashboard />;
   }
@@ -240,406 +286,442 @@ function DashboardContent() {
 
           {/* All Subjects Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-fr">
-            {/* English Summary */}
-            <Link href="/dashboard/english" className="h-full">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-                whileHover={{ scale: 1.02, y: -4 }}
-                className="h-full bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600 rounded-2xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all flex flex-col"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                      <BookOpen className="w-6 h-6" />
+            {/* English Summary - Show empty state if no data */}
+            {!learningStats?.english?.hasData ? (
+              <EmptyLearningCard
+                subject="영어"
+                subjectKey="english"
+                icon={<BookOpen className="w-6 h-6" />}
+                gradient="from-blue-500 via-indigo-600 to-purple-600"
+              />
+            ) : (
+              <Link href="/dashboard/english" className="h-full">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
+                  whileHover={{ scale: 1.02, y: -4 }}
+                  className="h-full bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600 rounded-2xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all flex flex-col"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                        <BookOpen className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold">영어 학습</h3>
+                        <p className="text-sm text-white/80">English Dashboard</p>
+                      </div>
                     </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold">{learningStats.english.cefrLevel || 'N/A'}</div>
+                      <div className="text-xs text-white/80">CEFR Level</div>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
                     <div>
-                      <h3 className="text-xl font-bold">영어 학습</h3>
-                      <p className="text-sm text-white/80">English Dashboard</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold">A2</div>
-                    <div className="text-xs text-white/80">CEFR Level</div>
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-white/80 flex items-center gap-2">
-                        <Clock className="w-4 h-4" />
-                        이번 주 학습 시간
-                      </span>
-                      <span className="text-sm font-semibold flex items-center gap-1">
-                        <AnimatedCounter value={12} duration={1.5} delay={0.4} className="font-bold" />
-                        <span className="text-white/60">/</span>
-                        <span>20시간</span>
-                      </span>
-                    </div>
-                    <div className="w-full bg-white/20 rounded-full h-2.5 overflow-hidden">
-                      <motion.div
-                        className="h-full bg-white rounded-full relative shadow-lg"
-                        initial={{ width: 0 }}
-                        animate={{ width: '60%' }}
-                        transition={{ duration: 1.5, delay: 0.2, ease: "easeOut" }}
-                      >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-white/80 flex items-center gap-2">
+                          <Clock className="w-4 h-4" />
+                          이번 주 학습 시간
+                        </span>
+                        <span className="text-sm font-semibold flex items-center gap-1">
+                          <AnimatedCounter value={learningStats.english.weeklyHours} duration={1.5} delay={0.4} className="font-bold" />
+                          <span className="text-white/60">/</span>
+                          <span>{learningStats.english.weeklyGoal}시간</span>
+                        </span>
+                      </div>
+                      <div className="w-full bg-white/20 rounded-full h-2.5 overflow-hidden">
                         <motion.div
-                          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
-                          initial={{ x: "-100%" }}
-                          animate={{ x: "200%" }}
-                          transition={{
-                            duration: 1.5,
-                            repeat: Infinity,
-                            repeatDelay: 2,
-                            delay: 0.5,
-                          }}
+                          className="h-full bg-white rounded-full relative shadow-lg"
+                          initial={{ width: 0 }}
+                          animate={{ width: `${Math.min((learningStats.english.weeklyHours / learningStats.english.weeklyGoal) * 100, 100)}%` }}
+                          transition={{ duration: 1.5, delay: 0.2, ease: "easeOut" }}
+                        >
+                          <motion.div
+                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
+                            initial={{ x: "-100%" }}
+                            animate={{ x: "200%" }}
+                            transition={{
+                              duration: 1.5,
+                              repeat: Infinity,
+                              repeatDelay: 2,
+                              delay: 0.5,
+                            }}
+                          />
+                        </motion.div>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-4 gap-2 pt-2">
+                      <div className="text-center">
+                        <div className="text-xs text-white/70 mb-1">Listening</div>
+                        <AnimatedCounter
+                          value={learningStats.english.skills?.listening || 0}
+                          suffix="%"
+                          duration={1.5}
+                          delay={0.6}
+                          className="text-lg font-bold"
                         />
-                      </motion.div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xs text-white/70 mb-1">Speaking</div>
+                        <AnimatedCounter
+                          value={learningStats.english.skills?.speaking || 0}
+                          suffix="%"
+                          duration={1.5}
+                          delay={0.7}
+                          className="text-lg font-bold"
+                        />
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xs text-white/70 mb-1">Reading</div>
+                        <AnimatedCounter
+                          value={learningStats.english.skills?.reading || 0}
+                          suffix="%"
+                          duration={1.5}
+                          delay={0.8}
+                          className="text-lg font-bold"
+                        />
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xs text-white/70 mb-1">Writing</div>
+                        <AnimatedCounter
+                          value={learningStats.english.skills?.writing || 0}
+                          suffix="%"
+                          duration={1.5}
+                          delay={0.9}
+                          className="text-lg font-bold"
+                        />
+                      </div>
                     </div>
                   </div>
-                  <div className="grid grid-cols-4 gap-2 pt-2">
-                    <div className="text-center">
-                      <div className="text-xs text-white/70 mb-1">Listening</div>
-                      <AnimatedCounter
-                        value={80}
-                        suffix="%"
-                        duration={1.5}
-                        delay={0.6}
-                        className="text-lg font-bold"
-                      />
-                    </div>
-                    <div className="text-center">
-                      <div className="text-xs text-white/70 mb-1">Speaking</div>
-                      <AnimatedCounter
-                        value={60}
-                        suffix="%"
-                        duration={1.5}
-                        delay={0.7}
-                        className="text-lg font-bold"
-                      />
-                    </div>
-                    <div className="text-center">
-                      <div className="text-xs text-white/70 mb-1">Reading</div>
-                      <AnimatedCounter
-                        value={100}
-                        suffix="%"
-                        duration={1.5}
-                        delay={0.8}
-                        className="text-lg font-bold"
-                      />
-                    </div>
-                    <div className="text-center">
-                      <div className="text-xs text-white/70 mb-1">Writing</div>
-                      <AnimatedCounter
-                        value={40}
-                        suffix="%"
-                        duration={1.5}
-                        delay={0.9}
-                        className="text-lg font-bold"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            </Link>
+                </motion.div>
+              </Link>
+            )}
 
-            {/* Math Summary */}
-            <Link href="/dashboard/math" className="h-full">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.1 }}
-                whileHover={{ scale: 1.02, y: -4 }}
-                className="h-full bg-gradient-to-br from-purple-500 via-pink-600 to-rose-600 rounded-2xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all flex flex-col"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                      <Calculator className="w-6 h-6" />
+            {/* Math Summary - Show empty state if no data */}
+            {!learningStats?.math?.hasData ? (
+              <EmptyLearningCard
+                subject="수학"
+                subjectKey="math"
+                icon={<Calculator className="w-6 h-6" />}
+                gradient="from-purple-500 via-pink-600 to-rose-600"
+              />
+            ) : (
+              <Link href="/dashboard/math" className="h-full">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.1 }}
+                  whileHover={{ scale: 1.02, y: -4 }}
+                  className="h-full bg-gradient-to-br from-purple-500 via-pink-600 to-rose-600 rounded-2xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all flex flex-col"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                        <Calculator className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold">수학 학습</h3>
+                        <p className="text-sm text-white/80">Math Dashboard</p>
+                      </div>
                     </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold">{learningStats.math.gradeLevel || profile?.gradeLevel || 'N/A'}</div>
+                      <div className="text-xs text-white/80">Grade Level</div>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
                     <div>
-                      <h3 className="text-xl font-bold">수학 학습</h3>
-                      <p className="text-sm text-white/80">Math Dashboard</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold">중2</div>
-                    <div className="text-xs text-white/80">Grade Level</div>
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-white/80 flex items-center gap-2">
-                        <Clock className="w-4 h-4" />
-                        이번 주 학습 시간
-                      </span>
-                      <span className="text-sm font-semibold flex items-center gap-1">
-                        <AnimatedCounter value={8} duration={1.5} delay={0.5} className="font-bold" />
-                        <span className="text-white/60">/</span>
-                        <span>15시간</span>
-                      </span>
-                    </div>
-                    <div className="w-full bg-white/20 rounded-full h-2.5 overflow-hidden">
-                      <motion.div
-                        className="h-full bg-white rounded-full relative shadow-lg"
-                        initial={{ width: 0 }}
-                        animate={{ width: '53%' }}
-                        transition={{ duration: 1.5, delay: 0.3, ease: "easeOut" }}
-                      >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-white/80 flex items-center gap-2">
+                          <Clock className="w-4 h-4" />
+                          이번 주 학습 시간
+                        </span>
+                        <span className="text-sm font-semibold flex items-center gap-1">
+                          <AnimatedCounter value={learningStats.math.weeklyHours} duration={1.5} delay={0.5} className="font-bold" />
+                          <span className="text-white/60">/</span>
+                          <span>{learningStats.math.weeklyGoal}시간</span>
+                        </span>
+                      </div>
+                      <div className="w-full bg-white/20 rounded-full h-2.5 overflow-hidden">
                         <motion.div
-                          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
-                          initial={{ x: "-100%" }}
-                          animate={{ x: "200%" }}
-                          transition={{
-                            duration: 1.5,
-                            repeat: Infinity,
-                            repeatDelay: 2,
-                            delay: 0.6,
-                          }}
-                        />
+                          className="h-full bg-white rounded-full relative shadow-lg"
+                          initial={{ width: 0 }}
+                          animate={{ width: `${Math.min((learningStats.math.weeklyHours / learningStats.math.weeklyGoal) * 100, 100)}%` }}
+                          transition={{ duration: 1.5, delay: 0.3, ease: "easeOut" }}
+                        >
+                          <motion.div
+                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
+                            initial={{ x: "-100%" }}
+                            animate={{ x: "200%" }}
+                            transition={{
+                              duration: 1.5,
+                              repeat: Infinity,
+                              repeatDelay: 2,
+                              delay: 0.6,
+                            }}
+                          />
+                        </motion.div>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 pt-2">
+                      <motion.div
+                        className="bg-white/10 rounded-lg p-3 backdrop-blur-sm"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.7, duration: 0.3 }}
+                      >
+                        <div className="flex items-center gap-1.5 text-xs text-white/70 mb-1.5">
+                          <PulseIndicator color="green" size="sm" />
+                          완료한 단원
+                        </div>
+                        <div className="text-lg font-bold flex items-baseline gap-1">
+                          <AnimatedCounter value={learningStats.math.completedUnits || 0} duration={1.2} delay={0.9} />
+                          <span className="text-sm text-white/60">/</span>
+                          <span className="text-sm">{learningStats.math.totalUnits || 0}</span>
+                        </div>
+                      </motion.div>
+                      <motion.div
+                        className="bg-white/10 rounded-lg p-3 backdrop-blur-sm"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.8, duration: 0.3 }}
+                      >
+                        <div className="flex items-center gap-1.5 text-xs text-white/70 mb-1.5">
+                          <PulseIndicator color="blue" size="sm" />
+                          학습 중
+                        </div>
+                        <motion.div
+                          className="text-sm font-bold"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 1, duration: 0.3 }}
+                        >
+                          {learningStats.math.currentTopic || '주제 없음'}
+                        </motion.div>
                       </motion.div>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 pt-2">
-                    <motion.div
-                      className="bg-white/10 rounded-lg p-3 backdrop-blur-sm"
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.7, duration: 0.3 }}
-                    >
-                      <div className="flex items-center gap-1.5 text-xs text-white/70 mb-1.5">
-                        <PulseIndicator color="green" size="sm" />
-                        완료한 단원
-                      </div>
-                      <div className="text-lg font-bold flex items-baseline gap-1">
-                        <AnimatedCounter value={2} duration={1.2} delay={0.9} />
-                        <span className="text-sm text-white/60">/</span>
-                        <span className="text-sm">5</span>
-                      </div>
-                    </motion.div>
-                    <motion.div
-                      className="bg-white/10 rounded-lg p-3 backdrop-blur-sm"
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.8, duration: 0.3 }}
-                    >
-                      <div className="flex items-center gap-1.5 text-xs text-white/70 mb-1.5">
-                        <PulseIndicator color="blue" size="sm" />
-                        학습 중
-                      </div>
-                      <motion.div
-                        className="text-sm font-bold"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 1, duration: 0.3 }}
-                      >
-                        이차방정식
-                      </motion.div>
-                    </motion.div>
-                  </div>
-                </div>
-              </motion.div>
-            </Link>
+                </motion.div>
+              </Link>
+            )}
 
-            {/* Science Summary */}
-            <Link href="/dashboard/science" className="h-full">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.2 }}
-                whileHover={{ scale: 1.02, y: -4 }}
-                className="h-full bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-600 rounded-2xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all flex flex-col"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                      <Beaker className="w-6 h-6" />
+            {/* Science Summary - Show empty state if no data */}
+            {!learningStats?.science?.hasData ? (
+              <EmptyLearningCard
+                subject="과학"
+                subjectKey="science"
+                icon={<Beaker className="w-6 h-6" />}
+                gradient="from-cyan-500 via-blue-600 to-indigo-600"
+              />
+            ) : (
+              <Link href="/dashboard/science" className="h-full">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.2 }}
+                  whileHover={{ scale: 1.02, y: -4 }}
+                  className="h-full bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-600 rounded-2xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all flex flex-col"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                        <Beaker className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold">과학 학습</h3>
+                        <p className="text-sm text-white/80">Science Dashboard</p>
+                      </div>
                     </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold">{learningStats.science.gradeLevel || profile?.gradeLevel || 'N/A'}</div>
+                      <div className="text-xs text-white/80">Grade Level</div>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
                     <div>
-                      <h3 className="text-xl font-bold">과학 학습</h3>
-                      <p className="text-sm text-white/80">Science Dashboard</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold">중2</div>
-                    <div className="text-xs text-white/80">Grade Level</div>
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-white/80 flex items-center gap-2">
-                        <Clock className="w-4 h-4" />
-                        이번 주 학습 시간
-                      </span>
-                      <span className="text-sm font-semibold flex items-center gap-1">
-                        <AnimatedCounter value={5} duration={1.5} delay={0.6} className="font-bold" />
-                        <span className="text-white/60">/</span>
-                        <span>10시간</span>
-                      </span>
-                    </div>
-                    <div className="w-full bg-white/20 rounded-full h-2.5 overflow-hidden">
-                      <motion.div
-                        className="h-full bg-white rounded-full relative shadow-lg"
-                        initial={{ width: 0 }}
-                        animate={{ width: '50%' }}
-                        transition={{ duration: 1.5, delay: 0.4, ease: "easeOut" }}
-                      >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-white/80 flex items-center gap-2">
+                          <Clock className="w-4 h-4" />
+                          이번 주 학습 시간
+                        </span>
+                        <span className="text-sm font-semibold flex items-center gap-1">
+                          <AnimatedCounter value={learningStats.science.weeklyHours} duration={1.5} delay={0.6} className="font-bold" />
+                          <span className="text-white/60">/</span>
+                          <span>{learningStats.science.weeklyGoal}시간</span>
+                        </span>
+                      </div>
+                      <div className="w-full bg-white/20 rounded-full h-2.5 overflow-hidden">
                         <motion.div
-                          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
-                          initial={{ x: "-100%" }}
-                          animate={{ x: "200%" }}
-                          transition={{
-                            duration: 1.5,
-                            repeat: Infinity,
-                            repeatDelay: 2,
-                            delay: 0.7,
-                          }}
-                        />
+                          className="h-full bg-white rounded-full relative shadow-lg"
+                          initial={{ width: 0 }}
+                          animate={{ width: `${Math.min((learningStats.science.weeklyHours / learningStats.science.weeklyGoal) * 100, 100)}%` }}
+                          transition={{ duration: 1.5, delay: 0.4, ease: "easeOut" }}
+                        >
+                          <motion.div
+                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
+                            initial={{ x: "-100%" }}
+                            animate={{ x: "200%" }}
+                            transition={{
+                              duration: 1.5,
+                              repeat: Infinity,
+                              repeatDelay: 2,
+                              delay: 0.7,
+                            }}
+                          />
+                        </motion.div>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 pt-2">
+                      <motion.div
+                        className="bg-white/10 rounded-lg p-3 backdrop-blur-sm"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.9, duration: 0.3 }}
+                      >
+                        <div className="flex items-center gap-1.5 text-xs text-white/70 mb-1.5">
+                          <PulseIndicator color="green" size="sm" />
+                          완료한 단원
+                        </div>
+                        <div className="text-lg font-bold flex items-baseline gap-1">
+                          <AnimatedCounter value={learningStats.science.completedUnits || 0} duration={1.2} delay={1.1} />
+                          <span className="text-sm text-white/60">/</span>
+                          <span className="text-sm">{learningStats.science.totalUnits || 0}</span>
+                        </div>
+                      </motion.div>
+                      <motion.div
+                        className="bg-white/10 rounded-lg p-3 backdrop-blur-sm"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 1.0, duration: 0.3 }}
+                      >
+                        <div className="flex items-center gap-1.5 text-xs text-white/70 mb-1.5">
+                          <PulseIndicator color="blue" size="sm" />
+                          학습 중
+                        </div>
+                        <motion.div
+                          className="text-sm font-bold"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 1.2, duration: 0.3 }}
+                        >
+                          {learningStats.science.currentTopic || '주제 없음'}
+                        </motion.div>
                       </motion.div>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 pt-2">
-                    <motion.div
-                      className="bg-white/10 rounded-lg p-3 backdrop-blur-sm"
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.9, duration: 0.3 }}
-                    >
-                      <div className="flex items-center gap-1.5 text-xs text-white/70 mb-1.5">
-                        <PulseIndicator color="green" size="sm" />
-                        완료한 단원
-                      </div>
-                      <div className="text-lg font-bold flex items-baseline gap-1">
-                        <AnimatedCounter value={1} duration={1.2} delay={1.1} />
-                        <span className="text-sm text-white/60">/</span>
-                        <span className="text-sm">4</span>
-                      </div>
-                    </motion.div>
-                    <motion.div
-                      className="bg-white/10 rounded-lg p-3 backdrop-blur-sm"
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 1.0, duration: 0.3 }}
-                    >
-                      <div className="flex items-center gap-1.5 text-xs text-white/70 mb-1.5">
-                        <PulseIndicator color="blue" size="sm" />
-                        학습 중
-                      </div>
-                      <motion.div
-                        className="text-sm font-bold"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 1.2, duration: 0.3 }}
-                      >
-                        화학반응
-                      </motion.div>
-                    </motion.div>
-                  </div>
-                </div>
-              </motion.div>
-            </Link>
+                </motion.div>
+              </Link>
+            )}
 
-            {/* Social Studies Summary */}
-            <Link href="/dashboard/social" className="h-full">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.3 }}
-                whileHover={{ scale: 1.02, y: -4 }}
-                className="h-full bg-gradient-to-br from-orange-500 via-amber-600 to-yellow-600 rounded-2xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all flex flex-col"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                      <Landmark className="w-6 h-6" />
+            {/* Social Studies Summary - Show empty state if no data */}
+            {!learningStats?.social?.hasData ? (
+              <EmptyLearningCard
+                subject="사회"
+                subjectKey="social-studies"
+                icon={<Landmark className="w-6 h-6" />}
+                gradient="from-orange-500 via-amber-600 to-yellow-600"
+              />
+            ) : (
+              <Link href="/dashboard/social" className="h-full">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.3 }}
+                  whileHover={{ scale: 1.02, y: -4 }}
+                  className="h-full bg-gradient-to-br from-orange-500 via-amber-600 to-yellow-600 rounded-2xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all flex flex-col"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                        <Landmark className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold">사회 학습</h3>
+                        <p className="text-sm text-white/80">Social Studies Dashboard</p>
+                      </div>
                     </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold">{learningStats.social.gradeLevel || profile?.gradeLevel || 'N/A'}</div>
+                      <div className="text-xs text-white/80">Grade Level</div>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
                     <div>
-                      <h3 className="text-xl font-bold">사회 학습</h3>
-                      <p className="text-sm text-white/80">Social Studies Dashboard</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold">중2</div>
-                    <div className="text-xs text-white/80">Grade Level</div>
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-white/80 flex items-center gap-2">
-                        <Clock className="w-4 h-4" />
-                        이번 주 학습 시간
-                      </span>
-                      <span className="text-sm font-semibold flex items-center gap-1">
-                        <AnimatedCounter value={4} duration={1.5} delay={0.7} className="font-bold" />
-                        <span className="text-white/60">/</span>
-                        <span>10시간</span>
-                      </span>
-                    </div>
-                    <div className="w-full bg-white/20 rounded-full h-2.5 overflow-hidden">
-                      <motion.div
-                        className="h-full bg-white rounded-full relative shadow-lg"
-                        initial={{ width: 0 }}
-                        animate={{ width: '40%' }}
-                        transition={{ duration: 1.5, delay: 0.5, ease: "easeOut" }}
-                      >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-white/80 flex items-center gap-2">
+                          <Clock className="w-4 h-4" />
+                          이번 주 학습 시간
+                        </span>
+                        <span className="text-sm font-semibold flex items-center gap-1">
+                          <AnimatedCounter value={learningStats.social.weeklyHours} duration={1.5} delay={0.7} className="font-bold" />
+                          <span className="text-white/60">/</span>
+                          <span>{learningStats.social.weeklyGoal}시간</span>
+                        </span>
+                      </div>
+                      <div className="w-full bg-white/20 rounded-full h-2.5 overflow-hidden">
                         <motion.div
-                          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
-                          initial={{ x: "-100%" }}
-                          animate={{ x: "200%" }}
-                          transition={{
-                            duration: 1.5,
-                            repeat: Infinity,
-                            repeatDelay: 2,
-                            delay: 0.8,
-                          }}
-                        />
+                          className="h-full bg-white rounded-full relative shadow-lg"
+                          initial={{ width: 0 }}
+                          animate={{ width: `${Math.min((learningStats.social.weeklyHours / learningStats.social.weeklyGoal) * 100, 100)}%` }}
+                          transition={{ duration: 1.5, delay: 0.5, ease: "easeOut" }}
+                        >
+                          <motion.div
+                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
+                            initial={{ x: "-100%" }}
+                            animate={{ x: "200%" }}
+                            transition={{
+                              duration: 1.5,
+                              repeat: Infinity,
+                              repeatDelay: 2,
+                              delay: 0.8,
+                            }}
+                          />
+                        </motion.div>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 pt-2">
+                      <motion.div
+                        className="bg-white/10 rounded-lg p-3 backdrop-blur-sm"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 1.0, duration: 0.3 }}
+                      >
+                        <div className="flex items-center gap-1.5 text-xs text-white/70 mb-1.5">
+                          <PulseIndicator color="green" size="sm" />
+                          완료한 단원
+                        </div>
+                        <div className="text-lg font-bold flex items-baseline gap-1">
+                          <AnimatedCounter value={learningStats.social.completedUnits || 0} duration={1.2} delay={1.2} />
+                          <span className="text-sm text-white/60">/</span>
+                          <span className="text-sm">{learningStats.social.totalUnits || 0}</span>
+                        </div>
+                      </motion.div>
+                      <motion.div
+                        className="bg-white/10 rounded-lg p-3 backdrop-blur-sm"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 1.1, duration: 0.3 }}
+                      >
+                        <div className="flex items-center gap-1.5 text-xs text-white/70 mb-1.5">
+                          <PulseIndicator color="blue" size="sm" />
+                          학습 중
+                        </div>
+                        <motion.div
+                          className="text-sm font-bold"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 1.3, duration: 0.3 }}
+                        >
+                          {learningStats.social.currentTopic || '주제 없음'}
+                        </motion.div>
                       </motion.div>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 pt-2">
-                    <motion.div
-                      className="bg-white/10 rounded-lg p-3 backdrop-blur-sm"
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 1.0, duration: 0.3 }}
-                    >
-                      <div className="flex items-center gap-1.5 text-xs text-white/70 mb-1.5">
-                        <PulseIndicator color="green" size="sm" />
-                        완료한 단원
-                      </div>
-                      <div className="text-lg font-bold flex items-baseline gap-1">
-                        <AnimatedCounter value={1} duration={1.2} delay={1.2} />
-                        <span className="text-sm text-white/60">/</span>
-                        <span className="text-sm">4</span>
-                      </div>
-                    </motion.div>
-                    <motion.div
-                      className="bg-white/10 rounded-lg p-3 backdrop-blur-sm"
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 1.1, duration: 0.3 }}
-                    >
-                      <div className="flex items-center gap-1.5 text-xs text-white/70 mb-1.5">
-                        <PulseIndicator color="blue" size="sm" />
-                        학습 중
-                      </div>
-                      <motion.div
-                        className="text-sm font-bold"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 1.3, duration: 0.3 }}
-                      >
-                        한국사
-                      </motion.div>
-                    </motion.div>
-                  </div>
-                </div>
-              </motion.div>
-            </Link>
+                </motion.div>
+              </Link>
+            )}
           </div>
 
           {/* Quick Start Section - Continue Learning */}
@@ -666,10 +748,20 @@ function DashboardContent() {
                         <BookOpen className="w-8 h-8" />
                       </div>
                       <div>
-                        <h4 className="text-xl font-bold mb-1">영어 튜터 계속하기</h4>
-                        <p className="text-sm text-white/80">
-                          마지막 주제: &ldquo;Daily Conversation&rdquo;
-                        </p>
+                        <h4 className="text-xl font-bold mb-1">
+                          {learningStats?.english?.detailed?.lastSession
+                            ? '영어 튜터 계속하기'
+                            : '영어 튜터 시작하기'}
+                        </h4>
+                        {learningStats?.english?.detailed?.lastSession ? (
+                          <p className="text-sm text-white/80">
+                            마지막 주제: &ldquo;{learningStats.english.detailed.lastSession.topic}&rdquo;
+                          </p>
+                        ) : (
+                          <p className="text-sm text-white/80">
+                            AI와 실시간 영어 대화
+                          </p>
+                        )}
                       </div>
                     </div>
                     <div className="text-2xl">→</div>
@@ -690,10 +782,20 @@ function DashboardContent() {
                         <Calculator className="w-8 h-8" />
                       </div>
                       <div>
-                        <h4 className="text-xl font-bold mb-1">수학 튜터 계속하기</h4>
-                        <p className="text-sm text-white/80">
-                          마지막 주제: &ldquo;이차방정식 풀이&rdquo;
-                        </p>
+                        <h4 className="text-xl font-bold mb-1">
+                          {learningStats?.math?.detailed?.lastSession
+                            ? '수학 튜터 계속하기'
+                            : '수학 튜터 시작하기'}
+                        </h4>
+                        {learningStats?.math?.detailed?.lastSession ? (
+                          <p className="text-sm text-white/80">
+                            마지막 주제: &ldquo;{learningStats.math.detailed.lastSession.topic}&rdquo;
+                          </p>
+                        ) : (
+                          <p className="text-sm text-white/80">
+                            AI와 수학 문제 풀이
+                          </p>
+                        )}
                       </div>
                     </div>
                     <div className="text-2xl">→</div>
@@ -714,10 +816,20 @@ function DashboardContent() {
                         <Beaker className="w-8 h-8" />
                       </div>
                       <div>
-                        <h4 className="text-xl font-bold mb-1">과학 튜터 계속하기</h4>
-                        <p className="text-sm text-white/80">
-                          마지막 주제: &ldquo;물질의 상태&rdquo;
-                        </p>
+                        <h4 className="text-xl font-bold mb-1">
+                          {learningStats?.science?.currentTopic
+                            ? '과학 튜터 계속하기'
+                            : '과학 튜터 시작하기'}
+                        </h4>
+                        {learningStats?.science?.currentTopic ? (
+                          <p className="text-sm text-white/80">
+                            마지막 주제: &ldquo;{learningStats.science.currentTopic}&rdquo;
+                          </p>
+                        ) : (
+                          <p className="text-sm text-white/80">
+                            AI와 과학 학습
+                          </p>
+                        )}
                       </div>
                     </div>
                     <div className="text-2xl">→</div>
@@ -738,9 +850,45 @@ function DashboardContent() {
                         <Landmark className="w-8 h-8" />
                       </div>
                       <div>
-                        <h4 className="text-xl font-bold mb-1">사회 튜터 계속하기</h4>
+                        <h4 className="text-xl font-bold mb-1">
+                          {learningStats?.social?.currentTopic
+                            ? '사회 튜터 계속하기'
+                            : '사회 튜터 시작하기'}
+                        </h4>
+                        {learningStats?.social?.currentTopic ? (
+                          <p className="text-sm text-white/80">
+                            마지막 주제: &ldquo;{learningStats.social.currentTopic}&rdquo;
+                          </p>
+                        ) : (
+                          <p className="text-sm text-white/80">
+                            AI와 사회 학습
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-2xl">→</div>
+                  </div>
+                </motion.div>
+              </Link>
+
+              {/* NEW: Korean Tutor */}
+              <Link href="/tutor/korean" className="h-full">
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="h-full bg-gradient-to-r from-pink-600 via-rose-600 to-red-600 rounded-xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all flex flex-col justify-between"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                        <BookOpen className="w-8 h-8" />
+                      </div>
+                      <div>
+                        <h4 className="text-xl font-bold mb-1">
+                          국어 튜터 시작하기 📚
+                        </h4>
                         <p className="text-sm text-white/80">
-                          마지막 주제: &ldquo;세계 지리&rdquo;
+                          읽기, 쓰기, 문법, 문학
                         </p>
                       </div>
                     </div>
@@ -817,7 +965,10 @@ function DashboardContent() {
                 </div>
 
                 {/* Math Topic Progress */}
-                <MathTopicProgress gradeLevel={(profile.gradeLevel as any) || 'elementary'} />
+                <MathTopicProgress
+                  gradeLevel={(profile.gradeLevel as any) || 'elementary'}
+                  topics={learningStats?.math?.detailed?.chapters}
+                />
 
                 {/* Weakness Analysis */}
                 <WeaknessAnalysis

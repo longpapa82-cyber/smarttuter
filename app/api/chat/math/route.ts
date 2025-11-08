@@ -302,15 +302,20 @@ export async function POST(req: NextRequest) {
         // we can potentially answer directly without API call
         const avgConfidence = retrievedContext.content.reduce((sum, c) => sum + (c.confidence ?? 1.0), 0) / retrievedContext.content.length;
 
+        // ✅ P0-2 COMPLETED: RAG Direct re-enabled with Korean content support
+        // High confidence answers can be served directly from verified content
         if (avgConfidence > 0.9 && retrievedContext.content.length >= 2) {
-          // Try to construct answer from RAG content only
-          ragDirectAnswer = `📚 **검증된 교육 자료를 바탕으로 답변드려요:**
+          // Use Korean content if available, fallback to English
+          const contentToUse = retrievedContext.content.map(c => c.contentKo || c.content);
 
-${retrievedContext.content.map(c => c.content).join('\n\n---\n\n')}
+          // Try to construct answer from RAG content only
+          ragDirectAnswer = `📚 **검증된 수학 교육 자료를 바탕으로 답변드려요:**
+
+${contentToUse.join('\n\n---\n\n')}
 
 💡 더 궁금한 점이 있으시면 언제든 질문해주세요!`;
 
-          console.log(`[RAG Direct] High confidence (${avgConfidence.toFixed(2)}) - answering without API`);
+          console.log(`[Math RAG Direct KO] High confidence (${avgConfidence.toFixed(2)}) - answering without API`);
 
           // Cache this RAG-based answer
           responseCache.set(message, 'math', gradeStr, ragDirectAnswer);

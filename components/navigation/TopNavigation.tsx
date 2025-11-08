@@ -51,62 +51,6 @@ function NavItem({ href, icon, label, isActive, onClick }: NavItemProps) {
   );
 }
 
-interface DropdownProps {
-  label: string;
-  icon: React.ReactNode;
-  items: { href: string; label: string; icon: React.ReactNode }[];
-  isActive: boolean;
-}
-
-function NavDropdown({ label, icon, items, isActive }: DropdownProps) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <div className="relative">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`
-          flex items-center gap-2 px-4 py-2 rounded-lg transition-all
-          ${isActive
-            ? 'text-primary-600 bg-primary-50 font-semibold'
-            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-          }
-        `}
-      >
-        {icon}
-        <span className="text-sm font-medium">{label}</span>
-        <ChevronDown
-          className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
-        />
-      </button>
-
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            className="absolute top-full left-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50"
-          >
-            {items.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setIsOpen(false)}
-                className="flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 transition-colors"
-              >
-                {item.icon}
-                <span className="text-sm font-medium">{item.label}</span>
-              </Link>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
 function ProfileDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const { user, signOut, isAuthenticated } = useAuth();
@@ -200,15 +144,12 @@ function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
 
   const mobileNavItems = [
     { href: "/", label: "홈", icon: <Home className="w-5 h-5" /> },
-    { href: "/tutor/english", label: "English", icon: <BookOpen className="w-5 h-5" /> },
-    { href: "/tutor/math", label: "Math", icon: <Calculator className="w-5 h-5" /> },
-    { href: "/tutor/science", label: "Science", icon: <Beaker className="w-5 h-5" /> },
-    { href: "/tutor/social-studies", label: "Social", icon: <Landmark className="w-5 h-5" /> },
+    { href: "/dashboard/english", label: "English", icon: <BookOpen className="w-5 h-5" /> },
+    { href: "/dashboard/math", label: "Math", icon: <Calculator className="w-5 h-5" /> },
+    { href: "/dashboard/science", label: "Science", icon: <Beaker className="w-5 h-5" /> },
+    { href: "/dashboard/social", label: "Social", icon: <Landmark className="w-5 h-5" /> },
+    { href: "/tutor/korean", label: "Korean 📚", icon: <BookOpen className="w-5 h-5" /> },
     { href: "/dashboard", label: "Total DashBoard", icon: <LayoutDashboard className="w-5 h-5" /> },
-    { href: "/dashboard/english", label: "English DashBoard", icon: <BookOpen className="w-5 h-5" /> },
-    { href: "/dashboard/math", label: "Math DashBoard", icon: <Calculator className="w-5 h-5" /> },
-    { href: "/dashboard/science", label: "Science DashBoard", icon: <Beaker className="w-5 h-5" /> },
-    { href: "/dashboard/social", label: "Social DashBoard", icon: <Landmark className="w-5 h-5" /> },
   ];
 
   const handleLogout = () => {
@@ -328,16 +269,6 @@ export function TopNavigation() {
     setMobileMenuOpen(false);
   }, [pathname]);
 
-  const dashboardItems = [
-    { href: "/dashboard", label: "Total DashBoard", icon: <LayoutDashboard className="w-4 h-4" /> },
-    { href: "/dashboard/english", label: "English DashBoard", icon: <BookOpen className="w-4 h-4" /> },
-    { href: "/dashboard/math", label: "Math DashBoard", icon: <Calculator className="w-4 h-4" /> },
-    { href: "/dashboard/science", label: "Science DashBoard", icon: <Beaker className="w-4 h-4" /> },
-    { href: "/dashboard/social", label: "Social DashBoard", icon: <Landmark className="w-4 h-4" /> },
-  ];
-
-  const isDashboardActive = pathname?.startsWith('/dashboard');
-
   return (
     <>
       <nav className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
@@ -364,34 +295,40 @@ export function TopNavigation() {
               {/* Desktop Navigation */}
               <div className="hidden lg:flex items-center gap-2">
                 <NavItem
-                  href="/tutor/english"
+                  href="/dashboard/english"
                   icon={<BookOpen className="w-4 h-4" />}
                   label="English"
-                  isActive={pathname === '/tutor/english'}
+                  isActive={pathname === '/dashboard/english'}
                 />
                 <NavItem
-                  href="/tutor/math"
+                  href="/dashboard/math"
                   icon={<Calculator className="w-4 h-4" />}
                   label="Math"
-                  isActive={pathname === '/tutor/math'}
+                  isActive={pathname === '/dashboard/math'}
                 />
                 <NavItem
-                  href="/tutor/science"
+                  href="/dashboard/science"
                   icon={<Beaker className="w-4 h-4" />}
                   label="Science"
-                  isActive={pathname === '/tutor/science'}
+                  isActive={pathname === '/dashboard/science'}
                 />
                 <NavItem
-                  href="/tutor/social-studies"
+                  href="/dashboard/social"
                   icon={<Landmark className="w-4 h-4" />}
                   label="Social"
-                  isActive={pathname === '/tutor/social-studies'}
+                  isActive={pathname === '/dashboard/social'}
                 />
-                <NavDropdown
-                  label="DashBoard"
+                <NavItem
+                  href="/tutor/korean"
+                  icon={<BookOpen className="w-4 h-4" />}
+                  label="Korean 📚"
+                  isActive={pathname === '/tutor/korean'}
+                />
+                <NavItem
+                  href="/dashboard"
                   icon={<LayoutDashboard className="w-4 h-4" />}
-                  items={dashboardItems}
-                  isActive={isDashboardActive}
+                  label="Total DashBoard"
+                  isActive={pathname === '/dashboard'}
                 />
               </div>
             </div>

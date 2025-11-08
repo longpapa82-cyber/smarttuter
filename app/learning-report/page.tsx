@@ -29,6 +29,9 @@ import {
   type WeeklyReport,
   type LearningSession,
 } from '@/lib/utils/learningData';
+import { StudyTimeChart } from '@/components/reports/StudyTimeChart';
+import { PerformanceTrendChart } from '@/components/reports/PerformanceTrendChart';
+import { SubjectDistributionChart } from '@/components/reports/SubjectDistributionChart';
 
 export default function LearningReportPage() {
   const router = useRouter();
@@ -210,6 +213,7 @@ export default function LearningReportPage() {
                 report={weeklyReport}
                 formatMinutes={formatMinutes}
                 formatDate={formatDate}
+                sessions={allSessions}
               />
             )}
           </div>
@@ -366,13 +370,31 @@ function WeeklyReportView({
   report,
   formatMinutes,
   formatDate,
+  sessions,
 }: {
   report: WeeklyReport;
   formatMinutes: (minutes: number) => string;
   formatDate: (date: string) => string;
+  sessions: LearningSession[];
 }) {
+  // Filter sessions for the last 7 days
+  const weekSessions = sessions.filter((s) => {
+    const sessionDate = new Date(s.date);
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    return sessionDate >= weekAgo;
+  });
+
   return (
     <div className="space-y-6">
+      {/* Interactive Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <StudyTimeChart sessions={weekSessions} days={7} />
+        <SubjectDistributionChart sessions={weekSessions} />
+      </div>
+
+      <PerformanceTrendChart sessions={weekSessions} days={7} />
+
       {/* Weekly Summary */}
       <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
         <div className="flex items-center justify-between mb-6">

@@ -4,8 +4,15 @@ import { motion } from "framer-motion";
 import { Calculator } from "lucide-react";
 import type { GradeLevel } from "@/types/tutor";
 
+interface TopicData {
+  name: string;
+  progress: number;
+  status?: 'completed' | 'in_progress' | 'not_started';
+}
+
 interface MathTopicProgressProps {
   gradeLevel: GradeLevel;
+  topics?: TopicData[]; // Optional: real data from Redis
   className?: string;
 }
 
@@ -35,15 +42,30 @@ const MASTERY_COLORS = {
   mastered: { bg: 'bg-blue-100', border: 'border-blue-300', text: 'text-blue-700' },
 };
 
-export function MathTopicProgress({ gradeLevel, className = '' }: MathTopicProgressProps) {
+export function MathTopicProgress({ gradeLevel, topics, className = '' }: MathTopicProgressProps) {
   const config = TOPIC_CONFIG[gradeLevel];
 
-  // Mock progress data
-  const topicProgress = config.topics.map((topic, idx) => ({
-    name: topic,
-    progress: Math.random() * 100,
-    mastery: ['low', 'medium', 'high', 'mastered'][Math.floor(Math.random() * 4)] as keyof typeof MASTERY_COLORS,
-  }));
+  // Use real data if available, otherwise show default topics with 0% progress
+  const topicProgress = topics && topics.length > 0
+    ? topics.map(topic => {
+        // Determine mastery level based on progress
+        const mastery =
+          topic.progress >= 90 ? 'mastered' :
+          topic.progress >= 70 ? 'high' :
+          topic.progress >= 40 ? 'medium' :
+          'low';
+
+        return {
+          name: topic.name,
+          progress: topic.progress,
+          mastery: mastery as keyof typeof MASTERY_COLORS,
+        };
+      })
+    : config.topics.map(topic => ({
+        name: topic,
+        progress: 0,
+        mastery: 'low' as keyof typeof MASTERY_COLORS,
+      }));
 
   return (
     <motion.div
