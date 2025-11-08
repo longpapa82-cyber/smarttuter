@@ -14,11 +14,22 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.email) {
+    // Check for session and user identifier (email or id)
+    if (!session?.user) {
       return createErrorResponse('인증이 필요합니다', 401, 'UNAUTHORIZED');
     }
 
-    const user = await dbUser.findByEmail(session.user.email);
+    // Use email as primary identifier, fallback to user ID
+    const userId = session.user.email || session.user.id;
+
+    if (!userId) {
+      return createErrorResponse('사용자 식별자를 찾을 수 없습니다', 401, 'NO_USER_ID');
+    }
+
+    // Find user by email or ID
+    const user = session.user.email
+      ? await dbUser.findByEmail(session.user.email)
+      : await dbUser.findById(session.user.id!);
 
     if (!user) {
       return createErrorResponse('사용자를 찾을 수 없습니다', 404, 'USER_NOT_FOUND');
@@ -47,11 +58,22 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.email) {
+    // Check for session and user identifier (email or id)
+    if (!session?.user) {
       return createErrorResponse('인증이 필요합니다', 401, 'UNAUTHORIZED');
     }
 
-    const user = await dbUser.findByEmail(session.user.email);
+    // Use email as primary identifier, fallback to user ID
+    const userId = session.user.email || session.user.id;
+
+    if (!userId) {
+      return createErrorResponse('사용자 식별자를 찾을 수 없습니다', 401, 'NO_USER_ID');
+    }
+
+    // Find user by email or ID
+    const user = session.user.email
+      ? await dbUser.findByEmail(session.user.email)
+      : await dbUser.findById(session.user.id!);
 
     if (!user) {
       return createErrorResponse('사용자를 찾을 수 없습니다', 404, 'USER_NOT_FOUND');
@@ -136,11 +158,22 @@ export async function PATCH(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.email) {
+    // Check for session and user identifier (email or id)
+    if (!session?.user) {
       return createErrorResponse('인증이 필요합니다', 401, 'UNAUTHORIZED');
     }
 
-    const user = await dbUser.findByEmail(session.user.email);
+    // Use email as primary identifier, fallback to user ID
+    const userId = session.user.email || session.user.id;
+
+    if (!userId) {
+      return createErrorResponse('사용자 식별자를 찾을 수 없습니다', 401, 'NO_USER_ID');
+    }
+
+    // Find user by email or ID
+    const user = session.user.email
+      ? await dbUser.findByEmail(session.user.email)
+      : await dbUser.findById(session.user.id!);
 
     if (!user) {
       return createErrorResponse('사용자를 찾을 수 없습니다', 404, 'USER_NOT_FOUND');

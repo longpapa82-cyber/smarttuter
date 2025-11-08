@@ -28,6 +28,19 @@ export const authOptions: NextAuthOptions = {
     KakaoProvider({
       clientId: process.env.KAKAO_CLIENT_ID || '',
       clientSecret: process.env.KAKAO_CLIENT_SECRET || '',
+      authorization: {
+        params: {
+          scope: 'profile_nickname account_email',
+        },
+      },
+      profile(profile) {
+        return {
+          id: profile.id.toString(),
+          name: profile.kakao_account?.profile?.nickname || profile.properties?.nickname || 'Kakao User',
+          email: profile.kakao_account?.email || `kakao_${profile.id}@kakao.temp`,
+          image: profile.kakao_account?.profile?.profile_image_url || profile.properties?.profile_image || null,
+        };
+      },
     }),
 
     // Email/Password Credentials
