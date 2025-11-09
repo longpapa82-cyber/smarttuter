@@ -53,3 +53,10 @@ sentry.properties
 # Vercel setup files (may contain secrets)
 .vercel-env-setup.md
 vertex-ai-key.json
+
+# Deployment temporary files
+.vercel-redeploy
+deployment.log
+nohup.out
+scripts/force-vercel-redeploy.sh
+scripts/wait-and-deploy.sh
