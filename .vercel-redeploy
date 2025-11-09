@@ -1,0 +1,12 @@
+# Vercel Redeploy Trigger
+# This file is used to trigger a new deployment on Vercel
+# Last updated: 2025-11-09 - Kakao OAuth fix
+
+Deployment trigger for environment variable updates:
+- NEXTAUTH_URL updated to https://aipark.vercel.app
+- KAKAO_CLIENT_ID and KAKAO_CLIENT_SECRET configured
+- All Redirect URIs registered in Kakao Console
+
+Changes:
+- Fixed Kakao OAuth login loop issue
+- Updated environment variables for production
