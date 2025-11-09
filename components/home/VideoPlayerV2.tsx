@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { Play, Pause, Volume2, VolumeX, SkipForward } from 'lucide-react';
 
 interface VideoState {
@@ -39,6 +39,30 @@ export function VideoPlayer({
     hasError: false,
   });
 
+  // Toggle functions with useCallback
+  const togglePlay = useCallback(() => {
+    if (videoRef.current) {
+      if (state.isPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+    }
+  }, [state.isPlaying]);
+
+  const toggleMute = useCallback(() => {
+    if (videoRef.current) {
+      const newMuted = !state.isMuted;
+      videoRef.current.muted = newMuted;
+      setState(prev => ({ ...prev, isMuted: newMuted }));
+
+      // 사용자 선호도 저장
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('aipark_video_muted', String(newMuted));
+      }
+    }
+  }, [state.isMuted]);
+
   // 자동 재생 시도
   useEffect(() => {
     if (autoPlay && videoRef.current) {
@@ -76,30 +100,7 @@ export function VideoPlayer({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [state.isPlaying, state.isMuted]);
-
-  const togglePlay = () => {
-    if (videoRef.current) {
-      if (state.isPlaying) {
-        videoRef.current.pause();
-      } else {
-        videoRef.current.play();
-      }
-    }
-  };
-
-  const toggleMute = () => {
-    if (videoRef.current) {
-      const newMuted = !state.isMuted;
-      videoRef.current.muted = newMuted;
-      setState(prev => ({ ...prev, isMuted: newMuted }));
-
-      // 사용자 선호도 저장
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('aipark_video_muted', String(newMuted));
-      }
-    }
-  };
+  }, [togglePlay, toggleMute]);
 
   const skipVideo = () => {
     // 다음 섹션으로 스크롤
@@ -216,15 +217,6 @@ export function VideoPlayer({
           </button>
         </div>
       </div>
-
-      {/* Top-right Skip Button - Always Visible */}
-      <button
-        onClick={skipVideo}
-        className="absolute top-4 right-4 sm:top-6 sm:right-6 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-black/50 backdrop-blur-md hover:bg-black/70 text-white text-xs sm:text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-white"
-        aria-label="영상 건너뛰기"
-      >
-        건너뛰기 →
-      </button>
 
       {/* Screen Reader Status */}
       <div className="sr-only" role="status" aria-live="polite">

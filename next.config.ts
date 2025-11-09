@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
 
+  // Disable Next.js loading indicator (Next.js 15 syntax)
+  devIndicators: false,
+
   // Image optimization
   images: {
     formats: ['image/avif', 'image/webp'],

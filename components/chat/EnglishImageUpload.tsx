@@ -161,7 +161,7 @@ export default function EnglishImageUpload({ onTextRecognized, onClose }: Englis
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           className={`
-            relative border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer
+            relative border-2 border-dashed rounded-2xl p-4 sm:p-6 md:p-8 lg:p-10 text-center cursor-pointer
             transition-all duration-300
             ${
               isDragging

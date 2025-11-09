@@ -8,7 +8,7 @@
 // ============================================================================
 
 export type GradeLevel = 'elementary' | 'middle' | 'high' | 'university';
-export type Subject = 'english' | 'math' | 'science' | 'social-studies';
+export type Subject = 'english' | 'math' | 'science' | 'social-studies' | 'korean';
 export type CEFRLevel = 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
 
 export interface GradeLevelDetail {
@@ -282,6 +282,7 @@ export interface GuidanceMessageTemplate {
   tooAdvanced: {
     math: string[];
     english: string[];
+    korean?: string[];
   };
   outOfExpertise?: {
     honest: string[];

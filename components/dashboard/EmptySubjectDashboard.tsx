@@ -3,9 +3,11 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { BookOpen, Calculator, Beaker, Globe } from "lucide-react";
+import { BetaBadge } from "@/components/common/BetaBadge";
 
 interface EmptySubjectDashboardProps {
   subject: 'english' | 'math' | 'science' | 'social';
+  showBeta?: boolean;
 }
 
 const subjectConfig = {
@@ -43,9 +45,11 @@ const subjectConfig = {
   },
 };
 
-export function EmptySubjectDashboard({ subject }: EmptySubjectDashboardProps) {
+export function EmptySubjectDashboard({ subject, showBeta = false }: EmptySubjectDashboardProps) {
   const config = subjectConfig[subject];
   const Icon = config.icon;
+
+  const subjectName = subject.charAt(0).toUpperCase() + subject.slice(1);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
@@ -56,6 +60,13 @@ export function EmptySubjectDashboard({ subject }: EmptySubjectDashboardProps) {
         className="max-w-2xl w-full"
       >
         <div className="bg-white rounded-3xl shadow-2xl p-12 text-center">
+          {/* Beta Badge */}
+          {showBeta && (
+            <div className="flex justify-center mb-4">
+              <BetaBadge subject={subjectName} />
+            </div>
+          )}
+
           {/* Icon */}
           <motion.div
             initial={{ scale: 0 }}

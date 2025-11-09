@@ -30,7 +30,8 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.KAKAO_CLIENT_SECRET || '',
       authorization: {
         params: {
-          scope: 'profile_nickname account_email',
+          // Only request nickname (email requires additional consent configuration)
+          scope: 'profile_nickname',
         },
       },
       profile(profile) {

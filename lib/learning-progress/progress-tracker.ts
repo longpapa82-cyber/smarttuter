@@ -379,12 +379,14 @@ export async function getLearningProgressSummary(
     const englishMastery = allMastery.filter(m => m.subject === 'english');
     const scienceMastery = allMastery.filter(m => m.subject === 'science');
     const socialStudiesMastery = allMastery.filter(m => m.subject === 'social-studies');
+    const koreanMastery = allMastery.filter(m => m.subject === 'korean');
 
     // 4. Calculate subject progress
     const mathProgress = calculateSubjectProgress(mathMastery, 'math', userId);
     const englishProgress = calculateSubjectProgress(englishMastery, 'english', userId);
     const scienceProgress = calculateSubjectProgress(scienceMastery, 'science', userId);
     const socialStudiesProgress = calculateSubjectProgress(socialStudiesMastery, 'social-studies', userId);
+    const koreanProgress = calculateSubjectProgress(koreanMastery, 'korean', userId);
 
     // 5. Calculate overall metrics
     const totalConcepts = allMastery.length;
@@ -408,6 +410,7 @@ export async function getLearningProgressSummary(
         math: mathProgress,
         science: scienceProgress,
         'social-studies': socialStudiesProgress,
+        korean: koreanProgress,
       },
       overallProgress,
       totalStudyTime,

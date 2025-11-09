@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Calculator, ArrowRight, TrendingUp, Target, Award, BarChart3, BookOpen, Gamepad2, FileEdit } from "lucide-react";
 import { useUserStore } from "@/lib/gamification/store";
 import { EmptySubjectDashboard } from "@/components/dashboard/EmptySubjectDashboard";
+import { BetaBadge } from "@/components/common/BetaBadge";
 import type { MathDetailedStats } from "@/types/learning-stats";
 
 function LoadingSpinner() {
@@ -73,14 +74,17 @@ function MathDashboardContent() {
   // Data exists - render dashboard with real data
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-rose-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12 py-6 sm:py-8 lg:py-10">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <Calculator className="w-8 h-8 text-purple-600" />
-            Math DashBoard
-          </h1>
-          <p className="mt-2 text-gray-600">
+          <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+              <Calculator className="w-8 h-8 text-purple-600" />
+              Math DashBoard
+            </h1>
+            <BetaBadge subject="Math" />
+          </div>
+          <p className="text-gray-600">
             {profile?.username || '학습자'}님의 수학 학습 현황과 추천 활동
           </p>
         </div>
@@ -224,7 +228,7 @@ function MathDashboardContent() {
               보조 학습 (수학)
             </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
               {/* Math Visualization */}
               <Link href="/math-visualization">
                 <motion.div

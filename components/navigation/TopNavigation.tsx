@@ -30,23 +30,30 @@ interface NavItemProps {
   label: string;
   isActive: boolean;
   onClick?: () => void;
+  showBeta?: boolean;
 }
 
-function NavItem({ href, icon, label, isActive, onClick }: NavItemProps) {
+function NavItem({ href, icon, label, isActive, onClick, showBeta = false }: NavItemProps) {
   return (
     <Link
       href={href}
       onClick={onClick}
       className={`
-        flex items-center gap-2 px-4 py-2 rounded-lg transition-all
+        flex items-center gap-2 px-4 py-2 rounded-lg transition-all touch-manipulation
+        min-h-[44px] active:scale-95
         ${isActive
           ? 'text-primary-600 bg-primary-50 font-semibold'
-          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 active:bg-gray-100'
         }
       `}
     >
       {icon}
       <span className="text-sm font-medium">{label}</span>
+      {showBeta && (
+        <span className="px-1.5 py-0.5 text-[10px] font-bold bg-gradient-to-r from-primary-500 to-accent-500 text-white rounded uppercase tracking-wide">
+          Beta
+        </span>
+      )}
     </Link>
   );
 }
@@ -88,7 +95,8 @@ function ProfileDropdown() {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+        className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 active:bg-gray-100 transition-all touch-manipulation min-h-[44px]"
+        aria-label="프로필 메뉴 열기"
       >
         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-400 to-accent-400 flex items-center justify-center text-white font-semibold text-sm">
           {profile?.avatar || user?.name?.[0] || '🎓'}
@@ -125,7 +133,8 @@ function ProfileDropdown() {
             <div className="border-t border-gray-100 mt-2 pt-2">
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-3 px-4 py-2.5 text-red-600 hover:bg-red-50 transition-colors w-full"
+                className="flex items-center gap-3 px-4 py-2.5 text-red-600 hover:bg-red-50 active:bg-red-100 transition-all touch-manipulation w-full min-h-[44px]"
+                aria-label="로그아웃"
               >
                 <LogOut className="w-4 h-4" />
                 <span className="text-sm font-medium">로그아웃</span>
@@ -188,7 +197,8 @@ function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
                 </Link>
                 <button
                   onClick={onClose}
-                  className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                  className="p-2 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition-all touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
+                  aria-label="메뉴 닫기"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -202,10 +212,11 @@ function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
                   href={item.href}
                   onClick={onClose}
                   className={`
-                    flex items-center gap-3 px-4 py-3 rounded-lg transition-all
+                    flex items-center gap-3 px-4 py-3 rounded-lg transition-all touch-manipulation
+                    min-h-[48px] active:scale-[0.98]
                     ${pathname === item.href
                       ? 'bg-primary-50 text-primary-600 font-semibold'
-                      : 'text-gray-700 hover:bg-gray-50'
+                      : 'text-gray-700 hover:bg-gray-50 active:bg-gray-100'
                     }
                   `}
                 >
@@ -221,7 +232,7 @@ function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
                   <Link
                     href="/profile"
                     onClick={onClose}
-                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-all touch-manipulation min-h-[48px]"
                   >
                     <User className="w-5 h-5" />
                     <span>프로필</span>
@@ -229,14 +240,14 @@ function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
                   <Link
                     href="/settings"
                     onClick={onClose}
-                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-all touch-manipulation min-h-[48px]"
                   >
                     <Settings className="w-5 h-5" />
                     <span>설정</span>
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors w-full"
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 active:bg-red-100 transition-all touch-manipulation w-full min-h-[48px]"
                   >
                     <LogOut className="w-5 h-5" />
                     <span>로그아웃</span>
@@ -279,7 +290,8 @@ export function TopNavigation() {
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setMobileMenuOpen(true)}
-                className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                className="lg:hidden p-2 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition-all touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
+                aria-label="메뉴 열기"
               >
                 <Menu className="w-6 h-6 text-gray-600" />
               </button>
@@ -336,7 +348,10 @@ export function TopNavigation() {
             {/* Right: Notifications + Profile */}
             <div className="flex items-center gap-3">
               {/* Notifications */}
-              <button className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors">
+              <button
+                className="relative p-2 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition-all touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
+                aria-label="알림"
+              >
                 <Bell className="w-5 h-5 text-gray-600" />
                 {notifications > 0 && (
                   <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />

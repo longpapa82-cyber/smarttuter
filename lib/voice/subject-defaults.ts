@@ -118,15 +118,16 @@ export const SOCIAL_STUDIES_TUTOR_DEFAULTS: VoiceSettingsConfig = {
 
 /**
  * 과목별 기본 설정 가져오기
- * @param subject 과목 ('english' | 'math' | 'science' | 'social-studies')
+ * @param subject 과목 ('english' | 'math' | 'science' | 'social-studies' | 'korean')
  * @returns 해당 과목에 최적화된 음성 설정
  */
 export function getSubjectDefaultSettings(
-  subject: 'english' | 'math' | 'science' | 'social-studies'
+  subject: 'english' | 'math' | 'science' | 'social-studies' | 'korean'
 ): VoiceSettingsConfig {
   if (subject === 'math') return MATH_TUTOR_DEFAULTS;
   if (subject === 'science') return SCIENCE_TUTOR_DEFAULTS;
   if (subject === 'social-studies') return SOCIAL_STUDIES_TUTOR_DEFAULTS;
+  if (subject === 'korean') return MATH_TUTOR_DEFAULTS; // Korean uses similar settings to Math
   return ENGLISH_TUTOR_DEFAULTS;
 }
 
@@ -136,10 +137,11 @@ export function getSubjectDefaultSettings(
  * - 영어: 수동 시작 (사용자가 버튼 클릭)
  * - 과학: 수동 시작 (사용자가 버튼 클릭)
  * - 사회: 수동 시작 (사용자가 버튼 클릭)
+ * - 국어: 수동 시작 (사용자가 버튼 클릭)
  *
  * 사용자 요청에 따라 모든 과목에서 음성인식 수동 시작으로 변경
  */
-export function shouldAutoStartVoice(subject: 'english' | 'math' | 'science' | 'social-studies'): boolean {
+export function shouldAutoStartVoice(subject: 'english' | 'math' | 'science' | 'social-studies' | 'korean'): boolean {
   return false; // 모든 과목에서 수동 시작
 }
 

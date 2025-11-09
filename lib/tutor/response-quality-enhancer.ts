@@ -104,6 +104,21 @@ const LEARNING_KEYWORDS = {
     'democracy', 'system', 'constitution', 'market', 'trade',
     'map', 'climate', 'population', 'city', 'nation', 'world',
   ],
+
+  korean: [
+    // 한글
+    '국어', '한글', '문법', '맞춤법', '띄어쓰기', '문장', '단어', '어휘',
+    '문학', '시', '소설', '수필', '설명문', '논설문', '기행문', '전기문',
+    '읽기', '쓰기', '말하기', '듣기', '표현', '이해', '감상', '비평',
+    '주제', '소재', '인물', '배경', '구성', '표현기법', '수사법', '비유',
+    '품사', '조사', '어미', '접사', '음운', '형태', '통사', '의미',
+
+    // 영어
+    'korean', 'hangul', 'grammar', 'spelling', 'spacing', 'sentence',
+    'word', 'vocabulary', 'literature', 'poem', 'novel', 'essay',
+    'reading', 'writing', 'speaking', 'listening', 'expression',
+    'comprehension', 'appreciation', 'criticism', 'theme', 'character',
+  ],
 };
 
 /**

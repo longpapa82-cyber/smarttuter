@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import Link from 'next/link';
 import { Send, Volume2, VolumeX, Settings as SettingsIcon, Sparkles, Image as ImageIcon, Mic, TrendingUp, Theater, LineChart, Pencil } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { VoiceButton } from '@/components/voice/VoiceButton';
@@ -13,6 +14,7 @@ import { usePuterTTS } from '@/hooks/usePuterTTS';
 import { startSession, updateCurrentSession, endSession } from '@/lib/utils/learningData';
 import { TypingEffect } from '@/components/ui/TypingEffect';
 import Avatar from '@/components/ui/Avatar';
+import { BetaBadge } from '@/components/common/BetaBadge';
 import EnglishImageUpload from '@/components/chat/EnglishImageUpload';
 import MathImageUpload from '@/components/math/MathImageUpload';
 import MathHandwritingCanvas from '@/components/math/MathHandwritingCanvas';
@@ -43,7 +45,7 @@ interface Message {
 }
 
 interface SimpleChatInterfaceProps {
-  subject: 'english' | 'math' | 'science' | 'social-studies';
+  subject: 'english' | 'math' | 'science' | 'social-studies' | 'korean';
   gradeLevel: string;
 }
 
@@ -51,6 +53,23 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
   // Profile images
   const TUTOR_PROFILE_IMAGE = '/avatars/tutor-profile.jpg';
   const USER_PROFILE_IMAGE = '/avatars/user-profile.jpg';
+
+  // Subject name mapping
+  const subjectNameKorean: Record<string, string> = {
+    'english': '영어',
+    'math': '수학',
+    'science': '과학',
+    'social-studies': '사회',
+    'korean': '국어'
+  };
+
+  const subjectNameEnglish: Record<string, string> = {
+    'english': 'English',
+    'math': 'Math',
+    'science': 'Science',
+    'social-studies': 'Social',
+    'korean': 'Korean'
+  };
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -133,7 +152,11 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
   const isTTSSupported = voiceSettings.ttsEngine === 'puter' ? puterTTS.isReady : browserTTS.isSupported;
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',  // Prevent excessive scrolling that hides header
+      inline: 'nearest'
+    });
   };
 
   // Start session on mount and add welcome message
@@ -239,7 +262,12 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
   }, [messages]);
 
   useEffect(() => {
-    scrollToBottom();
+    // Skip auto-scroll for initial welcome message (1 message total)
+    // This prevents the header from being hidden on page load
+    if (messages.length > 1) {
+      scrollToBottom();
+    }
+
     // DEBUG: Log messages array to check for duplicates
     console.log('📋 Current messages array:', {
       totalCount: messages.length,
@@ -707,14 +735,17 @@ ${scenario.initialMessage}`,
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
       {/* Header */}
-      <div className="bg-white/80 backdrop-blur-md border-b border-gray-200 p-4">
+      <div className="bg-white/80 backdrop-blur-md border-b border-gray-200 p-4 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              {subject === 'english' ? '영어' : '수학'} 튜터
-            </h1>
+            <div className="flex items-center gap-3 mb-1">
+              <h1 className="text-2xl font-bold text-gray-900">
+                {subjectNameKorean[subject]} 튜터
+              </h1>
+              <BetaBadge subject={subjectNameEnglish[subject]} size="compact" />
+            </div>
             <p className="text-sm text-gray-600">학년: {gradeLevel}</p>
           </div>
 
@@ -724,7 +755,7 @@ ${scenario.initialMessage}`,
             {subject === 'english' && (
               <button
                 onClick={() => setIsRoleplayOpen(true)}
-                className="p-2 rounded-lg bg-pink-100 text-pink-600 hover:bg-pink-200 transition-colors"
+                className="min-w-[48px] min-h-[48px] p-3 rounded-lg bg-pink-100 text-pink-600 hover:bg-pink-200 active:bg-pink-300 focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 transition-all touch-manipulation flex items-center justify-center"
                 title="롤플레이"
                 aria-label="Start roleplay scenario"
               >
@@ -736,7 +767,7 @@ ${scenario.initialMessage}`,
             {subject === 'english' && (
               <button
                 onClick={handleLevelAssessment}
-                className="p-2 rounded-lg bg-purple-100 text-purple-600 hover:bg-purple-200 transition-colors"
+                className="min-w-[48px] min-h-[48px] p-3 rounded-lg bg-purple-100 text-purple-600 hover:bg-purple-200 active:bg-purple-300 focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 transition-all touch-manipulation flex items-center justify-center"
                 title="레벨 평가"
                 aria-label="Check English level"
               >
@@ -751,7 +782,7 @@ ${scenario.initialMessage}`,
                   setPronunciationText('Hello, how are you today?');
                   setIsPronunciationOpen(true);
                 }}
-                className="p-2 rounded-lg bg-green-100 text-green-600 hover:bg-green-200 transition-colors"
+                className="min-w-[48px] min-h-[48px] p-3 rounded-lg bg-green-100 text-green-600 hover:bg-green-200 active:bg-green-300 focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 transition-all touch-manipulation flex items-center justify-center"
                 title="발음 연습"
                 aria-label="Open pronunciation practice"
               >
@@ -766,7 +797,7 @@ ${scenario.initialMessage}`,
                   setMathGraphType('quadratic');
                   setIsMathGraphOpen(true);
                 }}
-                className="p-2 rounded-lg bg-cyan-100 text-cyan-600 hover:bg-cyan-200 transition-colors"
+                className="min-w-[48px] min-h-[48px] p-3 rounded-lg bg-cyan-100 text-cyan-600 hover:bg-cyan-200 active:bg-cyan-300 focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 transition-all touch-manipulation flex items-center justify-center"
                 title="인터랙티브 그래프"
                 aria-label="Open interactive math graph"
               >
@@ -780,10 +811,10 @@ ${scenario.initialMessage}`,
                   setIsTTSEnabled(!isTTSEnabled);
                   if (isTTSEnabled) stop();
                 }}
-                className={`p-2 rounded-lg transition-colors ${
+                className={`min-w-[48px] min-h-[48px] p-3 rounded-lg transition-all touch-manipulation flex items-center justify-center focus-visible:ring-2 focus-visible:ring-offset-2 ${
                   isTTSEnabled
-                    ? 'bg-blue-100 text-blue-600 hover:bg-blue-200'
-                    : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                    ? 'bg-blue-100 text-blue-600 hover:bg-blue-200 active:bg-blue-300 focus-visible:ring-blue-500'
+                    : 'bg-gray-100 text-gray-400 hover:bg-gray-200 active:bg-gray-300 focus-visible:ring-gray-500'
                 }`}
                 title={isTTSEnabled ? 'TTS 끄기' : 'TTS 켜기'}
                 aria-label={isTTSEnabled ? 'Disable text-to-speech' : 'Enable text-to-speech'}
@@ -852,7 +883,7 @@ ${scenario.initialMessage}`,
                     initial={message.role === 'assistant' ? { x: -10 } : { x: 10 }}
                     animate={{ x: 0 }}
                     transition={{ duration: 0.3, ease: 'easeOut' }}
-                    className={`max-w-[calc(100%-64px)] rounded-2xl px-4 py-3 ${
+                    className={`max-w-[95%] sm:max-w-[90%] md:max-w-[85%] lg:max-w-[80%] xl:max-w-[calc(100%-64px)] rounded-2xl px-3 sm:px-4 py-2 sm:py-3 ${
                       message.role === 'user'
                         ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md'
                         : 'bg-white text-gray-900 shadow-md border border-gray-100'
@@ -1081,6 +1112,11 @@ ${scenario.initialMessage}`,
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="메시지를 입력하거나 음성으로 말하세요..."
+              inputMode="text"
+              autoComplete="off"
+              autoCorrect="on"
+              autoCapitalize="sentences"
+              enterKeyHint="send"
               className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-400"
               disabled={isLoading}
             />
@@ -1089,7 +1125,7 @@ ${scenario.initialMessage}`,
             <button
               type="submit"
               disabled={isLoading || !input.trim()}
-              className="px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="min-w-[48px] min-h-[48px] px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 active:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all touch-manipulation flex items-center justify-center"
             >
               <Send className="w-5 h-5" />
             </button>
@@ -1118,41 +1154,51 @@ ${scenario.initialMessage}`,
               <h4 className="font-semibold mb-3 text-sm">서비스</h4>
               <ul className="space-y-2 text-gray-400 text-sm">
                 <li>
-                  <a className="hover:text-white transition-colors" href="/tutor/english">
+                  <a className="hover:text-white transition-colors" href="/dashboard/english">
                     English
                   </a>
                 </li>
                 <li>
-                  <a className="hover:text-white transition-colors" href="/tutor/math">
+                  <a className="hover:text-white transition-colors" href="/dashboard/math">
                     Math
                   </a>
                 </li>
                 <li>
-                  <a className="hover:text-white transition-colors" href="/analytics">
-                    학습 리포트
+                  <a className="hover:text-white transition-colors" href="/tutor/korean">
+                    Korean 📚
+                  </a>
+                </li>
+                <li>
+                  <a className="hover:text-white transition-colors" href="/dashboard/science">
+                    Science
+                  </a>
+                </li>
+                <li>
+                  <a className="hover:text-white transition-colors" href="/dashboard/social">
+                    Social
                   </a>
                 </li>
               </ul>
             </div>
 
-            {/* Company */}
+            {/* Dashboard */}
             <div>
-              <h4 className="font-semibold mb-3 text-sm">회사</h4>
+              <h4 className="font-semibold mb-3 text-sm">대시보드</h4>
               <ul className="space-y-2 text-gray-400 text-sm">
                 <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    소개
+                  <a className="hover:text-white transition-colors" href="/dashboard">
+                    전체 대시보드
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    블로그
+                  <a className="hover:text-white transition-colors" href="/learning-report">
+                    학습 리포트
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    채용
-                  </a>
+                  <Link className="hover:text-white transition-colors" href="/">
+                    홈으로
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -1162,19 +1208,19 @@ ${scenario.initialMessage}`,
               <h4 className="font-semibold mb-3 text-sm">지원</h4>
               <ul className="space-y-2 text-gray-400 text-sm">
                 <li>
-                  <a href="#" className="hover:text-white transition-colors">
+                  <a className="hover:text-white transition-colors" href="/onboarding/quick">
+                    퀵 온보딩
+                  </a>
+                </li>
+                <li>
+                  <Link className="hover:text-white transition-colors" href="/">
                     도움말
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    문의
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
+                  <Link className="hover:text-white transition-colors" href="/">
                     개인정보처리방침
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>

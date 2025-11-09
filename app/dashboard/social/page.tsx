@@ -3,5 +3,5 @@
 import { EmptySubjectDashboard } from "@/components/dashboard/EmptySubjectDashboard";
 
 export default function SocialDashboardPage() {
-  return <EmptySubjectDashboard subject="social" />;
+  return <EmptySubjectDashboard subject="social" showBeta={true} />;
 }

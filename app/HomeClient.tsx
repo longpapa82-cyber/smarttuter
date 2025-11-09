@@ -32,17 +32,19 @@ export function HomeClient() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50">
-      {/* NEW: Hero Video Section */}
-      <HeroVideoSection />
+      <main>
+        {/* NEW: Hero Video Section */}
+        <HeroVideoSection />
 
-      {/* Features Section */}
-      <FeaturesSection />
+        {/* Features Section */}
+        <FeaturesSection />
 
-      {/* How It Works Section */}
-      <HowItWorksSection />
+        {/* How It Works Section */}
+        <HowItWorksSection />
 
-      {/* AI Differentiation Section */}
-      <AIDifferentiationSection />
+        {/* AI Differentiation Section */}
+        <AIDifferentiationSection />
+      </main>
 
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-12 px-4">
@@ -61,29 +63,75 @@ export function HomeClient() {
             </div>
 
             <div>
-              <h4 className="font-semibold mb-4">서비스</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link href="/tutor/english" className="hover:text-white">English</Link></li>
-                <li><Link href="/tutor/math" className="hover:text-white">Math</Link></li>
-                <li><Link href="/analytics" className="hover:text-white">학습 리포트</Link></li>
+              <h4 className="font-semibold mb-4 text-sm">서비스</h4>
+              <ul className="space-y-2 text-gray-400 text-sm">
+                <li>
+                  <Link href="/dashboard/english" className="hover:text-white transition-colors">
+                    English
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/dashboard/math" className="hover:text-white transition-colors">
+                    Math
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/tutor/korean" className="hover:text-white transition-colors">
+                    Korean 📚
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/dashboard/science" className="hover:text-white transition-colors">
+                    Science
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/dashboard/social" className="hover:text-white transition-colors">
+                    Social
+                  </Link>
+                </li>
               </ul>
             </div>
 
             <div>
-              <h4 className="font-semibold mb-4">회사</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white">소개</a></li>
-                <li><a href="#" className="hover:text-white">블로그</a></li>
-                <li><a href="#" className="hover:text-white">채용</a></li>
+              <h4 className="font-semibold mb-4 text-sm">대시보드</h4>
+              <ul className="space-y-2 text-gray-400 text-sm">
+                <li>
+                  <Link href="/dashboard" className="hover:text-white transition-colors">
+                    전체 대시보드
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/learning-report" className="hover:text-white transition-colors">
+                    학습 리포트
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/" className="hover:text-white transition-colors">
+                    홈으로
+                  </Link>
+                </li>
               </ul>
             </div>
 
             <div>
-              <h4 className="font-semibold mb-4">지원</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white">도움말</a></li>
-                <li><a href="#" className="hover:text-white">문의</a></li>
-                <li><a href="#" className="hover:text-white">개인정보처리방침</a></li>
+              <h4 className="font-semibold mb-4 text-sm">지원</h4>
+              <ul className="space-y-2 text-gray-400 text-sm">
+                <li>
+                  <Link href="/onboarding/quick" className="hover:text-white transition-colors">
+                    퀵 온보딩
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/" className="hover:text-white transition-colors">
+                    도움말
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/" className="hover:text-white transition-colors">
+                    개인정보처리방침
+                  </Link>
+                </li>
               </ul>
             </div>
           </div>

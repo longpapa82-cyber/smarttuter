@@ -24,6 +24,32 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Hide Next.js loading indicator - all possible selectors */
+[data-next-mark-loading],
+[data-next-mark-loading="false"],
+[data-next-mark-loading="true"],
+svg[data-next-mark-loading],
+div[data-next-mark-loading],
+button[data-nextjs-dev-tools-button] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  position: absolute !important;
+  left: -9999px !important;
+}
+
+/* Hide Next.js dev indicator by position */
+#__next-build-watcher,
+div[data-nextjs-dev-tools],
+div[aria-label*="Next.js"],
+button[aria-label*="Open Next.js Dev Tools"] {
+  display: none !important;
+  visibility: hidden !important;
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;

@@ -9,7 +9,7 @@ interface AvatarProps {
   alt: string;
   size?: 'sm' | 'md' | 'lg';
   type?: 'tutor' | 'user';
-  subject?: 'english' | 'math' | 'science' | 'social-studies';
+  subject?: 'english' | 'math' | 'science' | 'social-studies' | 'korean';
   showOnline?: boolean;
 }
 
@@ -18,6 +18,7 @@ const TUTOR_AVATARS = {
   english: '/avatars/tutor-english.png',
   science: '/avatars/tutor-science.png',
   'social-studies': '/avatars/tutor-social.png',
+  korean: '/avatars/tutor-korean.png',
 };
 
 export default function Avatar({

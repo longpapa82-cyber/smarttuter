@@ -111,7 +111,7 @@ export class ContentLevelDetector {
     }
 
     if (subject === 'korean') {
-      return this.getKoreanForbiddenKeywords(gradeLevel, gradeLevelDetail);
+      return this.getKoreanForbiddenKeywords(gradeLevel || 'elementary', gradeLevelDetail);
     }
 
     return [];

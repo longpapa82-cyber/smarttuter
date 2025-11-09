@@ -12,7 +12,39 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 // Check if Vertex AI is enabled
 const isVertexAIEnabled = process.env.ENABLE_VERTEX_AI === 'true';
 
-// Grade level specific prompts
+// Grade level specific prompts - 더 세밀한 학년별 맞춤 지도
+const getDetailedGradePrompt = (gradeLevel: string, gradeLevelDetail: number | undefined): string => {
+  const schoolLevel = gradeLevelMap[gradeLevel] || 'elementary';
+
+  // 초등학교는 학년별로 더 세밀하게 구분
+  if (schoolLevel === 'elementary' && gradeLevelDetail) {
+    if (gradeLevelDetail <= 2) {
+      return `초등 저학년(${gradeLevelDetail}학년) 수준에 맞게:
+- 한글 자모음을 정확히 읽을 수 있는 수준
+- 한 문장은 5-7단어 이내로 짧게
+- 어려운 한자어나 추상적 개념 사용 금지
+- 그림이나 이모지로 설명 보조 (예: 🌳, 🏠, 🐶)
+- "~해요", "~이에요" 같은 친근한 반말 사용
+- 예시는 일상생활에서 볼 수 있는 것으로만`;
+    } else if (gradeLevelDetail <= 4) {
+      return `초등 중학년(${gradeLevelDetail}학년) 수준에 맞게:
+- 기본 문법 용어 사용 가능 (주어, 서술어, 띄어쓰기)
+- 한 문장은 8-12단어 정도
+- 간단한 설명과 함께 개념 제시
+- 학교에서 배우는 내용과 연결
+- "~입니다", "~합니다" 존댓말과 "~해요" 반말 적절히 사용`;
+    } else {
+      return `초등 고학년(${gradeLevelDetail}학년) 수준에 맞게:
+- 문법 용어 자유롭게 사용 (품사, 문장성분, 수식어 등)
+- 문학 작품 예시 활용 가능
+- 개념 설명 후 심화 내용 추가
+- 중학교 준비를 위한 용어 미리 소개`;
+    }
+  }
+
+  return gradeLevelPrompts[schoolLevel] || gradeLevelPrompts.elementary;
+};
+
 const gradeLevelPrompts: Record<string, string> = {
   elementary: "초등학생 수준에 맞게 쉬운 단어와 짧은 문장으로",
   middle: "중학생 수준에 맞게 문법 용어를 포함하여 명확하게",
@@ -155,10 +187,11 @@ ${retrievedContext.content.map(c => c.contentKo || c.content).join('\n\n---\n\n'
     }
 
     // 🚀 Phase 4: Gemini AI 호출
+    const detailedGradePrompt = getDetailedGradePrompt(gradeLevel, undefined);
     const systemPrompt = `당신은 학생들의 국어 학습을 돕는 친절한 국어 튜터입니다.
 
 **역할**:
-- ${gradeLevelPrompts[gradeLevelMap[gradeLevel] || 'elementary']} 설명합니다
+- ${detailedGradePrompt} 설명합니다
 - 맞춤법, 띄어쓰기, 문법을 정확하게 가르칩니다
 - 문학 작품은 작품의 배경과 함께 설명합니다
 - 학생이 이해할 때까지 친절하게 반복 설명합니다

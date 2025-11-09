@@ -89,7 +89,7 @@ export function LoginClient() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
+        className="w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl"
       >
         <div className="bg-white rounded-2xl shadow-2xl p-8">
           {/* Header */}
@@ -137,6 +137,9 @@ export function LoginClient() {
                   id="email"
                   type="email"
                   required
+                  inputMode="email"
+                  autoComplete="email"
+                  enterKeyHint="next"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-all text-gray-900"
@@ -156,6 +159,8 @@ export function LoginClient() {
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   required
+                  autoComplete="current-password"
+                  enterKeyHint="done"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-all text-gray-900"

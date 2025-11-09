@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { StoreProvider } from "@/components/providers/StoreProvider";
@@ -15,7 +15,16 @@ const inter = Inter({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-inter",
+  preload: true,
+  adjustFontFallback: true,
 });
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
@@ -94,6 +103,35 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         {/* Puter.js - Async loading to comply with Next.js best practices */}
         <script src="https://js.puter.com/v2/" async></script>
+        {/* Hide Next.js dev indicator */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                function removeNextDevIndicator() {
+                  const selectors = [
+                    '[data-next-mark-loading]',
+                    '[data-nextjs-dev-tools]',
+                    '[data-nextjs-dev-tools-button]',
+                    'button[aria-label*="Next.js"]',
+                    'div[aria-label*="Next.js"]',
+                    '#__next-build-watcher'
+                  ];
+                  selectors.forEach(selector => {
+                    const elements = document.querySelectorAll(selector);
+                    elements.forEach(el => el.remove());
+                  });
+                }
+                if (document.readyState === 'loading') {
+                  document.addEventListener('DOMContentLoaded', removeNextDevIndicator);
+                } else {
+                  removeNextDevIndicator();
+                }
+                setInterval(removeNextDevIndicator, 1000);
+              })();
+            `,
+          }}
+        />
       </head>
       <body className="antialiased">
         <ErrorBoundary>

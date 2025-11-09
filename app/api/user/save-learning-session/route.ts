@@ -7,7 +7,7 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 interface LearningSessionData {
-  subject: 'english' | 'math' | 'science' | 'social-studies';
+  subject: 'english' | 'math' | 'science' | 'social-studies' | 'korean';
   gradeLevel: string;
   duration: number; // minutes
   messageCount: number;

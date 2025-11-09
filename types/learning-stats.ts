@@ -147,9 +147,38 @@ export interface SocialStats extends SubjectStats {
   detailed?: SocialDetailedStats;
 }
 
+// 국어 상세 통계
+export interface KoreanDetailedStats {
+  lastSession: LastSession | null;
+  nextTopic: string | null;
+  gradeProgress: {
+    level: string;
+    progress: number;
+  } | null;
+  monthlyHours: {
+    current: number;
+    target: number;
+  };
+  topics: {
+    name: string;
+    progress: number;
+    status: 'completed' | 'in_progress' | 'not_started';
+  }[];
+  analysis: LearningAnalysis;
+}
+
+export interface KoreanStats extends SubjectStats {
+  gradeLevel: string | null;
+  completedUnits: number;
+  totalUnits: number;
+  currentTopic: string | null;
+  detailed?: KoreanDetailedStats;
+}
+
 export interface LearningStats {
   english: EnglishStats;
   math: MathStats;
   science: ScienceStats;
   social: SocialStats;
+  korean: KoreanStats;
 }

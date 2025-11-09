@@ -124,7 +124,7 @@ export default function MathImageUpload({ onTextRecognized, onClose }: MathImage
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 md:p-6"
       onClick={onClose}
     >
       <motion.div
@@ -202,7 +202,7 @@ export default function MathImageUpload({ onTextRecognized, onClose }: MathImage
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6">
+        <div className="p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6">
           {/* Handwriting Mode */}
           {activeTab === 'handwriting' && (
             <MathHandwritingCanvas onTextRecognized={onTextRecognized} onClose={onClose} />

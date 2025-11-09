@@ -12,6 +12,18 @@ import { createErrorResponse } from '@/lib/api/error-handler';
 import { getAuthDb } from '@/lib/auth/db-redis';
 import type { LearningStats, EnglishDetailedStats, MathDetailedStats, ScienceDetailedStats, SocialDetailedStats } from '@/types/learning-stats';
 
+// Helper function to safely parse Redis data (can be string or already parsed object)
+function parseRedisData(data: any) {
+  if (!data) return null;
+  if (typeof data === 'object') return data;
+  try {
+    return JSON.parse(data);
+  } catch (e) {
+    console.error('Failed to parse Redis data:', e);
+    return null;
+  }
+}
+
 // GET /api/user/learning-stats - Get user's learning statistics
 // GET /api/user/learning-stats?subject=english - Get detailed English stats
 // GET /api/user/learning-stats?subject=math - Get detailed Math stats
@@ -39,7 +51,7 @@ export async function GET(request: NextRequest) {
       // Redis에서 영어 학습 데이터 조회
       const learningKey = `user:${userId}:learning:english`;
       const learningData = await db.get(learningKey);
-      const parsedData = learningData ? JSON.parse(String(learningData)) : null;
+      const parsedData = parseRedisData(learningData);
       const englishStats: EnglishDetailedStats = {
         lastSession: parsedData?.lastSession || null,
         nextTopic: parsedData?.nextTopic || null,
@@ -76,7 +88,7 @@ export async function GET(request: NextRequest) {
       // Redis에서 수학 학습 데이터 조회
       const learningKey = `user:${userId}:learning:math`;
       const learningData = await db.get(learningKey);
-      const parsedData = learningData ? JSON.parse(String(learningData)) : null;
+      const parsedData = parseRedisData(learningData);
 
       const mathStats: MathDetailedStats = {
         lastSession: parsedData?.lastSession || null,
@@ -107,7 +119,7 @@ export async function GET(request: NextRequest) {
       // Redis에서 과학 학습 데이터 조회
       const learningKey = `user:${userId}:learning:science`;
       const learningData = await db.get(learningKey);
-      const parsedData = learningData ? JSON.parse(String(learningData)) : null;
+      const parsedData = parseRedisData(learningData);
 
       const scienceStats: ScienceDetailedStats = {
         lastSession: parsedData?.lastSession || null,
@@ -138,7 +150,7 @@ export async function GET(request: NextRequest) {
       // Redis에서 사회 학습 데이터 조회
       const learningKey = `user:${userId}:learning:social-studies`;
       const learningData = await db.get(learningKey);
-      const parsedData = learningData ? JSON.parse(String(learningData)) : null;
+      const parsedData = parseRedisData(learningData);
 
       const socialStats: SocialDetailedStats = {
         lastSession: parsedData?.lastSession || null,
@@ -171,18 +183,21 @@ export async function GET(request: NextRequest) {
     const mathKey = `user:${userId}:learning:math`;
     const scienceKey = `user:${userId}:learning:science`;
     const socialKey = `user:${userId}:learning:social-studies`;
+    const koreanKey = `user:${userId}:learning:korean`;
 
-    const [englishData, mathData, scienceData, socialData] = await Promise.all([
+    const [englishData, mathData, scienceData, socialData, koreanData] = await Promise.all([
       db.get(englishKey),
       db.get(mathKey),
       db.get(scienceKey),
       db.get(socialKey),
+      db.get(koreanKey),
     ]);
 
-    const englishParsed = englishData ? JSON.parse(String(englishData)) : null;
-    const mathParsed = mathData ? JSON.parse(String(mathData)) : null;
-    const scienceParsed = scienceData ? JSON.parse(String(scienceData)) : null;
-    const socialParsed = socialData ? JSON.parse(String(socialData)) : null;
+    const englishParsed = parseRedisData(englishData);
+    const mathParsed = parseRedisData(mathData);
+    const scienceParsed = parseRedisData(scienceData);
+    const socialParsed = parseRedisData(socialData);
+    const koreanParsed = parseRedisData(koreanData);
 
     const stats: LearningStats = {
       english: {
@@ -291,6 +306,32 @@ export async function GET(request: NextRequest) {
             aiRecommendation: socialParsed?.totalSessions > 0
               ? '지속적인 학습으로 사회 이해력이 향상되고 있습니다!'
               : '사회 튜터와 학습을 시작하여 진행도 분석을 받아보세요!',
+          },
+        }
+      },
+      korean: {
+        weeklyHours: Math.round((koreanParsed?.totalHours || 0) * 10) / 10,
+        weeklyGoal: 12,
+        hasData: koreanParsed?.totalSessions > 0,
+        gradeLevel: koreanParsed?.gradeLevel || null,
+        completedUnits: koreanParsed?.topics?.filter((t: any) => t.status === 'completed').length || 0,
+        totalUnits: koreanParsed?.topics?.length || 0,
+        currentTopic: koreanParsed?.lastSession?.topic || null,
+        detailed: {
+          lastSession: koreanParsed?.lastSession || null,
+          nextTopic: koreanParsed?.nextTopic || null,
+          gradeProgress: koreanParsed?.gradeProgress || null,
+          monthlyHours: {
+            current: Math.round((koreanParsed?.totalHours || 0) * 10) / 10,
+            target: 12
+          },
+          topics: koreanParsed?.topics || [],
+          analysis: {
+            strengths: koreanParsed?.strengths || [],
+            weaknesses: koreanParsed?.weaknesses || [],
+            aiRecommendation: koreanParsed?.totalSessions > 0
+              ? '지속적인 학습으로 국어 실력이 향상되고 있습니다!'
+              : '국어 튜터와 학습을 시작하여 진행도 분석을 받아보세요!',
           },
         }
       }

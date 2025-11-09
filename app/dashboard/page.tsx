@@ -5,7 +5,21 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { BookOpen, Calculator, Beaker, Landmark, BarChart3, Trophy, Target, TrendingUp, Award, Clock, Star, Zap, Home, Flame } from "lucide-react";
+import { BookOpen, Calculator, Beaker, Landmark, BarChart3, Trophy, Target, TrendingUp, Award, Clock, Star, Zap, Home, Flame, BookMarked } from "lucide-react";
+
+// Helper function to convert gradeLevel to Korean
+function getKoreanGradeLevel(gradeLevel: string | undefined | null): string {
+  if (!gradeLevel) return 'N/A';
+
+  const gradeMap: Record<string, string> = {
+    'elementary': '초등',
+    'middle': '중등',
+    'high': '고등',
+    'university': '대학',
+  };
+
+  return gradeMap[gradeLevel.toLowerCase()] || gradeLevel;
+}
 import { useUserStore } from "@/lib/gamification/store";
 import { useAdaptiveLearning } from "@/lib/adaptive-learning/store";
 import { useInteractiveLearning } from "@/lib/interactive-learning/store";
@@ -227,7 +241,7 @@ function DashboardContent() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50">
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12 py-6 sm:py-8 lg:py-10">
         <div className="space-y-8">
           {/* P0: Guest Mode Banner */}
           {isGuestMode && (
@@ -261,7 +275,7 @@ function DashboardContent() {
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent">
                 Total DashBoard
               </h1>
               <p className="mt-2 text-gray-600">
@@ -285,7 +299,7 @@ function DashboardContent() {
           </div>
 
           {/* All Subjects Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-fr">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 md:gap-6 xl:gap-8" style={{ gridAutoRows: '480px' }}>
             {/* English Summary - Show empty state if no data */}
             {!learningStats?.english?.hasData ? (
               <EmptyLearningCard
@@ -301,31 +315,32 @@ function DashboardContent() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4 }}
                   whileHover={{ scale: 1.02, y: -4 }}
-                  className="h-full bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600 rounded-2xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all flex flex-col"
+                  className="h-full bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600 rounded-2xl p-4 sm:p-5 md:p-6 lg:p-7 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all flex flex-col justify-between"
                 >
                   <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center flex-shrink-0">
                         <BookOpen className="w-6 h-6" />
                       </div>
-                      <div>
-                        <h3 className="text-xl font-bold">영어 학습</h3>
-                        <p className="text-sm text-white/80">English Dashboard</p>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-lg sm:text-xl font-bold truncate">영어 학습</h3>
+                        <p className="text-xs sm:text-sm text-white/80 truncate">English Dashboard</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold">{learningStats.english.cefrLevel || 'N/A'}</div>
-                      <div className="text-xs text-white/80">CEFR Level</div>
+                    <div className="text-right flex-shrink-0 ml-2">
+                      <div className="text-lg sm:text-xl md:text-2xl font-bold whitespace-nowrap">{learningStats.english.cefrLevel || 'N/A'}</div>
+                      <div className="text-xs text-white/80 whitespace-nowrap">CEFR Level</div>
                     </div>
                   </div>
-                  <div className="space-y-3">
+                  <div className="flex-1 min-h-0">
+                  <div className="h-[180px] space-y-3">
                     <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm text-white/80 flex items-center gap-2">
-                          <Clock className="w-4 h-4" />
-                          이번 주 학습 시간
+                      <div className="flex items-center justify-between mb-2 gap-2">
+                        <span className="text-xs sm:text-sm text-white/80 flex items-center gap-1.5 flex-shrink-0">
+                          <Clock className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                          <span className="truncate">이번 주 학습 시간</span>
                         </span>
-                        <span className="text-sm font-semibold flex items-center gap-1">
+                        <span className="text-xs sm:text-sm font-semibold flex items-center gap-0.5 sm:gap-1 flex-shrink-0 whitespace-nowrap">
                           <AnimatedCounter value={learningStats.english.weeklyHours} duration={1.5} delay={0.4} className="font-bold" />
                           <span className="text-white/60">/</span>
                           <span>{learningStats.english.weeklyGoal}시간</span>
@@ -395,6 +410,18 @@ function DashboardContent() {
                       </div>
                     </div>
                   </div>
+                  </div>
+
+                  {/* 학습 시작하기 버튼 */}
+                  <div className="mt-auto pt-4 border-t border-white/20">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="w-full bg-white/20 hover:bg-white/30 backdrop-blur-sm px-6 py-3 rounded-full font-semibold transition-all"
+                    >
+                      영어 학습 시작하기 →
+                    </motion.button>
+                  </div>
                 </motion.div>
               </Link>
             )}
@@ -414,31 +441,32 @@ function DashboardContent() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: 0.1 }}
                   whileHover={{ scale: 1.02, y: -4 }}
-                  className="h-full bg-gradient-to-br from-purple-500 via-pink-600 to-rose-600 rounded-2xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all flex flex-col"
+                  className="h-full bg-gradient-to-br from-purple-500 via-pink-600 to-rose-600 rounded-2xl p-4 sm:p-5 md:p-6 lg:p-7 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all flex flex-col justify-between"
                 >
                   <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center flex-shrink-0">
                         <Calculator className="w-6 h-6" />
                       </div>
-                      <div>
-                        <h3 className="text-xl font-bold">수학 학습</h3>
-                        <p className="text-sm text-white/80">Math Dashboard</p>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-lg sm:text-xl font-bold truncate">수학 학습</h3>
+                        <p className="text-xs sm:text-sm text-white/80 truncate">Math Dashboard</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold">{learningStats.math.gradeLevel || profile?.gradeLevel || 'N/A'}</div>
-                      <div className="text-xs text-white/80">Grade Level</div>
+                    <div className="text-right flex-shrink-0 ml-2">
+                      <div className="text-lg sm:text-xl md:text-2xl font-bold whitespace-nowrap">{getKoreanGradeLevel(learningStats.math.gradeLevel || profile?.gradeLevel)}</div>
+                      <div className="text-xs text-white/80 whitespace-nowrap">학년</div>
                     </div>
                   </div>
-                  <div className="space-y-3">
+                  <div className="flex-1 min-h-0">
+                  <div className="h-[180px] space-y-3">
                     <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm text-white/80 flex items-center gap-2">
-                          <Clock className="w-4 h-4" />
-                          이번 주 학습 시간
+                      <div className="flex items-center justify-between mb-2 gap-2">
+                        <span className="text-xs sm:text-sm text-white/80 flex items-center gap-1.5 flex-shrink-0">
+                          <Clock className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                          <span className="truncate">이번 주 학습 시간</span>
                         </span>
-                        <span className="text-sm font-semibold flex items-center gap-1">
+                        <span className="text-xs sm:text-sm font-semibold flex items-center gap-0.5 sm:gap-1 flex-shrink-0 whitespace-nowrap">
                           <AnimatedCounter value={learningStats.math.weeklyHours} duration={1.5} delay={0.5} className="font-bold" />
                           <span className="text-white/60">/</span>
                           <span>{learningStats.math.weeklyGoal}시간</span>
@@ -465,43 +493,52 @@ function DashboardContent() {
                         </motion.div>
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-2 pt-2">
-                      <motion.div
-                        className="bg-white/10 rounded-lg p-3 backdrop-blur-sm"
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.7, duration: 0.3 }}
-                      >
-                        <div className="flex items-center gap-1.5 text-xs text-white/70 mb-1.5">
-                          <PulseIndicator color="green" size="sm" />
-                          완료한 단원
-                        </div>
-                        <div className="text-lg font-bold flex items-baseline gap-1">
-                          <AnimatedCounter value={learningStats.math.completedUnits || 0} duration={1.2} delay={0.9} />
-                          <span className="text-sm text-white/60">/</span>
-                          <span className="text-sm">{learningStats.math.totalUnits || 0}</span>
-                        </div>
-                      </motion.div>
-                      <motion.div
-                        className="bg-white/10 rounded-lg p-3 backdrop-blur-sm"
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.8, duration: 0.3 }}
-                      >
-                        <div className="flex items-center gap-1.5 text-xs text-white/70 mb-1.5">
-                          <PulseIndicator color="blue" size="sm" />
-                          학습 중
-                        </div>
-                        <motion.div
-                          className="text-sm font-bold"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          transition={{ delay: 1, duration: 0.3 }}
-                        >
-                          {learningStats.math.currentTopic || '주제 없음'}
-                        </motion.div>
-                      </motion.div>
+                    <div className="grid grid-cols-4 gap-2 pt-2">
+                      <div className="text-center">
+                        <div className="text-xs text-white/70 mb-1">완료</div>
+                        <AnimatedCounter
+                          value={learningStats.math.completedUnits || 0}
+                          duration={1.5}
+                          delay={0.6}
+                          className="text-lg font-bold"
+                        />
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xs text-white/70 mb-1">총</div>
+                        <AnimatedCounter
+                          value={learningStats.math.totalUnits || 0}
+                          duration={1.5}
+                          delay={0.7}
+                          className="text-lg font-bold"
+                        />
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xs text-white/70 mb-1">진도율</div>
+                        <AnimatedCounter
+                          value={learningStats.math.totalUnits > 0 ? Math.round((learningStats.math.completedUnits / learningStats.math.totalUnits) * 100) : 0}
+                          suffix="%"
+                          duration={1.5}
+                          delay={0.8}
+                          className="text-lg font-bold"
+                        />
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xs text-white/70 mb-1">레벨</div>
+                        <div className="text-lg font-bold">{learningStats.math.gradeLevel || '초등 1학년'}</div>
+                      </div>
                     </div>
+                  </div>
+                  </div>
+
+                  {/* 학습 시작하기 버튼 */}
+                  <div className="mt-auto pt-4 border-t border-white/20">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="w-full bg-white/20 hover:bg-white/30 backdrop-blur-sm px-6 py-3 rounded-full font-semibold transition-all"
+                    >
+                      수학 학습 시작하기 →
+                    </motion.button>
                   </div>
                 </motion.div>
               </Link>
@@ -522,31 +559,32 @@ function DashboardContent() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: 0.2 }}
                   whileHover={{ scale: 1.02, y: -4 }}
-                  className="h-full bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-600 rounded-2xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all flex flex-col"
+                  className="h-full bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-600 rounded-2xl p-4 sm:p-5 md:p-6 lg:p-7 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all flex flex-col justify-between"
                 >
                   <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center flex-shrink-0">
                         <Beaker className="w-6 h-6" />
                       </div>
-                      <div>
-                        <h3 className="text-xl font-bold">과학 학습</h3>
-                        <p className="text-sm text-white/80">Science Dashboard</p>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-lg sm:text-xl font-bold truncate">과학 학습</h3>
+                        <p className="text-xs sm:text-sm text-white/80 truncate">Science Dashboard</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold">{learningStats.science.gradeLevel || profile?.gradeLevel || 'N/A'}</div>
-                      <div className="text-xs text-white/80">Grade Level</div>
+                    <div className="text-right flex-shrink-0 ml-2">
+                      <div className="text-lg sm:text-xl md:text-2xl font-bold whitespace-nowrap">{getKoreanGradeLevel(learningStats.science.gradeLevel || profile?.gradeLevel)}</div>
+                      <div className="text-xs text-white/80 whitespace-nowrap">학년</div>
                     </div>
                   </div>
-                  <div className="space-y-3">
+                  <div className="flex-1 min-h-0">
+                  <div className="h-[180px] space-y-3">
                     <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm text-white/80 flex items-center gap-2">
-                          <Clock className="w-4 h-4" />
-                          이번 주 학습 시간
+                      <div className="flex items-center justify-between mb-2 gap-2">
+                        <span className="text-xs sm:text-sm text-white/80 flex items-center gap-1.5 flex-shrink-0">
+                          <Clock className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                          <span className="truncate">이번 주 학습 시간</span>
                         </span>
-                        <span className="text-sm font-semibold flex items-center gap-1">
+                        <span className="text-xs sm:text-sm font-semibold flex items-center gap-0.5 sm:gap-1 flex-shrink-0 whitespace-nowrap">
                           <AnimatedCounter value={learningStats.science.weeklyHours} duration={1.5} delay={0.6} className="font-bold" />
                           <span className="text-white/60">/</span>
                           <span>{learningStats.science.weeklyGoal}시간</span>
@@ -611,6 +649,18 @@ function DashboardContent() {
                       </motion.div>
                     </div>
                   </div>
+                  </div>
+
+                  {/* 학습 시작하기 버튼 */}
+                  <div className="mt-auto pt-4 border-t border-white/20">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="w-full bg-white/20 hover:bg-white/30 backdrop-blur-sm px-6 py-3 rounded-full font-semibold transition-all"
+                    >
+                      과학 학습 시작하기 →
+                    </motion.button>
+                  </div>
                 </motion.div>
               </Link>
             )}
@@ -630,31 +680,32 @@ function DashboardContent() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: 0.3 }}
                   whileHover={{ scale: 1.02, y: -4 }}
-                  className="h-full bg-gradient-to-br from-orange-500 via-amber-600 to-yellow-600 rounded-2xl p-6 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all flex flex-col"
+                  className="h-full bg-gradient-to-br from-orange-500 via-amber-600 to-yellow-600 rounded-2xl p-4 sm:p-5 md:p-6 lg:p-7 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all flex flex-col justify-between"
                 >
                   <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center flex-shrink-0">
                         <Landmark className="w-6 h-6" />
                       </div>
-                      <div>
-                        <h3 className="text-xl font-bold">사회 학습</h3>
-                        <p className="text-sm text-white/80">Social Studies Dashboard</p>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-lg sm:text-xl font-bold truncate">사회 학습</h3>
+                        <p className="text-xs sm:text-sm text-white/80 truncate">Social Studies Dashboard</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold">{learningStats.social.gradeLevel || profile?.gradeLevel || 'N/A'}</div>
-                      <div className="text-xs text-white/80">Grade Level</div>
+                    <div className="text-right flex-shrink-0 ml-2">
+                      <div className="text-lg sm:text-xl md:text-2xl font-bold whitespace-nowrap">{getKoreanGradeLevel(learningStats.social.gradeLevel || profile?.gradeLevel)}</div>
+                      <div className="text-xs text-white/80 whitespace-nowrap">학년</div>
                     </div>
                   </div>
-                  <div className="space-y-3">
+                  <div className="flex-1 min-h-0">
+                  <div className="h-[180px] space-y-3">
                     <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm text-white/80 flex items-center gap-2">
-                          <Clock className="w-4 h-4" />
-                          이번 주 학습 시간
+                      <div className="flex items-center justify-between mb-2 gap-2">
+                        <span className="text-xs sm:text-sm text-white/80 flex items-center gap-1.5 flex-shrink-0">
+                          <Clock className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                          <span className="truncate">이번 주 학습 시간</span>
                         </span>
-                        <span className="text-sm font-semibold flex items-center gap-1">
+                        <span className="text-xs sm:text-sm font-semibold flex items-center gap-0.5 sm:gap-1 flex-shrink-0 whitespace-nowrap">
                           <AnimatedCounter value={learningStats.social.weeklyHours} duration={1.5} delay={0.7} className="font-bold" />
                           <span className="text-white/60">/</span>
                           <span>{learningStats.social.weeklyGoal}시간</span>
@@ -719,9 +770,29 @@ function DashboardContent() {
                       </motion.div>
                     </div>
                   </div>
+                  </div>
+
+                  {/* 학습 시작하기 버튼 */}
+                  <div className="mt-auto pt-4 border-t border-white/20">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="w-full bg-white/20 hover:bg-white/30 backdrop-blur-sm px-6 py-3 rounded-full font-semibold transition-all"
+                    >
+                      사회 학습 시작하기 →
+                    </motion.button>
+                  </div>
                 </motion.div>
               </Link>
             )}
+
+            {/* Korean Summary - Show empty state for now */}
+            <EmptyLearningCard
+              subject="국어"
+              subjectKey="korean"
+              icon={<BookMarked className="w-6 h-6" />}
+              gradient="from-pink-500 via-rose-600 to-red-600"
+            />
           </div>
 
           {/* Quick Start Section - Continue Learning */}
@@ -730,11 +801,11 @@ function DashboardContent() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.2 }}
           >
-            <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Zap className="w-6 h-6 text-yellow-500" />
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" />
               빠른 시작
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 auto-rows-fr">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4 md:gap-6 lg:gap-8 auto-rows-fr">
               {/* Continue English */}
               <Link href="/tutor/english" className="h-full">
                 <motion.div
@@ -985,7 +1056,7 @@ function DashboardContent() {
               <Target className="w-6 h-6 text-purple-600" />
               보조 학습 활동
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
               {/* Microlearning */}
               <Link href="/microlearning">
                 <motion.div
@@ -1060,9 +1131,6 @@ function DashboardContent() {
                   </div>
                   <h4 className="text-lg font-bold mb-2">발음 연습</h4>
                   <p className="text-sm text-white/80">AI 발음 분석</p>
-                  <div className="mt-3 text-xs bg-white/20 rounded-full px-3 py-1 inline-block">
-                    Phase 10 🎤
-                  </div>
                 </motion.div>
               </Link>
 
@@ -1078,9 +1146,6 @@ function DashboardContent() {
                   </div>
                   <h4 className="text-lg font-bold mb-2">수학 시각화</h4>
                   <p className="text-sm text-white/80">인터랙티브 그래프</p>
-                  <div className="mt-3 text-xs bg-white/20 rounded-full px-3 py-1 inline-block">
-                    Phase 10 📊
-                  </div>
                 </motion.div>
               </Link>
             </div>
@@ -1092,7 +1157,7 @@ function DashboardContent() {
               <TrendingUp className="w-6 h-6 text-blue-600" />
               학습 분석 및 리포트
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
               {/* Learning Report */}
               <Link href="/learning-report">
                 <motion.div
@@ -1152,6 +1217,127 @@ function DashboardContent() {
           </div>
         </div>
       </main>
+
+      {/* Footer */}
+      <footer className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-white py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {/* 브랜드 */}
+            <div>
+              <h3 className="text-xl font-bold mb-4 bg-gradient-to-r from-primary-400 to-accent-400 bg-clip-text text-transparent">
+                AI Park
+              </h3>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                AI 기반 개인 맞춤형 학습 플랫폼으로 영어, 수학, 과학, 사회, 국어를 효과적으로 학습하세요.
+              </p>
+              <div className="mt-4 flex gap-3">
+                <a href="#" className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 transition-colors flex items-center justify-center">
+                  <span className="text-sm">📘</span>
+                </a>
+                <a href="#" className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 transition-colors flex items-center justify-center">
+                  <span className="text-sm">🐦</span>
+                </a>
+                <a href="#" className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 transition-colors flex items-center justify-center">
+                  <span className="text-sm">📸</span>
+                </a>
+              </div>
+            </div>
+
+            {/* 서비스 */}
+            <div>
+              <h4 className="font-semibold mb-4">서비스</h4>
+              <ul className="space-y-2">
+                <li>
+                  <Link href="/tutor/english" className="text-gray-400 hover:text-white transition-colors text-sm">
+                    영어 튜터
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/tutor/math" className="text-gray-400 hover:text-white transition-colors text-sm">
+                    수학 튜터
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/tutor/science" className="text-gray-400 hover:text-white transition-colors text-sm">
+                    과학 튜터
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/tutor/social-studies" className="text-gray-400 hover:text-white transition-colors text-sm">
+                    사회 튜터
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/tutor/korean" className="text-gray-400 hover:text-white transition-colors text-sm">
+                    국어 튜터
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* 대시보드 */}
+            <div>
+              <h4 className="font-semibold mb-4">대시보드</h4>
+              <ul className="space-y-2">
+                <li>
+                  <Link href="/dashboard" className="text-gray-400 hover:text-white transition-colors text-sm">
+                    전체 대시보드
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/learning-report" className="text-gray-400 hover:text-white transition-colors text-sm">
+                    학습 리포트
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/analytics" className="text-gray-400 hover:text-white transition-colors text-sm">
+                    학습 분석
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/profile" className="text-gray-400 hover:text-white transition-colors text-sm">
+                    프로필 설정
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* 지원 */}
+            <div>
+              <h4 className="font-semibold mb-4">지원</h4>
+              <ul className="space-y-2">
+                <li>
+                  <Link href="/help" className="text-gray-400 hover:text-white transition-colors text-sm">
+                    도움말
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/faq" className="text-gray-400 hover:text-white transition-colors text-sm">
+                    자주 묻는 질문
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/contact" className="text-gray-400 hover:text-white transition-colors text-sm">
+                    문의하기
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/privacy" className="text-gray-400 hover:text-white transition-colors text-sm">
+                    개인정보처리방침
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Copyright */}
+          <div className="mt-8 pt-8 border-t border-gray-700 text-center">
+            <p className="text-gray-400 text-sm">
+              © 2025 AI Park. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

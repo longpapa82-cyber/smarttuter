@@ -2,7 +2,7 @@
 
 export interface LearningSession {
   id: string;
-  subject: "math" | "english" | "science" | "social-studies";
+  subject: "math" | "english" | "science" | "social-studies" | "korean";
   gradeLevel: string;
   startTime: Date;
   endTime: Date;
@@ -46,7 +46,7 @@ const STORAGE_KEYS = {
 
 // 현재 세션 시작
 export function startSession(
-  subject: "english" | "math" | "science" | "social-studies",
+  subject: "english" | "math" | "science" | "social-studies" | "korean",
   gradeLevel: string
 ): string {
   const sessionId = `session_${Date.now()}`;

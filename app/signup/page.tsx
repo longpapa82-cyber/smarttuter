@@ -108,7 +108,7 @@ export default function SignUpPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
+        className="w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl"
       >
         {/* Logo */}
         <div className="text-center mb-8">
@@ -217,6 +217,9 @@ export default function SignUpPage() {
                 <input
                   id="name"
                   type="text"
+                  inputMode="text"
+                  autoComplete="name"
+                  enterKeyHint="next"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none transition-all text-gray-900"
@@ -236,6 +239,9 @@ export default function SignUpPage() {
                   id="email"
                   type="email"
                   required
+                  inputMode="email"
+                  autoComplete="email"
+                  enterKeyHint="next"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none transition-all text-gray-900"
@@ -255,6 +261,8 @@ export default function SignUpPage() {
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   required
+                  autoComplete="new-password"
+                  enterKeyHint="done"
                   value={formData.password}
                   onChange={handlePasswordChange}
                   className="w-full pl-10 pr-12 py-3 border-2 border-gray-200 rounded-xl focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none transition-all text-gray-900"
