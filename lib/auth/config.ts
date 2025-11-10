@@ -94,14 +94,26 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     async signIn({ user, account, profile }) {
-      // For OAuth providers, create user if doesn't exist
-      if (account && account.provider !== 'credentials' && user.email) {
-        const existingUser = await dbUser.findByEmail(user.email);
+      try {
+        console.log('🔐 OAuth signIn callback started:', {
+          provider: account?.provider,
+          userId: user.id,
+          userEmail: user.email
+        });
+
+        // For OAuth providers, create user if doesn't exist
+        if (account && account.provider !== 'credentials') {
+          // Kakao may not provide email, so we use fallback
+          const userEmail = user.email || `${account.provider}_${account.providerAccountId}@temp.user`;
+
+          console.log('📧 Looking up user by email:', userEmail);
+          const existingUser = await dbUser.findByEmail(userEmail);
 
         if (!existingUser) {
+          console.log('👤 Creating new OAuth user:', userEmail);
           // Create new user for OAuth
           const newUser = await dbUser.create({
-            email: user.email,
+            email: userEmail,
             name: user.name || null,
             image: user.image || null,
             password: null, // No password for OAuth users
@@ -110,6 +122,7 @@ export const authOptions: NextAuthOptions = {
             gradeDetail: null, // Will be set during onboarding
             preferredSubjects: null, // Will be set during onboarding
           });
+          console.log('✅ New user created with ID:', newUser.id);
 
           // Create account link
           await dbAccount.create({
@@ -129,6 +142,7 @@ export const authOptions: NextAuthOptions = {
           // Update user id to match database
           user.id = newUser.id;
         } else {
+          console.log('✅ Existing user found:', existingUser.id);
           // Update existing user's OAuth info if needed
           user.id = existingUser.id;
 
@@ -157,7 +171,17 @@ export const authOptions: NextAuthOptions = {
         }
       }
 
-      return true;
+        console.log('✅ OAuth signIn callback completed successfully');
+        return true;
+      } catch (error) {
+        console.error('❌ OAuth signIn callback error:', error);
+        console.error('Error details:', {
+          message: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined
+        });
+        // Return false to prevent sign in and show error
+        return false;
+      }
     },
 
     async jwt({ token, user, account }) {
