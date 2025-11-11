@@ -40,7 +40,13 @@ export function generateEnhancedSystemPrompt(config: SystemPromptConfig): string
     ragContext
   } = config;
 
-  const subjectKo = subject === 'english' ? '영어' : '수학';
+  const subjectKo = {
+    english: '영어',
+    math: '수학',
+    science: '과학',
+    'social-studies': '사회',
+    korean: '국어'
+  }[subject] || '수학';
   const studentGreeting = studentName ? `${studentName}님` : '학생';
 
   // Build prompt sections
@@ -116,37 +122,63 @@ function buildIdentitySection(
  * Section 2: Subject Boundaries
  */
 function buildSubjectBoundariesSection(subject: Subject, subjectKo: string): string {
-  const otherSubject = subject === 'english' ? '수학' : '영어';
-  const otherPark = subject === 'english' ? 'Math Park' : 'English Park';
+  const subjectContent: Record<string, string> = {
+    english: `
+- 문법 (Grammar): 시제, 품사, 문장 구조
+- 어휘 (Vocabulary): 단어 의미, 사용법, 유의어
+- 독해 (Reading): 이해, 분석, 해석
+- 작문 (Writing): 에세이, 문단 구성, 스타일
+- 회화 (Speaking): 표현, 발음, 실용 영어`,
+    math: `
+- 산술 (Arithmetic): 사칙연산, 분수, 소수
+- 대수 (Algebra): 방정식, 함수, 식
+- 기하 (Geometry): 도형, 측정, 증명
+- 미적분 (Calculus): 극한, 미분, 적분
+- 통계 (Statistics): 확률, 데이터 분석
+- 응용 수학: 문제 해결, 수학적 모델링`,
+    science: `
+- 물리 (Physics): 힘, 운동, 에너지, 파동, 전자기
+- 화학 (Chemistry): 원자, 분자, 화학 반응, 물질의 성질
+- 생물 (Biology): 세포, 유전, 생태계, 인체
+- 지구과학 (Earth Science): 지질, 기상, 천문, 환경
+- 과학적 탐구: 실험 설계, 데이터 분석, 과학적 방법`,
+    'social-studies': `
+- 역사 (History): 한국사, 세계사, 역사적 사건
+- 지리 (Geography): 지형, 기후, 인구, 문화 지리
+- 정치 (Politics): 정치 제도, 민주주의, 국제 관계
+- 경제 (Economics): 시장, 무역, 경제 원리
+- 사회 문화: 사회 구조, 문화, 사회 문제`,
+    korean: `
+- 문학 (Literature): 시, 소설, 수필, 희곡 분석
+- 문법 (Grammar): 품사, 문장 성분, 어법
+- 독해 (Reading): 글의 이해와 분석
+- 작문 (Writing): 글쓰기, 논술, 발표
+- 어휘: 단어의 뜻과 쓰임`
+  };
+
+  const otherSubjects: Record<string, string> = {
+    english: '수학, 과학, 사회',
+    math: '영어, 과학, 사회',
+    science: '영어, 수학, 사회',
+    'social-studies': '영어, 수학, 과학',
+    korean: '영어, 수학, 과학, 사회'
+  };
 
   return `# 📚 교과 범위 (Subject Boundaries)
 
 **당신은 ${subjectKo}만 가르칩니다.**
 
 **${subjectKo} 질문 - 답변하세요**:
-${subject === 'english' ? `
-- 문법 (Grammar): 시제, 품사, 문장 구조
-- 어휘 (Vocabulary): 단어 의미, 사용법, 유의어
-- 독해 (Reading): 이해, 분석, 해석
-- 작문 (Writing): 에세이, 문단 구성, 스타일
-- 회화 (Speaking): 표현, 발음, 실용 영어
-` : `
-- 산술 (Arithmetic): 사칙연산, 분수, 소수
-- 대수 (Algebra): 방정식, 함수, 식
-- 기하 (Geometry): 도형, 측정, 증명
-- 미적분 (Calculus): 극한, 미분, 적분
-- 통계 (Statistics): 확률, 데이터 분석
-- 응용 수학: 문제 해결, 수학적 모델링
-`}
+${subjectContent[subject] || subjectContent.math}
 
 **다른 과목 질문 - 정중히 안내하세요**:
-- ${otherSubject} 질문 → "**${otherPark}**에서 도와드릴 수 있어요!"
-- 과학, 사회 등 → "현재는 ${subjectKo}만 지원해요. ${subjectKo} 질문을 해주세요!"
+- 다른 과목 (${otherSubjects[subject]}) → "해당 과목 튜터에서 도와드릴 수 있어요!"
+- 학습 무관 질문 → "저는 ${subjectKo} 전문 튜터예요. ${subjectKo} 질문을 해주세요!"
 
 **안내 원칙**:
 ✅ 친근하고 긍정적인 톤 유지
 ✅ 거절이 아닌 '안내'로 표현
-✅ 대안 제시 (적절한 Park 또는 주제)
+✅ 대안 제시 (적절한 과목 튜터)
 ✅ 학습 동기 유지`;
 }
 
@@ -334,7 +366,7 @@ function buildResponseFormatSection(
 \`\`\`
 
 **사용 조건**:
-- ${subject === 'math' ? '계산/증명 문제만' : '문법 분석만'}
+- ${subject === 'math' ? '계산/증명 문제만' : subject === 'science' ? '실험/계산 문제만' : subject === 'social-studies' ? '역사 연대/지리 분석만' : subject === 'korean' ? '문학 분석만' : '문법 분석만'}
 - 개념 설명엔 사용 금지!`;
   }
 

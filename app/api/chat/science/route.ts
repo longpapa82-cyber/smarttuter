@@ -164,7 +164,7 @@ export async function POST(req: NextRequest) {
     const levelCheck = await contentLevelDetector.detect(
       message,
       userProfile.gradeLevel,
-      'math',
+      'science',
       userProfile.gradeLevelDetail
     );
 
@@ -172,7 +172,7 @@ export async function POST(req: NextRequest) {
     if (levelCheck.outOfScope && levelCheck.confidence > 0.7) {
       const guidanceMsg = getRandomGuidanceMessage(
         userProfile.gradeLevel,
-        'math',
+        'science',
         {
           '학생 이름': userId,
           '현재 학년 적절한 개념': '현재 배우고 있는 내용',
@@ -248,7 +248,7 @@ export async function POST(req: NextRequest) {
 
     // Generate cache key
     const cacheKey = generateCacheKey(
-      'math',
+      'science',
       message,
       gradeLevel,
       conversationHistory || []
@@ -480,7 +480,7 @@ export async function POST(req: NextRequest) {
       });
     }
   } catch (error: unknown) {
-    console.error("Error in math chat API:", error);
+    console.error("Error in science chat API:", error);
 
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error occurred";

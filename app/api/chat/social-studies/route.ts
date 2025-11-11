@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
 
     // 🚀 Phase 1: Check smart cache first (saves 4 API calls if hit)
     const gradeStr = String(userProfile.gradeLevelDetail || '5');
-    const cachedAnswer = responseCache.get(message, 'social', gradeStr);
+    const cachedAnswer = responseCache.get(message, 'social-studies', gradeStr);
 
     if (cachedAnswer) {
       const encoder = new TextEncoder();
@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 🚀 Phase 2: Quick keyword-based classification (no API call)
-    const quickClassification = quickClassify(message, 'social');
+    const quickClassification = quickClassify(message, 'social-studies');
 
     if (quickClassification && !quickClassification.isOnTopic) {
       apiTracker.track('quick-classify-redirect');
@@ -164,7 +164,7 @@ export async function POST(req: NextRequest) {
     const levelCheck = await contentLevelDetector.detect(
       message,
       userProfile.gradeLevel,
-      'math',
+      'social-studies',
       userProfile.gradeLevelDetail
     );
 
@@ -172,7 +172,7 @@ export async function POST(req: NextRequest) {
     if (levelCheck.outOfScope && levelCheck.confidence > 0.7) {
       const guidanceMsg = getRandomGuidanceMessage(
         userProfile.gradeLevel,
-        'math',
+        'social-studies',
         {
           '학생 이름': userId,
           '현재 학년 적절한 개념': '현재 배우고 있는 내용',
@@ -248,7 +248,7 @@ export async function POST(req: NextRequest) {
 
     // Generate cache key
     const cacheKey = generateCacheKey(
-      'math',
+      'social-studies',
       message,
       gradeLevel,
       conversationHistory || []
@@ -374,7 +374,7 @@ export async function POST(req: NextRequest) {
               });
 
               // Smart cache for similarity matching
-              responseCache.set(message, 'social', gradeStr, fullResponse);
+              responseCache.set(message, 'social-studies', gradeStr, fullResponse);
             }
 
             // Track learning event (Phase 8: Progress tracking integration)
@@ -480,7 +480,7 @@ export async function POST(req: NextRequest) {
       });
     }
   } catch (error: unknown) {
-    console.error("Error in math chat API:", error);
+    console.error("Error in social-studies chat API:", error);
 
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error occurred";
