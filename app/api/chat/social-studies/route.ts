@@ -14,8 +14,14 @@ import { retrieveVerifiedContent, formatRetrievedContext } from "@/lib/tutor/rag
 
 import { responseCache } from "@/lib/cache/response-cache";
 import { quickClassify, apiTracker } from "@/lib/cache/api-optimizer";
-// Initialize Gemini client
+import { vertexAIClient } from "@/lib/ai/vertex-client";
+import { intelligentRouter } from "@/lib/ai/intelligent-router";
+
+// Initialize Gemini client (Fallback)
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+
+// Check if Vertex AI is enabled
+const isVertexAIEnabled = process.env.ENABLE_VERTEX_AI === 'true';
 
 // Grade level specific prompts
 const gradeLevelPrompts: Record<string, string> = {
@@ -307,7 +313,29 @@ export async function POST(req: NextRequest) {
       ragContext
     });
 
-    // Prepare conversation for Gemini API with system instruction
+    // Decide which AI service to use
+    let modelTier: 'flash' | 'pro' = 'flash'; // Default to flash
+    let useVertexAI = isVertexAIEnabled;
+
+    // If Vertex AI is enabled, use intelligent router to decide tier
+    if (isVertexAIEnabled) {
+      try {
+        const routingDecision = await intelligentRouter.routeQuestion(
+          message,
+          'social-studies',
+          gradeStr,
+          conversationHistory
+        );
+        modelTier = routingDecision.tier;
+        console.log(`[Intelligent Router] ${routingDecision.model} (${routingDecision.reasoning})`);
+      } catch (error) {
+        console.error('[Router] Failed to route question:', error);
+        // Fallback to flash tier
+        modelTier = 'flash';
+      }
+    }
+
+    // Prepare conversation for Gemini API with system instruction (Fallback)
     const model = genAI.getGenerativeModel({
       model: "gemini-2.0-flash-exp",
       systemInstruction: systemPrompt,  // System prompt는 여기서 한 번만 설정
@@ -336,20 +364,8 @@ export async function POST(req: NextRequest) {
     const encoder = new TextEncoder();
 
     try {
-      // Start chat with history
-      const chat = model.startChat({
-        history: chatHistory,
-        generationConfig: {
-          maxOutputTokens: 2048,
-          temperature: 0.7,
-        },
-      });
-
-      // Send message and get stream (system prompt는 이미 모델에 설정됨)
       // Track API call
       apiTracker.track('chat-social');
-
-      const result = await chat.sendMessageStream(message);
 
       // Create a readable stream for the response
       let fullResponse = ''; // Collect full response for caching
@@ -357,13 +373,58 @@ export async function POST(req: NextRequest) {
       const readableStream = new ReadableStream({
         async start(controller) {
           try {
-            for await (const chunk of result.stream) {
-              const text = chunk.text();
-              if (text) {
-                fullResponse += text; // Accumulate for caching
-                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
+            if (useVertexAI) {
+              // ✅ Use Vertex AI (Unlimited Quota)
+              console.log(`[Vertex AI] Using ${modelTier} tier for response`);
+
+              const prompt = `${systemPrompt}
+
+**대화 내역:**
+${recentHistory.map((msg: { role: string; content: string }) => `${msg.role === 'user' ? '학생' : '튜터'}: ${msg.content}`).join('\n\n')}
+
+**새 질문:**
+학생: ${message}
+
+튜터:`;
+
+              const streamIterator = await vertexAIClient.generateContentStream(
+                prompt,
+                modelTier,
+                {
+                  temperature: 0.7,
+                  maxTokens: 3072,
+                }
+              );
+
+              for await (const text of streamIterator) {
+                if (text) {
+                  fullResponse += text;
+                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
+                }
+              }
+            } else {
+              // ⚠️  Fallback to Gemini API (50/day limit)
+              console.log('[Gemini API] Using fallback (quota limited)');
+
+              const chat = model.startChat({
+                history: chatHistory,
+                generationConfig: {
+                  maxOutputTokens: 2048,
+                  temperature: 0.7,
+                },
+              });
+
+              const result = await chat.sendMessageStream(message);
+
+              for await (const chunk of result.stream) {
+                const text = chunk.text();
+                if (text) {
+                  fullResponse += text;
+                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
+                }
               }
             }
+
             controller.enqueue(encoder.encode("data: [DONE]\n\n"));
             controller.close();
 

@@ -12,6 +12,7 @@
  */
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { vertexAIClient } from '@/lib/ai/vertex-client';
 import { HANDWRITING_PROMPT } from './gemini-vision-handwriting-prompt';
 import { postProcessOCR, getCorrectionSummary, type PostProcessResult } from './ocr-postprocessor';
 
@@ -44,7 +45,16 @@ export async function geminiVisionOCR(imageBase64: string, isHandwriting = false
       ? imageBase64.split(',')[1]
       : imageBase64;
 
-    // Initialize Gemini client
+    // Check if Vertex AI is enabled for unlimited OCR
+    const isVertexAIEnabled = process.env.ENABLE_VERTEX_AI === 'true';
+
+    if (isVertexAIEnabled) {
+      console.log('[Gemini Vision] Using Vertex AI (unlimited quota)');
+      return await geminiVisionOCRVertexAI(base64Data, isHandwriting);
+    }
+
+    // Fallback to regular Gemini API (free tier with rate limits)
+    console.log('[Gemini Vision] Using Gemini API (free tier)');
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
       throw new Error('GEMINI_API_KEY not configured');
@@ -61,32 +71,52 @@ export async function geminiVisionOCR(imageBase64: string, isHandwriting = false
     };
 
     // Choose prompt based on input type
-    const prompt = isHandwriting ? HANDWRITING_PROMPT : `당신은 수학 교육 전문가입니다. 이 이미지를 분석하여 다음 정보를 추출해주세요:
+    const prompt = isHandwriting ? HANDWRITING_PROMPT : `🎯 당신의 임무: 이 이미지에서 **도형/다이어그램을 절대 놓치지 말고** 모든 시각적 요소를 찾아내세요!
 
-1. **텍스트 내용**: 이미지에 있는 모든 텍스트를 정확하게 추출 (한글, 영어, 숫자, 수학 기호)
+🔍 **1단계: 먼저 이미지 전체를 스캔하여 도형이 있는지 확인하세요**
+- 문제 안에 작은 삼각형, 사각형, 원 등이 숨어있지 않나요?
+- 그래프, 좌표계, 수직선은 없나요?
+- 점들이 레이블(A, B, C 등)과 함께 표시되어 있나요?
+- 변에 길이나 각도가 표시되어 있나요?
 
-2. **다이어그램/그래프 설명**:
-   - 도형, 그래프, 좌표계가 있다면 자세히 설명
-   - 기하학적 관계 (위치, 거리, 각도)
-   - 점, 선, 도형의 레이블과 좌표
+📋 **분석 순서** (반드시 이 순서로 진행):
 
-3. **수학 공식**:
-   - 모든 수학 수식을 LaTeX 형식으로 변환
-   - 예: "x² + y² = 25"
+**STEP 1: 도형/다이어그램 찾기** (⭐⭐⭐ 가장 중요!)
+이미지를 매우 세밀하게 스캔하여:
+- 삼각형, 사각형, 원, 다각형 등 모든 기하학적 도형
+- 그래프, 좌표계, 함수 그래프
+- 수직선, 선분, 각도 표시
+- 점 레이블 (A, B, C, P, Q 등)
+- 변의 길이 표시 (숫자 + 단위)
+- 각도 표시 (°, 호 등)
 
-4. **표/테이블**:
-   - 표 구조가 있다면 마크다운 형식으로 변환
+⚠️ **중요**: 도형이 문제 텍스트 중간에 작게 삽입되어 있을 수 있습니다!
+텍스트만 보지 말고, 이미지의 모든 영역을 꼼꼼히 살펴보세요!
 
-5. **시각적 요소**:
-   - 화살표, 각도 표시, 측정값
-   - 중요한 시각적 정보
+**STEP 2: 텍스트 추출**
+- 모든 한글, 영어, 숫자, 수학 기호
+- 문제 번호, 제목, 본문, 선택지
 
-응답 형식:
-## 텍스트
-[추출된 모든 텍스트]
+**STEP 3: 수학 공식**
+- 수식을 LaTeX 형식으로 변환
+
+**STEP 4: 표/테이블**
+- 표 구조가 있다면 마크다운 형식
+
+**STEP 5: 기타 시각적 요소**
+- 화살표, 강조선, 밑줄 등
+
+📤 **응답 형식** (반드시 이 형식 사용):
 
 ## 다이어그램
-[다이어그램/그래프에 대한 자세한 설명]
+[이미지를 스캔한 결과, 발견한 모든 도형을 자세히 설명]
+[예시: "삼각형 ABC가 있으며, 점 A는 위쪽, 점 B는 왼쪽 하단, 점 C는 오른쪽 하단에 위치. 변 AB의 길이는 5cm로 표시되어 있음. 각 C에 직각 표시가 있음."]
+
+⚠️ 도형이 정말로 없다면 "이미지 전체를 스캔했으나 도형/다이어그램이 발견되지 않음"이라고 명시하세요.
+⚠️ 절대로 성급하게 "없음"이라고 답하지 마세요! 작은 도형도 찾아내야 합니다!
+
+## 텍스트
+[추출된 모든 텍스트]
 
 ## 수식
 [LaTeX 형식의 수학 공식들]
@@ -95,9 +125,9 @@ export async function geminiVisionOCR(imageBase64: string, isHandwriting = false
 [마크다운 테이블]
 
 ## 시각적 요소
-[기타 중요한 시각 정보]
+[기타 시각 정보]
 
-이미지에 해당 항목이 없으면 "없음"이라고 표시하세요.`;
+💡 팁: 수학 문제 이미지의 90%에는 도형이 포함되어 있습니다. 반드시 찾아내세요!`;
 
     // Call Gemini Vision API (using Gemini 2.5 Flash - stable with generous free tier)
     // Free tier: 10 RPM, 250 RPD, 250K tokens/min
@@ -261,4 +291,131 @@ export function getGeminiVisionStatus(): {
       'Geometric relationship analysis',
     ],
   };
+}
+
+/**
+ * Gemini Vision OCR using Vertex AI (unlimited quota)
+ */
+async function geminiVisionOCRVertexAI(imageBase64: string, isHandwriting = false): Promise<GeminiVisionResult> {
+  try {
+    // Choose prompt based on input type
+    const prompt = isHandwriting ? HANDWRITING_PROMPT : `🎯 당신의 임무: 이 이미지에서 **도형/다이어그램을 절대 놓치지 말고** 모든 시각적 요소를 찾아내세요!
+
+🔍 **1단계: 먼저 이미지 전체를 스캔하여 도형이 있는지 확인하세요**
+- 문제 안에 작은 삼각형, 사각형, 원 등이 숨어있지 않나요?
+- 그래프, 좌표계, 수직선은 없나요?
+- 점들이 레이블(A, B, C 등)과 함께 표시되어 있나요?
+- 변에 길이나 각도가 표시되어 있나요?
+
+📋 **분석 순서** (반드시 이 순서로 진행):
+
+**STEP 1: 도형/다이어그램 찾기** (⭐⭐⭐ 가장 중요!)
+이미지를 매우 세밀하게 스캔하여:
+- 삼각형, 사각형, 원, 다각형 등 모든 기하학적 도형
+- 그래프, 좌표계, 함수 그래프
+- 수직선, 선분, 각도 표시
+- 점 레이블 (A, B, C, P, Q 등)
+- 변의 길이 표시 (숫자 + 단위)
+- 각도 표시 (°, 호 등)
+
+⚠️ **중요**: 도형이 문제 텍스트 중간에 작게 삽입되어 있을 수 있습니다!
+텍스트만 보지 말고, 이미지의 모든 영역을 꼼꼼히 살펴보세요!
+
+**STEP 2: 텍스트 추출**
+- 모든 한글, 영어, 숫자, 수학 기호
+- 문제 번호, 제목, 본문, 선택지
+
+**STEP 3: 수학 공식**
+- 수식을 LaTeX 형식으로 변환
+
+**STEP 4: 표/테이블**
+- 표 구조가 있다면 마크다운 형식
+
+**STEP 5: 기타 시각적 요소**
+- 화살표, 강조선, 밑줄 등
+
+📤 **응답 형식** (반드시 이 형식 사용):
+
+## 다이어그램
+[이미지를 스캔한 결과, 발견한 모든 도형을 자세히 설명]
+[예시: "삼각형 ABC가 있으며, 점 A는 위쪽, 점 B는 왼쪽 하단, 점 C는 오른쪽 하단에 위치. 변 AB의 길이는 5cm로 표시되어 있음. 각 C에 직각 표시가 있음."]
+
+⚠️ 도형이 정말로 없다면 "이미지 전체를 스캔했으나 도형/다이어그램이 발견되지 않음"이라고 명시하세요.
+⚠️ 절대로 성급하게 "없음"이라고 답하지 마세요! 작은 도형도 찾아내야 합니다!
+
+## 텍스트
+[추출된 모든 텍스트]
+
+## 수식
+[LaTeX 형식의 수학 공식들]
+
+## 표
+[마크다운 테이블]
+
+## 시각적 요소
+[기타 시각 정보]
+
+💡 팁: 수학 문제 이미지의 90%에는 도형이 포함되어 있습니다. 반드시 찾아내세요!`;
+
+    // Use Vertex AI's image analysis with very low temperature for accurate diagram detection
+    const result = await vertexAIClient.analyzeImage(
+      imageBase64,
+      prompt,
+      'flash', // Use flash tier for cost efficiency
+      {
+        temperature: 0.1, // Very low for precise visual analysis
+        maxTokens: 2048,
+      }
+    );
+
+    console.log('[Gemini Vision] Raw result length:', result.length);
+
+    // Parse the structured response
+    const parsed = parseGeminiVisionResponse(result);
+
+    // Apply post-processing corrections to text
+    const postProcessResult = postProcessOCR(
+      parsed.text,
+      0.95, // Base confidence
+      result // Use full response as context
+    );
+
+    // Apply post-processing to formulas as well
+    const correctedFormulas = parsed.formulas?.map(formula =>
+      postProcessOCR(formula, 0.95, result).corrected
+    );
+
+    const correctionSummary = getCorrectionSummary(postProcessResult);
+
+    console.log('[Gemini Vision] ✅ Analysis complete');
+    console.log(`  - Text: ${postProcessResult.corrected.length} chars`);
+    console.log(`  - Diagrams: ${parsed.diagramDescription ? 'Yes' : 'No'}`);
+    console.log(`  - Formulas: ${parsed.formulas?.length || 0}`);
+    console.log(`  - Tables: ${parsed.tables?.length || 0}`);
+    console.log(`  - Visual elements: ${parsed.visualElements?.length || 0}`);
+    console.log(`  - Post-processing: ${correctionSummary}`);
+
+    return {
+      success: true,
+      text: postProcessResult.corrected,
+      diagramDescription: parsed.diagramDescription,
+      formulas: correctedFormulas,
+      tables: parsed.tables,
+      visualElements: parsed.visualElements,
+      confidence: postProcessResult.confidence,
+      corrections: postProcessResult.corrections.length,
+      correctionSummary,
+    };
+
+  } catch (error: any) {
+    console.error('[Gemini Vision Vertex AI] Error:', error);
+
+    // Return error result
+    return {
+      success: false,
+      text: '',
+      confidence: 0,
+      error: error.message || 'Vertex AI Vision analysis failed',
+    };
+  }
 }

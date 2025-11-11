@@ -18,7 +18,7 @@ const isVertexAIEnabled = () => {
   return !!(
     process.env.GCP_PROJECT_ID &&
     process.env.GCP_LOCATION &&
-    process.env.GOOGLE_APPLICATION_CREDENTIALS
+    (process.env.GOOGLE_APPLICATION_CREDENTIALS || process.env.GCP_SERVICE_ACCOUNT_KEY)
   );
 };
 
@@ -57,11 +57,26 @@ class VertexAIClient {
 
     if (this.isEnabled) {
       try {
-        this.vertexAI = new VertexAI({
-          project: process.env.GCP_PROJECT_ID!,
-          location: process.env.GCP_LOCATION || 'us-central1',
-        });
-        console.log('✅ Vertex AI initialized successfully');
+        // Vercel 환경: GCP_SERVICE_ACCOUNT_KEY JSON 문자열 사용
+        if (process.env.GCP_SERVICE_ACCOUNT_KEY && !process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+          const credentials = JSON.parse(process.env.GCP_SERVICE_ACCOUNT_KEY);
+
+          // JSON 키를 임시 환경 변수로 설정 (Vertex AI SDK가 자동 감지)
+          process.env.GOOGLE_APPLICATION_CREDENTIALS = JSON.stringify(credentials);
+
+          this.vertexAI = new VertexAI({
+            project: process.env.GCP_PROJECT_ID!,
+            location: process.env.GCP_LOCATION || 'us-central1',
+          });
+          console.log('✅ Vertex AI initialized successfully (Vercel mode)');
+        } else {
+          // 로컬 개발: GOOGLE_APPLICATION_CREDENTIALS 파일 경로 사용
+          this.vertexAI = new VertexAI({
+            project: process.env.GCP_PROJECT_ID!,
+            location: process.env.GCP_LOCATION || 'us-central1',
+          });
+          console.log('✅ Vertex AI initialized successfully (Local mode)');
+        }
       } catch (error) {
         console.warn('⚠️  Vertex AI initialization failed, will use fallback:', error);
         this.isEnabled = false;
