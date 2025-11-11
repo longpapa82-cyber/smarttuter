@@ -14,6 +14,28 @@ const nextConfig: NextConfig = {
   // Disable Next.js loading indicator (Next.js 15 syntax)
   devIndicators: false,
 
+  // Webpack configuration
+  webpack: (config, { isServer }) => {
+    // Ensure crypto and server-only modules are not bundled in client
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        crypto: false,
+        fs: false,
+        net: false,
+        tls: false,
+      };
+
+      // Exclude server-only modules from client bundle
+      config.externals = config.externals || [];
+      config.externals.push({
+        '@/lib/error-tracking': 'commonjs @/lib/error-tracking',
+        './lib/error-tracking': 'commonjs ./lib/error-tracking',
+      });
+    }
+    return config;
+  },
+
   // Image optimization
   images: {
     formats: ['image/avif', 'image/webp'],
@@ -106,37 +128,8 @@ const nextConfig: NextConfig = {
   },
 };
 
-// Sentry configuration with Bundle Analyzer
-export default withSentryConfig(withBundleAnalyzer(nextConfig), {
-  // For all available options, see:
-  // https://github.com/getsentry/sentry-webpack-plugin#options
+// Temporarily disable Sentry to test custom error tracking
+// Will re-enable once custom system is working
+// export default withSentryConfig(withBundleAnalyzer(nextConfig), {...});
 
-  org: process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT,
-
-  // Only print logs for uploading source maps in CI
-  silent: !process.env.CI,
-
-  // For all available options, see:
-  // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
-
-  // Upload a larger set of source maps for prettier stack traces (increases build time)
-  widenClientFileUpload: true,
-
-  // Automatically annotate React components to show their full name in breadcrumbs and session replay
-  reactComponentAnnotation: {
-    enabled: true,
-  },
-
-  // Route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
-  // This can increase your server load as well as your hosting bill.
-  // Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-
-  // side errors will fail.
-  tunnelRoute: "/monitoring",
-
-  // Enables automatic instrumentation of Vercel Cron Monitors. (Does not yet work with App Router route handlers.)
-  // See the following for more information:
-  // https://docs.sentry.io/product/crons/
-  // https://vercel.com/docs/cron-jobs
-  automaticVercelMonitors: true,
-});
+export default withBundleAnalyzer(nextConfig);

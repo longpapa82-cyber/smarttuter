@@ -42,3 +42,17 @@ yarn-error.log*
 # Backup files
 *.backup
 *.bak
+
+# Python environments
+venv/
+venv-ocr/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Pix2Text OCR API (not yet implemented, planned for P2)
+app/api/ocr/pix2text/
+lib/ocr/pix2text-ocr.ts
+scripts/*pix2text*

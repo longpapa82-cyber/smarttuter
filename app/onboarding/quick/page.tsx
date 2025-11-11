@@ -25,14 +25,39 @@ export default function QuickOnboardingPage() {
 
   // Check if user already has a profile - redirect to dashboard if yes
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const hasProfile = localStorage.getItem('aipark_user_profile');
-      if (hasProfile) {
-        console.log('✅ User already has profile, redirecting to dashboard');
+    async function checkProfile() {
+      if (typeof window === 'undefined') return;
+
+      // 1. Check localStorage for guest users
+      const hasLocalProfile = localStorage.getItem('aipark_user_profile');
+      if (hasLocalProfile) {
+        console.log('✅ Guest user already has profile, redirecting to dashboard');
         router.replace('/dashboard');
+        return;
+      }
+
+      // 2. Check server API for authenticated users
+      if (session?.user) {
+        try {
+          const response = await fetch('/api/user/profile');
+          if (response.ok) {
+            const { user: dbUser } = await response.json();
+
+            // If user has gradeLevel and gradeDetail, they completed onboarding
+            if (dbUser?.gradeLevel && dbUser?.gradeDetail) {
+              console.log('✅ Authenticated user already has profile, redirecting to dashboard');
+              router.replace('/dashboard');
+              return;
+            }
+          }
+        } catch (error) {
+          console.error('Failed to check profile:', error);
+        }
       }
     }
-  }, [router]);
+
+    checkProfile();
+  }, [router, session]);
 
   // Step 0: 학교급 선택
   const handleGradeLevel = (level: GradeLevel) => {

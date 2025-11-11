@@ -27,6 +27,7 @@ export function createUserProfile(data: {
   provider?: 'credentials' | 'google' | 'github' | 'guest';
 }): UserProfile {
   const now = new Date();
+  const nowISO = now.toISOString();
 
   return {
     id: generateUserId(),
@@ -38,6 +39,17 @@ export function createUserProfile(data: {
     learningGoals: data.learningGoals,
     email: data.email,
     provider: data.provider || 'guest',
+
+    // 학년 관리 필드
+    gradeLevelSetAt: nowISO,
+    gradeLevelHistory: [
+      {
+        fromGrade: null,
+        toGrade: data.gradeLevel,
+        changedAt: nowISO,
+        reason: 'initial_setup',
+      },
+    ],
   };
 }
 
@@ -86,11 +98,43 @@ export function getUserProfile(): UserProfile | null {
 
     const parsed = JSON.parse(stored);
 
-    return {
+    const profile: UserProfile = {
       ...parsed,
       createdAt: new Date(parsed.createdAt),
       updatedAt: new Date(parsed.updatedAt),
     };
+
+    // 기존 사용자 데이터 마이그레이션: gradeLevelSetAt이 없으면 추가
+    let needsSave = false;
+
+    if (!profile.gradeLevelSetAt) {
+      // createdAt을 설정일로 사용 (기존 사용자는 최초 생성 시 학년 선택했으므로)
+      profile.gradeLevelSetAt = profile.createdAt.toISOString();
+      needsSave = true;
+      console.log('🔄 gradeLevelSetAt 마이그레이션:', profile.gradeLevelSetAt);
+    }
+
+    if (!profile.gradeLevelHistory || profile.gradeLevelHistory.length === 0) {
+      // 기존 사용자에게 초기 이력 생성
+      profile.gradeLevelHistory = [
+        {
+          fromGrade: null,
+          toGrade: profile.gradeLevel,
+          changedAt: profile.createdAt.toISOString(),
+          reason: 'initial_setup',
+        },
+      ];
+      needsSave = true;
+      console.log('🔄 gradeLevelHistory 마이그레이션 완료');
+    }
+
+    // 마이그레이션이 필요한 경우 저장
+    if (needsSave) {
+      saveUserProfile(profile);
+      console.log('✅ 기존 사용자 데이터 마이그레이션 완료');
+    }
+
+    return profile;
   } catch (error) {
     console.error('❌ 프로필 불러오기 실패:', error);
     return null;

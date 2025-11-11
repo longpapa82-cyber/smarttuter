@@ -10,6 +10,17 @@ import type {
   AudioFeatures,
   AudioAnalysisConfig,
 } from '@/types/pronunciation';
+import {
+  calculatePronunciationAccuracy,
+  calculateWordAccuracies,
+  calculatePhonemeAccuracyWithSimilarity,
+  calculateComprehensiveScore,
+  type WordAccuracy,
+} from './accuracy-calculator';
+import {
+  getPhoneTip,
+  findDifficultPhonemes,
+} from './phoneme-tips-database';
 
 /**
  * 발음 분석기 클래스
@@ -151,8 +162,8 @@ export class PronunciationAnalyzer {
   }
 
   /**
-   * 음소 분석 (간단한 휴리스틱 기반)
-   * 실제 프로덕션에서는 TensorFlow.js 모델 사용 권장
+   * 음소 분석 (개선된 버전 - Levenshtein Distance 기반)
+   * 단어 단위로 분석하여 더 정확한 피드백 제공
    */
   analyzePhonemes(
     targetText: string,
@@ -160,51 +171,79 @@ export class PronunciationAnalyzer {
   ): PhonemeAnalysis[] {
     const analyses: PhonemeAnalysis[] = [];
 
-    // 간단한 문자 비교 기반 분석
-    const targetChars = targetText.toLowerCase().split('');
-    const transcriptChars = transcript.toLowerCase().split('');
+    // 단어 단위로 정확도 계산
+    const wordAccuracies = calculateWordAccuracies(targetText, transcript);
 
-    for (let i = 0; i < targetChars.length; i++) {
-      const target = targetChars[i];
-      const actual = transcriptChars[i] || '';
-      const isMatch = target === actual;
+    // 각 단어를 음소 분석으로 변환
+    let position = 0;
+    for (const wordAcc of wordAccuracies) {
+      const targetWord = wordAcc.expectedWord;
+      const actualWord = wordAcc.word;
 
-      let feedback = '';
-      let severity: 'perfect' | 'good' | 'fair' | 'poor' = 'perfect';
+      // 단어별 정확도를 0-1 범위로 변환
+      const accuracy = wordAcc.accuracy / 100;
 
-      if (!isMatch) {
+      // 심각도 결정
+      let severity: 'perfect' | 'good' | 'fair' | 'poor';
+      if (accuracy >= 0.95) {
+        severity = 'perfect';
+      } else if (accuracy >= 0.80) {
+        severity = 'good';
+      } else if (accuracy >= 0.60) {
+        severity = 'fair';
+      } else {
         severity = 'poor';
-        feedback = this.getPhoneFeedback(target, actual);
       }
 
+      // 피드백 생성
+      const feedback = this.getWordFeedback(targetWord, actualWord, accuracy);
+
       analyses.push({
-        target: `/${target}/`,
-        actual: `/${actual}/`,
-        accuracy: isMatch ? 1.0 : 0.3,
-        position: i,
+        target: targetWord,
+        actual: actualWord,
+        accuracy,
+        position,
         feedback,
         severity,
       });
+
+      position++;
     }
 
     return analyses;
   }
 
   /**
-   * 음소별 피드백 생성
+   * 단어별 피드백 생성 (개선된 버전)
+   * 발음 팁 데이터베이스를 활용
    */
-  private getPhoneFeedback(target: string, actual: string): string {
-    const feedbackMap: Record<string, string> = {
-      'th': '혀를 윗니와 아랫니 사이에 두고 공기를 내보내세요',
-      'r': '혀를 입천장 쪽으로 말아 올리세요',
-      'l': '혀끝을 윗니 뒤에 대세요',
-      'v': '윗니를 아랫입술에 가볍게 대고 소리내세요',
-      'f': 'v와 비슷하지만 목소리 없이 공기만 내보내세요',
-      'z': 's와 비슷하지만 목소리를 함께 내세요',
-      's': '혀를 윗니 뒤쪽에 대고 공기를 내보내세요',
-    };
+  private getWordFeedback(target: string, actual: string, accuracy: number): string {
+    // 정확도가 높으면 피드백 불필요
+    if (accuracy >= 0.95) {
+      return '완벽합니다! 🎉';
+    }
 
-    return feedbackMap[target] || `"${target}" 소리 연습이 필요해요`;
+    // 완전히 틀린 경우
+    if (!actual || accuracy < 0.3) {
+      return `"${target}" 단어를 다시 발음해보세요`;
+    }
+
+    // 어려운 음소 찾기
+    const difficultPhonemes = findDifficultPhonemes(target);
+
+    if (difficultPhonemes.length > 0) {
+      const tip = difficultPhonemes[0];
+      return `${tip.koreanGuide} (예: ${tip.examples.join(', ')})`;
+    }
+
+    // 일반적인 피드백
+    if (accuracy >= 0.80) {
+      return '거의 완벽해요! 조금만 더 연습하면 됩니다 😊';
+    } else if (accuracy >= 0.60) {
+      return `"${target}" 발음을 천천히 다시 시도해보세요`;
+    } else {
+      return `"${target}" 발음이 어려워 보이네요. 천천히 따라해보세요`;
+    }
   }
 
   /**

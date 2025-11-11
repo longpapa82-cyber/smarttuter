@@ -34,8 +34,9 @@ export async function recognizeEnglishText(
   onProgress?: (progress: number) => void
 ): Promise<OCRResult> {
   try {
-    // Tesseract.js Worker 생성
-    const worker = await Tesseract.createWorker('eng', 1, {
+    // Tesseract.js Worker 생성 (한글+영어 다국어 지원)
+    // 한국 학생들의 영어 시험지는 문제 번호나 지문 설명이 한글로 되어 있는 경우가 많음
+    const worker = await Tesseract.createWorker('kor+eng', 1, {
       logger: (m) => {
         if (m.status === 'recognizing text' && onProgress) {
           onProgress(Math.round(m.progress * 100));
@@ -77,7 +78,8 @@ export async function recognizeFromUrl(
   onProgress?: (progress: number) => void
 ): Promise<OCRResult> {
   try {
-    const worker = await Tesseract.createWorker('eng', 1, {
+    // 한글+영어 다국어 지원
+    const worker = await Tesseract.createWorker('kor+eng', 1, {
       logger: (m) => {
         if (m.status === 'recognizing text' && onProgress) {
           onProgress(Math.round(m.progress * 100));

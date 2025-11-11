@@ -22,6 +22,20 @@ export interface UserProfile {
   avatar?: string;
   email?: string;
   provider?: AuthProvider;
+
+  // 학년 관리
+  gradeLevelSetAt?: string; // ISO date - 최초 설정 시각
+  gradeLevelLastChangedAt?: string; // ISO date - 마지막 변경 시각
+  gradeLevelHistory?: GradeLevelChange[]; // 변경 이력
+}
+
+// 학년 변경 이력
+export interface GradeLevelChange {
+  fromGrade: GradeLevel | null; // null = 최초 설정
+  toGrade: GradeLevel;
+  changedAt: string; // ISO date
+  reason: 'initial_setup' | 'user_change' | 'admin_change';
+  userAgent?: string; // 변경 시 브라우저 정보
 }
 
 export interface OnboardingProgress {

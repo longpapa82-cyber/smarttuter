@@ -1,0 +1,599 @@
+// lib/pronunciation/phoneme-tips-database.ts
+// 영어 발음 팁 종합 데이터베이스 (30+ 음소/패턴)
+
+export interface PhonemeTip {
+  phoneme: string;           // IPA 표기
+  examples: string[];         // 예시 단어
+  koreanGuide: string;        // 한국어 설명
+  articulationTip: string;    // 조음 방법
+  commonMistakes: string[];   // 흔한 실수
+  practiceWords: string[];    // 연습 단어
+  difficulty: 'easy' | 'medium' | 'hard';
+  videoUrl?: string;          // 발음 영상 URL (향후 추가)
+}
+
+/**
+ * 자음 발음 팁 데이터베이스
+ */
+export const consonantTips: Record<string, PhonemeTip> = {
+  // === 치경음 (Alveolar) ===
+  't': {
+    phoneme: '/t/',
+    examples: ['tea', 'time', 'stop'],
+    koreanGuide: '혀끝을 윗니 뒤쪽 잇몸에 대고 공기를 터뜨리듯 발음',
+    articulationTip: '혀끝을 윗니 잇몸에 대고 → 공기를 막았다가 → 갑자기 터뜨림',
+    commonMistakes: [
+      '한국어 ㄷ보다 강하게 발음해야 함',
+      '단어 끝의 t는 거의 들리지 않게 (stop → stoptop)',
+    ],
+    practiceWords: ['top', 'cat', 'better'],
+    difficulty: 'easy',
+  },
+
+  'd': {
+    phoneme: '/d/',
+    examples: ['day', 'red', 'ladder'],
+    koreanGuide: '/t/와 비슷하지만 목소리를 함께 냄',
+    articulationTip: '혀 위치는 /t/와 같지만 성대를 진동시킴',
+    commonMistakes: [
+      '단어 중간의 d는 빠르게 (ladder → lader)',
+      '한국어 ㄷ과 달리 유성음',
+    ],
+    practiceWords: ['dog', 'did', 'ladder'],
+    difficulty: 'easy',
+  },
+
+  's': {
+    phoneme: '/s/',
+    examples: ['sea', 'pass', 'city'],
+    koreanGuide: '혀를 윗니 뒤쪽에 가까이 대고 공기를 내보냄',
+    articulationTip: '혀끝을 윗니 잇몸 가까이 → 좁은 틈으로 공기 보냄 → 쉿 소리',
+    commonMistakes: [
+      '/ʃ/(sh)와 혼동하지 말 것',
+      '한국어 ㅅ보다 날카롭게',
+    ],
+    practiceWords: ['sun', 'kiss', 'mass'],
+    difficulty: 'easy',
+  },
+
+  'z': {
+    phoneme: '/z/',
+    examples: ['zoo', 'buzz', 'is'],
+    koreanGuide: '/s/와 같은 혀 위치지만 목소리를 함께 냄',
+    articulationTip: '/s/의 유성음 버전, 성대를 진동시키며 발음',
+    commonMistakes: [
+      '한국어에 없는 소리라 어려움',
+      '/s/와 구별 필요 (bus vs. buzz)',
+    ],
+    practiceWords: ['zone', 'lazy', 'buzz'],
+    difficulty: 'medium',
+  },
+
+  'n': {
+    phoneme: '/n/',
+    examples: ['no', 'run', 'sunny'],
+    koreanGuide: '혀끝을 윗니 잇몸에 대고 코로 공기를 냄',
+    articulationTip: '혀끝을 윗니 잇몸에 → 입을 막고 → 코로 소리',
+    commonMistakes: [
+      '비음 (nasal)을 충분히 냄',
+      '/m/과 구별 (혀 vs 입술)',
+    ],
+    practiceWords: ['not', 'pen', 'dinner'],
+    difficulty: 'easy',
+  },
+
+  'l': {
+    phoneme: '/l/',
+    examples: ['love', 'ball', 'million'],
+    koreanGuide: '혀끝을 윗니 뒤쪽에 대고 양 옆으로 공기를 흘림',
+    articulationTip: '혀끝을 윗니 잇몸에 → 혀 양옆으로 공기 흐름',
+    commonMistakes: [
+      '한국어 ㄹ과 달리 혀끝이 고정됨',
+      '/r/과 혼동 주의',
+    ],
+    practiceWords: ['light', 'ball', 'million'],
+    difficulty: 'medium',
+  },
+
+  'r': {
+    phoneme: '/r/ 또는 /ɹ/',
+    examples: ['red', 'car', 'berry'],
+    koreanGuide: '혀를 입천장 쪽으로 말아 올리되 닿지 않게',
+    articulationTip: '혀를 둥글게 말아 올림 → 입천장에 닿지 않게 → 목 뒤쪽에서 소리',
+    commonMistakes: [
+      '한국어 ㄹ로 발음하지 말 것',
+      '혀가 입천장에 닿으면 안 됨',
+      '/l/과 구별 필수 (light vs. right)',
+    ],
+    practiceWords: ['right', 'very', 'correct'],
+    difficulty: 'hard',
+  },
+
+  // === 치음 (Dental) ===
+  'θ': {
+    phoneme: '/θ/ (무성 th)',
+    examples: ['think', 'bath', 'tooth'],
+    koreanGuide: '혀를 윗니와 아랫니 사이에 가볍게 대고 공기를 냄',
+    articulationTip: '혀끝을 윗니 뒤에 살짝 대거나 → 치아 사이로 내밀어 → 공기를 마찰',
+    commonMistakes: [
+      '/s/로 발음하는 실수 (think → sink)',
+      '/f/로 발음하는 실수',
+      '혀를 너무 많이 내밀지 말 것',
+    ],
+    practiceWords: ['think', 'math', 'three'],
+    difficulty: 'hard',
+  },
+
+  'ð': {
+    phoneme: '/ð/ (유성 th)',
+    examples: ['this', 'father', 'breathe'],
+    koreanGuide: '/θ/와 같지만 목소리를 함께 냄',
+    articulationTip: '/θ/의 유성음 버전, 성대를 진동시키며 발음',
+    commonMistakes: [
+      '/z/로 발음하는 실수 (this → zis)',
+      '/d/로 발음하는 실수',
+      '/θ/와 구별 (breath vs. breathe)',
+    ],
+    practiceWords: ['the', 'mother', 'smooth'],
+    difficulty: 'hard',
+  },
+
+  // === 순치음 (Labiodental) ===
+  'f': {
+    phoneme: '/f/',
+    examples: ['fun', 'laugh', 'coffee'],
+    koreanGuide: '윗니를 아랫입술에 가볍게 대고 공기를 냄',
+    articulationTip: '윗니를 아랫입술에 가볍게 대기 → 공기를 마찰시킴',
+    commonMistakes: [
+      '한국어 ㅍ처럼 입술을 닫지 말 것',
+      '/p/와 혼동 주의',
+    ],
+    practiceWords: ['five', 'stuff', 'coffee'],
+    difficulty: 'easy',
+  },
+
+  'v': {
+    phoneme: '/v/',
+    examples: ['voice', 'love', 'have'],
+    koreanGuide: '/f/와 같지만 목소리를 함께 냄',
+    articulationTip: '윗니를 아랫입술에 대고 → 성대를 진동시키며 발음',
+    commonMistakes: [
+      '한국어에 없는 소리라 /b/로 대체하는 실수',
+      '/f/와 구별 (fan vs. van)',
+    ],
+    practiceWords: ['very', 'seven', 'love'],
+    difficulty: 'medium',
+  },
+
+  // === 양순음 (Bilabial) ===
+  'p': {
+    phoneme: '/p/',
+    examples: ['pen', 'happy', 'stop'],
+    koreanGuide: '입술을 닫았다가 공기를 터뜨리듯 발음',
+    articulationTip: '입술을 완전히 닫음 → 공기를 모음 → 갑자기 터뜨림',
+    commonMistakes: [
+      '단어 시작의 p는 강한 기식음 (펀 아닌 푼)',
+      '단어 끝의 p는 약하게',
+    ],
+    practiceWords: ['pop', 'happy', 'stop'],
+    difficulty: 'easy',
+  },
+
+  'b': {
+    phoneme: '/b/',
+    examples: ['ball', 'rub', 'hobby'],
+    koreanGuide: '/p/와 같지만 목소리를 함께 냄',
+    articulationTip: '입술을 닫고 → 성대를 진동시키며 → 터뜨림',
+    commonMistakes: [
+      '한국어 ㅂ보다 약하게',
+      '/v/와 혼동 주의',
+    ],
+    practiceWords: ['big', 'baby', 'rib'],
+    difficulty: 'easy',
+  },
+
+  'm': {
+    phoneme: '/m/',
+    examples: ['man', 'summer', 'some'],
+    koreanGuide: '입술을 닫고 코로 공기를 냄',
+    articulationTip: '입술을 완전히 닫고 → 코로 소리를 냄 (비음)',
+    commonMistakes: [
+      '입을 열면 안 됨',
+      '/n/과 구별 (입술 vs 혀)',
+    ],
+    practiceWords: ['mom', 'summer', 'time'],
+    difficulty: 'easy',
+  },
+
+  'w': {
+    phoneme: '/w/',
+    examples: ['water', 'swim', 'quick'],
+    koreanGuide: '입술을 둥글게 오므렸다가 빠르게 펴며 발음',
+    articulationTip: '입술을 우 모양으로 → 빠르게 다음 모음으로 전환',
+    commonMistakes: [
+      '/v/와 혼동 (wet vs. vet)',
+      '한국어 ㅗ처럼 길게 발음하지 말 것',
+    ],
+    practiceWords: ['we', 'away', 'twin'],
+    difficulty: 'medium',
+  },
+
+  // === 연구개음 (Velar) ===
+  'k': {
+    phoneme: '/k/',
+    examples: ['cat', 'book', 'school'],
+    koreanGuide: '혀 뒤쪽을 입천장 뒤쪽에 대고 공기를 터뜨림',
+    articulationTip: '혀 뒤쪽을 연구개(soft palate)에 → 공기를 막았다가 → 터뜨림',
+    commonMistakes: [
+      '단어 시작의 k는 강한 기식음',
+      '단어 끝의 k는 약하게',
+    ],
+    practiceWords: ['kid', 'back', 'school'],
+    difficulty: 'easy',
+  },
+
+  'g': {
+    phoneme: '/g/',
+    examples: ['go', 'big', 'finger'],
+    koreanGuide: '/k/와 같지만 목소리를 함께 냄',
+    articulationTip: '혀 뒤쪽을 연구개에 대고 → 성대를 진동시키며 발음',
+    commonMistakes: [
+      '한국어 ㄱ보다 약하게',
+      '단어 끝의 g는 거의 들리지 않음',
+    ],
+    practiceWords: ['good', 'dog', 'bigger'],
+    difficulty: 'easy',
+  },
+
+  'ŋ': {
+    phoneme: '/ŋ/ (ng)',
+    examples: ['sing', 'long', 'finger'],
+    koreanGuide: '혀 뒤쪽을 입천장 뒤쪽에 대고 코로 공기를 냄',
+    articulationTip: '/k/의 위치에서 → 코로 소리를 냄 (비음)',
+    commonMistakes: [
+      '한국어 ㅇ받침과 비슷하지만 위치가 다름',
+      '/n/과 구별 (sin vs. sing)',
+    ],
+    practiceWords: ['sing', 'long', 'thinking'],
+    difficulty: 'medium',
+  },
+
+  // === 성문음 (Glottal) ===
+  'h': {
+    phoneme: '/h/',
+    examples: ['hot', 'behind', 'who'],
+    koreanGuide: '목 뒤에서 공기를 내보내며 발음',
+    articulationTip: '목구멍을 좁혀 → 공기를 마찰시킴 (한숨 쉬듯)',
+    commonMistakes: [
+      '한국어 ㅎ보다 약하게',
+      '모음 앞에서만 발음됨',
+    ],
+    practiceWords: ['he', 'ahead', 'house'],
+    difficulty: 'easy',
+  },
+
+  // === 후치경음 (Postalveolar) ===
+  'ʃ': {
+    phoneme: '/ʃ/ (sh)',
+    examples: ['she', 'fish', 'sure'],
+    koreanGuide: '혀를 윗니 뒤쪽에 대고 공기를 넓게 내보냄',
+    articulationTip: '혀끝을 /s/보다 약간 뒤로 → 입술을 둥글게 → 공기를 넓게',
+    commonMistakes: [
+      '/s/와 혼동 (sea vs. she)',
+      '한국어 ㅅ보다 부드럽게',
+    ],
+    practiceWords: ['ship', 'wish', 'machine'],
+    difficulty: 'medium',
+  },
+
+  'ʒ': {
+    phoneme: '/ʒ/ (vision의 s)',
+    examples: ['vision', 'measure', 'beige'],
+    koreanGuide: '/ʃ/와 같지만 목소리를 함께 냄',
+    articulationTip: '/ʃ/의 유성음 버전, 성대를 진동시킴',
+    commonMistakes: [
+      '한국어에 없는 소리라 어려움',
+      '/z/로 발음하는 실수',
+    ],
+    practiceWords: ['vision', 'pleasure', 'garage'],
+    difficulty: 'hard',
+  },
+
+  'tʃ': {
+    phoneme: '/tʃ/ (ch)',
+    examples: ['chair', 'catch', 'much'],
+    koreanGuide: '한국어 ㅊ과 비슷',
+    articulationTip: '/t/와 /ʃ/를 빠르게 연속으로 발음',
+    commonMistakes: [
+      '/ʃ/로만 발음하는 실수',
+      '한국어 ㅊ보다 강하게',
+    ],
+    practiceWords: ['cheese', 'beach', 'teacher'],
+    difficulty: 'easy',
+  },
+
+  'dʒ': {
+    phoneme: '/dʒ/ (j)',
+    examples: ['jump', 'edge', 'judge'],
+    koreanGuide: '/tʃ/와 같지만 목소리를 함께 냄',
+    articulationTip: '/d/와 /ʒ/를 빠르게 연속으로 발음',
+    commonMistakes: [
+      '한국어 ㅈ으로 발음하는 실수',
+      '/ʒ/로만 발음하는 실수',
+    ],
+    practiceWords: ['job', 'bridge', 'page'],
+    difficulty: 'medium',
+  },
+
+  // === 반모음 (Semivowels) ===
+  'j': {
+    phoneme: '/j/ (y)',
+    examples: ['yes', 'you', 'beyond'],
+    koreanGuide: '한국어 ㅣ를 빠르게 발음하며 다음 모음으로',
+    articulationTip: '혀를 입천장 가까이 → 빠르게 다음 모음으로 전환',
+    commonMistakes: [
+      '한국어 ㅣ처럼 길게 발음하지 말 것',
+      '빠른 전환이 중요',
+    ],
+    practiceWords: ['year', 'yellow', 'beyond'],
+    difficulty: 'easy',
+  },
+};
+
+/**
+ * 모음 발음 팁 데이터베이스
+ */
+export const vowelTips: Record<string, PhonemeTip> = {
+  // === 단모음 (Monophthongs) ===
+  'i': {
+    phoneme: '/i:/ (긴 이)',
+    examples: ['see', 'meet', 'key'],
+    koreanGuide: '한국어 '이'를 길고 강하게',
+    articulationTip: '입을 옆으로 벌리고 → 혀를 높게 → 길게 발음',
+    commonMistakes: [
+      '/ɪ/와 구별 (seat vs. sit)',
+      '충분히 길게 발음',
+    ],
+    practiceWords: ['see', 'feet', 'key'],
+    difficulty: 'easy',
+  },
+
+  'ɪ': {
+    phoneme: '/ɪ/ (짧은 이)',
+    examples: ['sit', 'big', 'fish'],
+    koreanGuide: '한국어 '이'를 짧고 약하게',
+    articulationTip: '입을 약간만 벌리고 → 짧게 발음',
+    commonMistakes: [
+      '/i:/로 길게 발음하는 실수',
+      '너무 한국어 ㅣ처럼 발음',
+    ],
+    practiceWords: ['sit', 'big', 'fish'],
+    difficulty: 'medium',
+  },
+
+  'e': {
+    phoneme: '/e/ (에)',
+    examples: ['bed', 'pet', 'said'],
+    koreanGuide: '한국어 '에'와 비슷',
+    articulationTip: '입을 중간 정도 벌리고 → 혀를 중간 높이로',
+    commonMistakes: [
+      '한국어 '애'로 발음하는 실수',
+      '/æ/와 구별',
+    ],
+    practiceWords: ['bed', 'red', 'head'],
+    difficulty: 'easy',
+  },
+
+  'æ': {
+    phoneme: '/æ/ (애)',
+    examples: ['cat', 'bad', 'apple'],
+    koreanGuide: '한국어 '애'를 더 크게 벌려서',
+    articulationTip: '입을 크게 벌리고 → 혀를 낮게 → 앞쪽으로',
+    commonMistakes: [
+      '/e/로 발음하는 실수 (bad vs. bed)',
+      '충분히 입을 벌리지 않음',
+    ],
+    practiceWords: ['cat', 'hat', 'back'],
+    difficulty: 'medium',
+  },
+
+  'ʌ': {
+    phoneme: '/ʌ/ (어)',
+    examples: ['cup', 'love', 'under'],
+    koreanGuide: '한국어 '어'와 '아'의 중간',
+    articulationTip: '입을 반쯤 벌리고 → 혀를 중간 높이로 → 이완',
+    commonMistakes: [
+      '/ɑ:/와 혼동 (cup vs. cop)',
+      '한국어 ㅓ로만 발음하는 실수',
+    ],
+    practiceWords: ['but', 'love', 'mother'],
+    difficulty: 'hard',
+  },
+
+  'ɑ': {
+    phoneme: '/ɑ:/ (아)',
+    examples: ['father', 'hot', 'car'],
+    koreanGuide: '한국어 '아'를 길고 깊게',
+    articulationTip: '입을 크게 벌리고 → 혀를 낮게 → 목 뒤에서 소리',
+    commonMistakes: [
+      '/ʌ/와 구별 (hot vs. hut)',
+      '충분히 길게 발음',
+    ],
+    practiceWords: ['father', 'car', 'heart'],
+    difficulty: 'medium',
+  },
+
+  'ɔ': {
+    phoneme: '/ɔ:/ (오)',
+    examples: ['law', 'caught', 'thought'],
+    koreanGuide: '한국어 '오'를 입술을 둥글게 하여',
+    articulationTip: '입술을 둥글게 → 혀를 뒤쪽 중간 높이로',
+    commonMistakes: [
+      '/ou/로 이중모음으로 발음하는 실수',
+      '입술을 충분히 둥글게',
+    ],
+    practiceWords: ['law', 'caught', 'ball'],
+    difficulty: 'medium',
+  },
+
+  'u': {
+    phoneme: '/u:/ (우)',
+    examples: ['food', 'moon', 'blue'],
+    koreanGuide: '한국어 '우'를 길고 입술을 둥글게',
+    articulationTip: '입술을 작고 둥글게 → 혀를 높게 뒤로 → 길게',
+    commonMistakes: [
+      '/ʊ/와 구별 (pool vs. pull)',
+      '충분히 길게 발음',
+    ],
+    practiceWords: ['food', 'pool', 'moon'],
+    difficulty: 'easy',
+  },
+
+  'ʊ': {
+    phoneme: '/ʊ/ (짧은 우)',
+    examples: ['book', 'good', 'put'],
+    koreanGuide: '한국어 '우'를 짧고 약하게',
+    articulationTip: '입술을 약간만 둥글게 → 짧게 발음',
+    commonMistakes: [
+      '/u:/로 길게 발음하는 실수',
+      '한국어 ㅜ로 발음',
+    ],
+    practiceWords: ['book', 'good', 'look'],
+    difficulty: 'medium',
+  },
+
+  'ə': {
+    phoneme: '/ə/ (schwa)',
+    examples: ['about', 'banana', 'problem'],
+    koreanGuide: '짧고 약한 '어' 소리',
+    articulationTip: '입과 혀를 이완하고 → 짧고 약하게 → 가장 자연스러운 소리',
+    commonMistakes: [
+      '강하게 발음하는 실수',
+      '모든 모음을 schwa로 대체',
+    ],
+    practiceWords: ['about', 'sofa', 'camera'],
+    difficulty: 'hard',
+  },
+
+  // === 이중모음 (Diphthongs) ===
+  'eɪ': {
+    phoneme: '/eɪ/ (에이)',
+    examples: ['day', 'make', 'play'],
+    koreanGuide: '한국어 '에'에서 '이'로 이동',
+    articulationTip: '/e/에서 시작 → /ɪ/로 부드럽게 전환',
+    commonMistakes: [
+      '단모음으로 발음하는 실수',
+      '한국어 '에이'처럼 두 음절로',
+    ],
+    practiceWords: ['day', 'make', 'play'],
+    difficulty: 'easy',
+  },
+
+  'aɪ': {
+    phoneme: '/aɪ/ (아이)',
+    examples: ['my', 'time', 'fly'],
+    koreanGuide: '한국어 '아'에서 '이'로 이동',
+    articulationTip: '/ɑ/에서 시작 → /ɪ/로 부드럽게 전환',
+    commonMistakes: [
+      '단모음으로 발음하는 실수',
+      '한국어 '아이'처럼 두 음절로',
+    ],
+    practiceWords: ['my', 'time', 'fly'],
+    difficulty: 'easy',
+  },
+
+  'ɔɪ': {
+    phoneme: '/ɔɪ/ (오이)',
+    examples: ['boy', 'coin', 'enjoy'],
+    koreanGuide: '한국어 '오'에서 '이'로 이동',
+    articulationTip: '/ɔ/에서 시작 → /ɪ/로 부드럽게 전환',
+    commonMistakes: [
+      '한국어 '오이'처럼 두 음절로',
+      '첫 소리를 충분히 둥글게',
+    ],
+    practiceWords: ['boy', 'coin', 'toy'],
+    difficulty: 'medium',
+  },
+
+  'aʊ': {
+    phoneme: '/aʊ/ (아우)',
+    examples: ['now', 'house', 'brown'],
+    koreanGuide: '한국어 '아'에서 '우'로 이동',
+    articulationTip: '/ɑ/에서 시작 → /ʊ/로 부드럽게 전환',
+    commonMistakes: [
+      '한국어 '아우'처럼 두 음절로',
+      '입술을 충분히 둥글게',
+    ],
+    practiceWords: ['now', 'house', 'cow'],
+    difficulty: 'medium',
+  },
+
+  'oʊ': {
+    phoneme: '/oʊ/ (오우)',
+    examples: ['go', 'home', 'know'],
+    koreanGuide: '한국어 '오'에서 '우'로 이동',
+    articulationTip: '/o/에서 시작 → /ʊ/로 부드럽게 전환',
+    commonMistakes: [
+      '한국어 '오'로만 발음',
+      '두 번째 소리를 생략',
+    ],
+    practiceWords: ['go', 'home', 'know'],
+    difficulty: 'easy',
+  },
+};
+
+/**
+ * 음소 발음 팁 검색
+ */
+export function getPhoneTip(phoneme: string): PhonemeTip | undefined {
+  return consonantTips[phoneme] || vowelTips[phoneme];
+}
+
+/**
+ * 단어에서 어려운 음소 찾기
+ */
+export function findDifficultPhonemes(word: string): PhonemeTip[] {
+  const difficult: PhonemeTip[] = [];
+  const lowerWord = word.toLowerCase();
+
+  // 어려운 자음 패턴 감지
+  const difficultPatterns = [
+    { pattern: /th/g, phoneme: 'θ' },      // think
+    { pattern: /the?[^n]/g, phoneme: 'ð' }, // the, father
+    { pattern: /r/g, phoneme: 'r' },
+    { pattern: /l/g, phoneme: 'l' },
+    { pattern: /v/g, phoneme: 'v' },
+    { pattern: /sh/g, phoneme: 'ʃ' },
+    { pattern: /ng/g, phoneme: 'ŋ' },
+  ];
+
+  for (const { pattern, phoneme } of difficultPatterns) {
+    if (pattern.test(lowerWord)) {
+      const tip = getPhoneTip(phoneme);
+      if (tip && tip.difficulty !== 'easy') {
+        difficult.push(tip);
+      }
+    }
+  }
+
+  return difficult;
+}
+
+/**
+ * 전체 음소 팁 목록
+ */
+export function getAllPhonemeTips(): PhonemeTip[] {
+  return [
+    ...Object.values(consonantTips),
+    ...Object.values(vowelTips),
+  ];
+}
+
+/**
+ * 난이도별 필터링
+ */
+export function getPhonemeTipsByDifficulty(
+  difficulty: 'easy' | 'medium' | 'hard'
+): PhonemeTip[] {
+  return getAllPhonemeTips().filter(tip => tip.difficulty === difficulty);
+}

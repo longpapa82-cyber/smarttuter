@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { Send, Volume2, VolumeX, Settings as SettingsIcon, Sparkles, Image as ImageIcon, Mic, TrendingUp, Theater, LineChart, Pencil } from 'lucide-react';
+import { Send, Volume2, VolumeX, Settings as SettingsIcon, Sparkles, Image as ImageIcon, Mic, TrendingUp, Theater, LineChart, Pencil, GraduationCap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { VoiceButton } from '@/components/voice/VoiceButton';
 import { ContinuousVoiceInput } from '@/components/voice/ContinuousVoiceInput';
@@ -21,6 +21,7 @@ import MathHandwritingCanvas from '@/components/math/MathHandwritingCanvas';
 import InteractiveMathGraph from '@/components/math/InteractiveMathGraph';
 import StepByStepSolution from '@/components/math/StepByStepSolution';
 import ErrorFeedback from '@/components/math/ErrorFeedback';
+import StepByStepGuide from '@/components/math/StepByStepGuide';
 import PronunciationPractice from '@/components/pronunciation/PronunciationPractice';
 import LevelAssessmentCard from '@/components/learning/LevelAssessmentCard';
 import LevelUpNotification from '@/components/learning/LevelUpNotification';
@@ -122,6 +123,8 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
   const [isMathGraphOpen, setIsMathGraphOpen] = useState(false);
   const [mathGraphType, setMathGraphType] = useState<'quadratic' | 'linear' | 'circle' | 'trigonometric' | 'exponential'>('quadratic');
   const [detectedGraph, setDetectedGraph] = useState<GraphInfo | null>(null);
+  const [isStepByStepOpen, setIsStepByStepOpen] = useState(false);
+  const [stepByStepProblem, setStepByStepProblem] = useState('');
 
   // Adaptive Learning State (English only)
   const [adaptiveState, setAdaptiveState] = useState<AdaptiveLearningState | null>(null);
@@ -1055,8 +1058,8 @@ ${scenario.initialMessage}`,
               </div>
             )}
 
-            {/* Image Upload Button (English only) - DISABLED */}
-            {/* {subject === 'english' && (
+            {/* Image Upload Button (English only) - Tesseract.js OCR */}
+            {subject === 'english' && (
               <button
                 type="button"
                 onClick={() => setIsImageUploadOpen(!isImageUploadOpen)}
@@ -1066,11 +1069,11 @@ ${scenario.initialMessage}`,
                     ? 'bg-gradient-to-br from-purple-500 to-blue-500 text-white shadow-lg'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
-                title="이미지에서 텍스트 인식"
+                title="이미지에서 텍스트 인식 (영어 문제, 지문)"
               >
                 <ImageIcon className="w-5 h-5" />
               </button>
-            )} */}
+            )}
 
             {/* Image Upload Button (Math only) */}
             {subject === 'math' && (
@@ -1103,6 +1106,30 @@ ${scenario.initialMessage}`,
                 title="수식 필기 입력 (무료!)"
               >
                 <Pencil className="w-5 h-5" />
+              </button>
+            )}
+
+            {/* Step-by-Step Guide Button (Math only) - Khan Academy Style! */}
+            {subject === 'math' && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (input.trim()) {
+                    setStepByStepProblem(input.trim());
+                    setIsStepByStepOpen(true);
+                  } else {
+                    alert('풀이할 문제를 입력해주세요!');
+                  }
+                }}
+                disabled={isLoading || !input.trim()}
+                className={`shrink-0 p-3 rounded-xl transition-all ${
+                  isStepByStepOpen
+                    ? 'bg-gradient-to-br from-purple-500 to-indigo-500 text-white shadow-lg'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
+                title="단계별 풀이 가이드 (Khan Academy 스타일)"
+              >
+                <GraduationCap className="w-5 h-5" />
               </button>
             )}
 
@@ -1362,6 +1389,37 @@ ${scenario.initialMessage}`,
                   setHasUserInteracted(true);
                 }}
                 onClose={() => setIsHandwritingOpen(false)}
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Step-by-Step Guide Modal (Math only) - Khan Academy Style! */}
+      <AnimatePresence>
+        {isStepByStepOpen && subject === 'math' && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setIsStepByStepOpen(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6"
+            >
+              <StepByStepGuide
+                problem={stepByStepProblem}
+                gradeLevel={gradeLevel}
+                onComplete={(summary) => {
+                  console.log('✅ Step-by-step completed:', summary);
+                  setIsStepByStepOpen(false);
+                }}
+                onClose={() => setIsStepByStepOpen(false)}
               />
             </motion.div>
           </motion.div>

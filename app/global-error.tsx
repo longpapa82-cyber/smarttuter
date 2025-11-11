@@ -1,9 +1,9 @@
 'use client'
 
-import * as Sentry from '@sentry/nextjs'
 import { useEffect } from 'react'
 import Link from 'next/link'
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react'
+import { captureClientError } from '@/lib/error-tracking/client'
 
 export default function GlobalError({
   error,
@@ -13,8 +13,11 @@ export default function GlobalError({
   reset: () => void
 }) {
   useEffect(() => {
-    // Capture error in Sentry
-    Sentry.captureException(error)
+    // Capture error in Custom Error Tracker
+    captureClientError(error, {
+      pathname: typeof window !== 'undefined' ? window.location.pathname : 'unknown',
+      digest: error.digest,
+    })
   }, [error])
 
   return (

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Home, RefreshCw, AlertCircle } from "lucide-react";
-import * as Sentry from "@sentry/nextjs";
+import { captureClientError } from "@/lib/error-tracking/client";
 
 export default function Error({
   error,
@@ -16,15 +16,10 @@ export default function Error({
   const [showCacheClearHelp, setShowCacheClearHelp] = useState(false);
 
   useEffect(() => {
-    // Send error to Sentry for monitoring
-    Sentry.captureException(error, {
-      tags: {
-        errorBoundary: "app-level",
-      },
-      extra: {
-        digest: error.digest,
-        autoRetryCount,
-      },
+    // Send error to Custom Error Tracker
+    captureClientError(error, {
+      pathname: window.location.pathname,
+      digest: error.digest,
     });
 
     console.error("Application error:", error);

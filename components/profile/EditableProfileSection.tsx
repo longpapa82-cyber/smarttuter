@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { getUserProfile, updateUserProfile, validateNickname } from '@/lib/user/user-profile';
 import { GRADE_LEVEL_OPTIONS, SUBJECT_OPTIONS, type GradeLevel, type Subject } from '@/types/user';
@@ -31,20 +32,14 @@ export default function EditableProfileSection() {
       return;
     }
 
-    if (!gradeLevel) {
-      setError('학교급을 선택해주세요.');
-      return;
-    }
-
     if (subjects.length === 0) {
       setError('최소 1개 이상의 과목을 선택해주세요.');
       return;
     }
 
-    // 업데이트
+    // 업데이트 (gradeLevel 제외 - Settings에서만 변경 가능)
     updateUserProfile({
       nickname,
-      gradeLevel,
       preferredSubjects: subjects,
       learningGoals: learningGoals || undefined,
     });
@@ -128,38 +123,39 @@ export default function EditableProfileSection() {
           )}
         </div>
 
-        {/* Grade Level */}
+        {/* Grade Level - Read-only with Settings link */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             학교급
           </label>
-          {isEditing ? (
-            <div className="grid grid-cols-2 gap-2">
-              {GRADE_LEVEL_OPTIONS.map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => setGradeLevel(option.value)}
-                  className={`p-3 rounded-lg border-2 transition-all ${
-                    gradeLevel === option.value
-                      ? 'border-purple-600 bg-purple-50'
-                      : 'border-gray-200 hover:border-purple-300'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl">{option.emoji}</span>
-                    <div className="text-left">
-                      <div className="font-semibold text-sm">{option.label}</div>
-                      <div className="text-xs text-gray-600">{option.ageRange}</div>
-                    </div>
-                  </div>
-                </button>
-              ))}
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">
+                {GRADE_LEVEL_OPTIONS.find((o) => o.value === profile.gradeLevel)?.emoji}
+              </span>
+              <div>
+                <p className="text-gray-900 font-semibold">
+                  {GRADE_LEVEL_OPTIONS.find((o) => o.value === profile.gradeLevel)?.label}
+                </p>
+                {profile.gradeLevelSetAt && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    설정일: {new Date(profile.gradeLevelSetAt).toLocaleDateString('ko-KR')}
+                  </p>
+                )}
+              </div>
             </div>
-          ) : (
-            <p className="text-gray-900 font-semibold">
-              {GRADE_LEVEL_OPTIONS.find((o) => o.value === profile.gradeLevel)?.label}
-            </p>
-          )}
+            <Link
+              href="/settings"
+              className="flex items-center gap-1 text-sm text-primary-600 hover:text-primary-700 font-medium transition-colors"
+            >
+              <span>학년 변경</span>
+              <span>→</span>
+            </Link>
+          </div>
+          <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
+            <span>ℹ️</span>
+            <span>학년 변경은 24시간에 1회만 가능합니다</span>
+          </p>
         </div>
 
         {/* Subjects */}

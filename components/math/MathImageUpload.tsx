@@ -86,11 +86,21 @@ export default function MathImageUpload({ onTextRecognized, onClose }: MathImage
       setOcrEngine(result.engine);
       setConfidence(result.confidence);
 
-      // If we got LaTeX, convert it to plain text for better readability
-      const displayText = result.latex ? result.latex : result.text;
+      // Combine ALL OCR results for comprehensive context
+      let fullText = result.text || '';
+
+      // Append LaTeX formulas if available
+      if (result.latex) {
+        fullText += (fullText ? '\n\n' : '') + '수식:\n' + result.latex;
+      }
+
+      // Append tables if available
+      if (result.tables && result.tables.length > 0) {
+        fullText += (fullText ? '\n\n' : '') + '표:\n' + result.tables.join('\n\n');
+      }
 
       setProgress(100);
-      setRecognizedText(displayText);
+      setRecognizedText(fullText);
 
       // Small delay to show 100% completion
       setTimeout(() => {
@@ -316,11 +326,15 @@ export default function MathImageUpload({ onTextRecognized, onClose }: MathImage
                   </div>
                   {ocrEngine && (
                     <div className="flex items-center gap-2">
+                      {ocrEngine === 'gemini-vision' && <Sparkles className="w-4 h-4 text-indigo-500" />}
                       {ocrEngine === 'mathpix' && <Sparkles className="w-4 h-4 text-purple-500" />}
                       {ocrEngine === 'google-vision' && <Zap className="w-4 h-4 text-blue-500" />}
+                      {ocrEngine === 'pix2text' && <Zap className="w-4 h-4 text-orange-500" />}
                       <span className="text-xs text-gray-600">
-                        {ocrEngine === 'mathpix' ? 'Mathpix (프리미엄)' :
+                        {ocrEngine === 'gemini-vision' ? 'Gemini Vision AI (프리미엄)' :
+                         ocrEngine === 'mathpix' ? 'Mathpix (프리미엄)' :
                          ocrEngine === 'google-vision' ? 'Google Vision' :
+                         ocrEngine === 'pix2text' ? 'Pix2Text' :
                          'Tesseract (무료)'}
                       </span>
                       {confidence > 0 && (

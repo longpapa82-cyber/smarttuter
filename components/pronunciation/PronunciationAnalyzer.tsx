@@ -247,6 +247,102 @@ export function PronunciationAnalyzerComponent({ targetText, onAnalysisComplete 
             <p className="text-sm opacity-90">분석 시간: {Math.round(analysis.processingTime)}ms</p>
           </div>
 
+          {/* 단어별 발음 분석 (색상 피드백) */}
+          {analysis.phonemes.length > 0 && (
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">📝 단어별 발음 분석</h3>
+              <div className="space-y-3">
+                {/* 타겟 문장 (단어별 색상) */}
+                <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">목표 문장:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {analysis.phonemes.map((phoneme, i) => (
+                      <span
+                        key={i}
+                        className={`px-3 py-1.5 rounded-lg font-medium text-lg ${
+                          phoneme.severity === 'perfect'
+                            ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-2 border-green-300 dark:border-green-700'
+                            : phoneme.severity === 'good'
+                            ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-2 border-blue-300 dark:border-blue-700'
+                            : phoneme.severity === 'fair'
+                            ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-2 border-yellow-300 dark:border-yellow-700'
+                            : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-2 border-red-300 dark:border-red-700'
+                        }`}
+                        title={`정확도: ${Math.round(phoneme.accuracy * 100)}%`}
+                      >
+                        {phoneme.target}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 인식된 문장 */}
+                <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">인식된 문장:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {analysis.phonemes.map((phoneme, i) => (
+                      <span
+                        key={i}
+                        className="px-3 py-1.5 rounded-lg font-medium text-lg bg-white dark:bg-gray-600 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-500"
+                      >
+                        {phoneme.actual || '(없음)'}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 색상 범례 */}
+                <div className="flex flex-wrap gap-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="w-4 h-4 rounded bg-green-500"></span>
+                    <span className="text-gray-700 dark:text-gray-300">완벽 (95%+)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-4 h-4 rounded bg-blue-500"></span>
+                    <span className="text-gray-700 dark:text-gray-300">좋음 (80-94%)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-4 h-4 rounded bg-yellow-500"></span>
+                    <span className="text-gray-700 dark:text-gray-300">보통 (60-79%)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-4 h-4 rounded bg-red-500"></span>
+                    <span className="text-gray-700 dark:text-gray-300">개선 필요 (&lt;60%)</span>
+                  </div>
+                </div>
+
+                {/* 단어별 상세 피드백 */}
+                {analysis.phonemes.filter(p => p.severity !== 'perfect').length > 0 && (
+                  <div className="mt-4 space-y-2">
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">개선이 필요한 단어:</p>
+                    {analysis.phonemes
+                      .filter(p => p.severity !== 'perfect')
+                      .map((phoneme, i) => (
+                        <div
+                          key={i}
+                          className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border-l-4 border-yellow-500"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1">
+                              <p className="font-medium text-gray-900 dark:text-white">
+                                &quot;{phoneme.target}&quot; → &quot;{phoneme.actual || '없음'}&quot;
+                              </p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                {phoneme.feedback}
+                              </p>
+                            </div>
+                            <span className="text-sm font-bold text-gray-600 dark:text-gray-400">
+                              {Math.round(phoneme.accuracy * 100)}%
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* 세부 점수 */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <ScoreCard

@@ -63,9 +63,12 @@ function ProfileDropdown() {
   const { user, signOut, isAuthenticated } = useAuth();
   const profile = useUserStore((state) => state.profile);
 
+  // Check if user is admin
+  const isAdmin = user?.email === 'a090723@naver.com';
+
   const profileItems = [
     { href: "/profile", label: "프로필 편집", icon: <User className="w-4 h-4" /> },
-    { href: "/settings", label: "설정", icon: <Settings className="w-4 h-4" /> },
+    { href: "/settings", label: "학년 설정", icon: <Settings className="w-4 h-4" /> },
     { href: "/learning-report", label: "학습 리포트", icon: <BarChart3 className="w-4 h-4" /> },
   ];
 
@@ -130,6 +133,21 @@ function ProfileDropdown() {
               </Link>
             ))}
 
+            {/* Admin Dashboard Link - Only for admin */}
+            {isAdmin && (
+              <>
+                <div className="border-t border-gray-100 my-2" />
+                <Link
+                  href="/admin/errors"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 px-4 py-2.5 text-gray-500 hover:bg-gray-50 transition-colors"
+                >
+                  <Settings className="w-4 h-4" />
+                  <span className="text-xs font-medium">Admin Dashboard</span>
+                </Link>
+              </>
+            )}
+
             <div className="border-t border-gray-100 mt-2 pt-2">
               <button
                 onClick={handleLogout}
@@ -149,7 +167,10 @@ function ProfileDropdown() {
 
 function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const pathname = usePathname();
-  const { isAuthenticated, signOut } = useAuth();
+  const { user, isAuthenticated, signOut } = useAuth();
+
+  // Check if user is admin
+  const isAdmin = user?.email === 'a090723@naver.com';
 
   const mobileNavItems = [
     { href: "/", label: "홈", icon: <Home className="w-5 h-5" /> },
@@ -245,6 +266,19 @@ function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
                     <Settings className="w-5 h-5" />
                     <span>설정</span>
                   </Link>
+
+                  {/* Admin Dashboard Link - Only for admin */}
+                  {isAdmin && (
+                    <Link
+                      href="/admin/errors"
+                      onClick={onClose}
+                      className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-500 hover:bg-gray-50 active:bg-gray-100 transition-all touch-manipulation min-h-[48px]"
+                    >
+                      <Settings className="w-5 h-5" />
+                      <span className="text-sm">Admin Dashboard</span>
+                    </Link>
+                  )}
+
                   <button
                     onClick={handleLogout}
                     className="flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 active:bg-red-100 transition-all touch-manipulation w-full min-h-[48px]"
