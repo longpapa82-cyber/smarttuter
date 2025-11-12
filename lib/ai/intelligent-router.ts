@@ -31,7 +31,7 @@ class IntelligentRouter {
    */
   async routeQuestion(
     question: string,
-    subject: 'math' | 'english' | 'science' | 'social',
+    subject: 'math' | 'english' | 'science' | 'social-studies',
     gradeLevel: string,
     conversationHistory?: Array<{ role: string; content: string }>
   ): Promise<RoutingDecision> {

@@ -342,7 +342,7 @@ export async function POST(req: NextRequest) {
     });
 
     // Build conversation history for Gemini
-    const chatHistory = [];
+    const chatHistory: Array<{ role: string; parts: Array<{ text: string }> }> = [];
     const recentHistory = conversationHistory?.slice(-10) || [];
 
     for (const msg of recentHistory) {

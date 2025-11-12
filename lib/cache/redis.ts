@@ -1,5 +1,6 @@
 import { Redis } from '@upstash/redis';
 import crypto from 'crypto';
+import type { Subject } from '@/types/tutor';
 
 // Redis client initialization (requires UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN)
 let redis: Redis | null = null;
@@ -22,7 +23,7 @@ function getRedisClient(): Redis | null {
 
 // Generate cache key from conversation context
 export function generateCacheKey(
-  subject: 'english' | 'math',
+  subject: Subject,
   message: string,
   gradeLevel: string,
   conversationHistory: Array<{ role: string; content: string }>

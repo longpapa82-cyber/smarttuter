@@ -283,6 +283,8 @@ export interface GuidanceMessageTemplate {
     math: string[];
     english: string[];
     korean?: string[];
+    science?: string[];
+    'social-studies'?: string[];
   };
   outOfExpertise?: {
     honest: string[];

@@ -14,7 +14,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 export interface OptimizedClassification {
-  subject: 'english' | 'math' | 'science' | 'social' | 'korean' | 'other';
+  subject: 'english' | 'math' | 'science' | 'social-studies' | 'korean' | 'other';
   confidence: number;
   isOnTopic: boolean;
   reason: string;
@@ -27,7 +27,7 @@ export interface OptimizedClassification {
  */
 export function quickClassify(
   question: string,
-  expectedSubject: 'english' | 'math' | 'science' | 'social' | 'korean'
+  expectedSubject: 'english' | 'math' | 'science' | 'social-studies' | 'korean'
 ): OptimizedClassification | null {
   const lower = question.toLowerCase();
 
@@ -39,8 +39,8 @@ export function quickClassify(
               'pronunciation', '발음', 'reading', '독해', 'writing', '작문'],
     science: ['과학', 'science', '실험', 'experiment', '화학', 'chemistry', '물리', 'physics',
               '생물', 'biology', '원소', 'element', '세포', 'cell', '에너지', 'energy'],
-    social: ['사회', 'social', '역사', 'history', '지리', 'geography', '정치', 'politics',
-             '경제', 'economics', '문화', 'culture', '시민', 'civic'],
+    'social-studies': ['사회', 'social', '역사', 'history', '지리', 'geography', '정치', 'politics',
+                       '경제', 'economics', '문화', 'culture', '시민', 'civic'],
     korean: ['국어', 'korean', '문학', 'literature', '시', 'poem', '소설', 'novel',
              '작가', 'author', '맞춤법', 'spelling', '한글', 'hangul', '독서', 'reading']
   };
@@ -50,7 +50,7 @@ export function quickClassify(
     math: keywords.math.filter(kw => lower.includes(kw)).length,
     english: keywords.english.filter(kw => lower.includes(kw)).length,
     science: keywords.science.filter(kw => lower.includes(kw)).length,
-    social: keywords.social.filter(kw => lower.includes(kw)).length,
+    'social-studies': keywords['social-studies'].filter(kw => lower.includes(kw)).length,
     korean: keywords.korean.filter(kw => lower.includes(kw)).length,
   };
 
@@ -82,7 +82,7 @@ export function quickClassify(
  */
 export async function classifyAndVerify(
   question: string,
-  expectedSubject: 'english' | 'math' | 'science' | 'social',
+  expectedSubject: 'english' | 'math' | 'science' | 'social-studies',
   answer: string
 ): Promise<{
   classification: OptimizedClassification;
@@ -135,10 +135,10 @@ export async function classifyAndVerify(
 
   return {
     classification: {
-      subject: parsed.subject === '영어' ? 'english' : 
+      subject: parsed.subject === '영어' ? 'english' :
                parsed.subject === '수학' ? 'math' :
                parsed.subject === '과학' ? 'science' :
-               parsed.subject === '사회' ? 'social' : 'other',
+               parsed.subject === '사회' ? 'social-studies' : 'other',
       confidence: parsed.confidence,
       isOnTopic: parsed.isOnTopic,
       reason: parsed.reason,
