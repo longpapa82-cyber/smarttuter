@@ -2,7 +2,9 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, MicOff, Volume2, X, CheckCircle2, AlertCircle, Trophy, TrendingUp } from 'lucide-react';
+import { Mic, MicOff, Volume2, X, CheckCircle2, AlertCircle, Trophy, TrendingUp, Lightbulb, Play } from 'lucide-react';
+import { calculateWordAccuracies, type WordAccuracy } from '@/lib/pronunciation/accuracy-calculator';
+import { findDifficultPhonemes, type PhonemeTip } from '@/lib/pronunciation/phoneme-tips-database';
 
 interface PronunciationPracticeProps {
   targetText: string;
@@ -10,21 +12,16 @@ interface PronunciationPracticeProps {
   gradeLevel: string;
 }
 
-interface Word {
-  text: string;
-  accuracy: number;
-  isCorrect: boolean;
-}
-
 export default function PronunciationPractice({ targetText, onClose, gradeLevel }: PronunciationPracticeProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [recognizedText, setRecognizedText] = useState('');
   const [accuracy, setAccuracy] = useState<number | null>(null);
-  const [wordResults, setWordResults] = useState<Word[]>([]);
+  const [wordAccuracies, setWordAccuracies] = useState<WordAccuracy[]>([]);
   const [feedback, setFeedback] = useState('');
-  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [phonemeTips, setPhonemeTips] = useState<PhonemeTip[]>([]);
   const [attemptCount, setAttemptCount] = useState(0);
   const [isListening, setIsListening] = useState(false);
+  const [playingWord, setPlayingWord] = useState<string | null>(null);
 
   const recognitionRef = useRef<any>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -87,88 +84,43 @@ export default function PronunciationPractice({ targetText, onClose, gradeLevel 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Levenshtein Distance 계산
-  const levenshteinDistance = (str1: string, str2: string): number => {
-    const s1 = str1.toLowerCase();
-    const s2 = str2.toLowerCase();
-    const matrix: number[][] = [];
+  // 발음 분석 (고급 분석기 사용)
+  const analyzePronunciation = (original: string, recognized: string) => {
+    // 단어별 정확도 계산 (Levenshtein Distance 기반)
+    const wordAccs = calculateWordAccuracies(original, recognized);
+    setWordAccuracies(wordAccs);
 
-    for (let i = 0; i <= s2.length; i++) {
-      matrix[i] = [i];
-    }
-    for (let j = 0; j <= s1.length; j++) {
-      matrix[0][j] = j;
-    }
+    // 전체 정확도 (단어 평균)
+    const overallAccuracy = wordAccs.length > 0
+      ? wordAccs.reduce((sum, w) => sum + w.accuracy, 0) / wordAccs.length
+      : 0;
+    setAccuracy(Math.round(overallAccuracy));
 
-    for (let i = 1; i <= s2.length; i++) {
-      for (let j = 1; j <= s1.length; j++) {
-        if (s2.charAt(i - 1) === s1.charAt(j - 1)) {
-          matrix[i][j] = matrix[i - 1][j - 1];
-        } else {
-          matrix[i][j] = Math.min(
-            matrix[i - 1][j - 1] + 1,
-            matrix[i][j - 1] + 1,
-            matrix[i - 1][j] + 1
-          );
+    // 어려운 음소 찾기 및 발음 팁 제공
+    const difficultWords = wordAccs
+      .filter(w => w.accuracy < 80)
+      .map(w => w.expectedWord);
+
+    const allTips: PhonemeTip[] = [];
+    for (const word of difficultWords) {
+      const tips = findDifficultPhonemes(word);
+      // 중복 제거 (동일 음소)
+      for (const tip of tips) {
+        if (!allTips.find(t => t.phoneme === tip.phoneme)) {
+          allTips.push(tip);
         }
       }
     }
-
-    return matrix[s2.length][s1.length];
-  };
-
-  // 유사도 계산
-  const calculateSimilarity = (str1: string, str2: string): number => {
-    const distance = levenshteinDistance(str1, str2);
-    const maxLength = Math.max(str1.length, str2.length);
-    if (maxLength === 0) return 100;
-    return ((maxLength - distance) / maxLength) * 100;
-  };
-
-  // 발음 분석
-  const analyzePronunciation = (original: string, recognized: string) => {
-    const normalizeText = (text: string) =>
-      text.toLowerCase().replace(/[.,!?;:]/g, '').trim();
-
-    const originalWords = normalizeText(original).split(/\s+/);
-    const recognizedWords = normalizeText(recognized).split(/\s+/);
-
-    // 단어별 분석
-    const words: Word[] = [];
-    const maxLength = Math.max(originalWords.length, recognizedWords.length);
-
-    for (let i = 0; i < maxLength; i++) {
-      const orig = originalWords[i] || '';
-      const recog = recognizedWords[i] || '';
-
-      if (orig || recog) {
-        const wordAccuracy = calculateSimilarity(orig, recog);
-        words.push({
-          text: orig,
-          accuracy: Math.round(wordAccuracy),
-          isCorrect: wordAccuracy >= 80,
-        });
-      }
-    }
-
-    setWordResults(words);
-
-    // 전체 정확도
-    const overallAccuracy = calculateSimilarity(
-      normalizeText(original),
-      normalizeText(recognized)
-    );
-    setAccuracy(Math.round(overallAccuracy));
+    setPhonemeTips(allTips.slice(0, 3)); // 최대 3개만 표시
 
     // 피드백 생성
-    generateFeedback(overallAccuracy, words);
+    generateFeedback(overallAccuracy, wordAccs);
     setAttemptCount(prev => prev + 1);
   };
 
   // 피드백 생성
-  const generateFeedback = (acc: number, words: Word[]) => {
+  const generateFeedback = (acc: number, words: WordAccuracy[]) => {
     let feedbackText = '';
-    const suggestionsList: string[] = [];
 
     if (acc >= 95) {
       feedbackText = '완벽해요! 🌟 원어민처럼 발음하셨어요!';
@@ -183,28 +135,6 @@ export default function PronunciationPractice({ targetText, onClose, gradeLevel 
     }
 
     setFeedback(feedbackText);
-
-    // 틀린 단어
-    const incorrectWords = words.filter(w => !w.isCorrect && w.text);
-    if (incorrectWords.length > 0) {
-      suggestionsList.push('특히 주의가 필요한 단어:');
-      incorrectWords.slice(0, 3).forEach(word => {
-        suggestionsList.push(`  • "${word.text}" (${word.accuracy}%)`);
-      });
-    }
-
-    // 개선 팁
-    if (acc < 85) {
-      suggestionsList.push('');
-      suggestionsList.push('💡 발음 개선 팁:');
-      if (acc < 70) {
-        suggestionsList.push('  • 더 천천히, 또박또박 발음하세요');
-        suggestionsList.push('  • 각 단어를 명확하게 구분하세요');
-      }
-      suggestionsList.push('  • 마이크와 입의 거리를 적당히 유지하세요');
-    }
-
-    setSuggestions(suggestionsList);
   };
 
   // 녹음 시작/중지
@@ -219,9 +149,9 @@ export default function PronunciationPractice({ targetText, onClose, gradeLevel 
       // 시작
       setRecognizedText('');
       setAccuracy(null);
-      setWordResults([]);
+      setWordAccuracies([]);
       setFeedback('');
-      setSuggestions([]);
+      setPhonemeTips([]);
 
       try {
         if (recognitionRef.current) {
@@ -241,6 +171,18 @@ export default function PronunciationPractice({ targetText, onClose, gradeLevel 
       const utterance = new SpeechSynthesisUtterance(targetText);
       utterance.lang = 'en-US';
       utterance.rate = 0.9; // 약간 느리게
+      window.speechSynthesis.speak(utterance);
+    }
+  };
+
+  // 단어별 발음 재생
+  const playWord = (word: string) => {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      setPlayingWord(word);
+      const utterance = new SpeechSynthesisUtterance(word);
+      utterance.lang = 'en-US';
+      utterance.rate = 0.8; // 더 느리게
+      utterance.onend = () => setPlayingWord(null);
       window.speechSynthesis.speak(utterance);
     }
   };
@@ -375,29 +317,46 @@ export default function PronunciationPractice({ targetText, onClose, gradeLevel 
             </div>
 
             {/* Word-by-Word Analysis */}
-            {wordResults.length > 0 && (
+            {wordAccuracies.length > 0 && (
               <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
                 <h4 className="text-sm font-medium text-gray-500 mb-3">단어별 분석</h4>
                 <div className="flex flex-wrap gap-2">
-                  {wordResults.map((word, index) => (
-                    <div
-                      key={index}
-                      className={`
-                        px-3 py-1.5 rounded-lg text-sm font-medium
-                        ${word.isCorrect
-                          ? 'bg-green-100 text-green-700 border border-green-300'
-                          : 'bg-red-100 text-red-700 border border-red-300'
-                        }
-                      `}
-                    >
-                      {word.text}
-                      {!word.isCorrect && (
-                        <span className="ml-1 text-xs opacity-70">
-                          ({word.accuracy}%)
+                  {wordAccuracies.map((wordAcc, index) => {
+                    const bgColor =
+                      wordAcc.color === 'green' ? 'bg-green-100 text-green-700 border-green-300' :
+                      wordAcc.color === 'yellow' ? 'bg-yellow-100 text-yellow-700 border-yellow-300' :
+                      'bg-red-100 text-red-700 border-red-300';
+
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => playWord(wordAcc.expectedWord)}
+                        disabled={playingWord === wordAcc.expectedWord}
+                        className={`
+                          group relative px-3 py-1.5 rounded-lg text-sm font-medium border
+                          ${bgColor}
+                          ${playingWord === wordAcc.expectedWord ? 'opacity-50' : 'hover:shadow-md transition-all cursor-pointer'}
+                        `}
+                      >
+                        <span className="flex items-center gap-1.5">
+                          {wordAcc.expectedWord}
+                          {wordAcc.accuracy < 90 && (
+                            <span className="text-xs opacity-70">
+                              ({wordAcc.accuracy}%)
+                            </span>
+                          )}
+                          {playingWord !== wordAcc.expectedWord && (
+                            <Play className="w-3 h-3 opacity-0 group-hover:opacity-70 transition-opacity" />
+                          )}
                         </span>
-                      )}
-                    </div>
-                  ))}
+                        {wordAcc.accuracy < 90 && (
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                            클릭하여 정확한 발음 듣기
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -410,14 +369,77 @@ export default function PronunciationPractice({ targetText, onClose, gradeLevel 
               </div>
             )}
 
-            {/* Suggestions */}
-            {suggestions.length > 0 && (
-              <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
-                <div className="space-y-1">
-                  {suggestions.map((suggestion, index) => (
-                    <p key={index} className="text-sm text-blue-900">
-                      {suggestion}
-                    </p>
+            {/* Phoneme Tips (발음 팁) */}
+            {phonemeTips.length > 0 && (
+              <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-2xl p-6 shadow-lg border-2 border-purple-200">
+                <div className="flex items-center gap-2 mb-4">
+                  <Lightbulb className="w-5 h-5 text-purple-600" />
+                  <h4 className="font-bold text-purple-900">발음 교정 가이드</h4>
+                </div>
+                <div className="space-y-4">
+                  {phonemeTips.map((tip, index) => (
+                    <div key={index} className="bg-white rounded-xl p-4 border border-purple-200">
+                      <div className="flex items-start justify-between gap-3 mb-2">
+                        <div>
+                          <span className="inline-block px-2 py-1 bg-purple-100 text-purple-700 rounded text-sm font-mono font-bold mb-1">
+                            {tip.phoneme}
+                          </span>
+                          <p className="text-sm font-medium text-gray-900">{tip.koreanGuide}</p>
+                        </div>
+                        <span className={`
+                          px-2 py-0.5 rounded text-xs font-medium
+                          ${tip.difficulty === 'hard' ? 'bg-red-100 text-red-700' :
+                            tip.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                            'bg-green-100 text-green-700'}
+                        `}>
+                          {tip.difficulty === 'hard' ? '어려움' : tip.difficulty === 'medium' ? '보통' : '쉬움'}
+                        </span>
+                      </div>
+
+                      <div className="space-y-2 text-sm">
+                        <div>
+                          <span className="font-medium text-gray-700">조음 방법:</span>
+                          <p className="text-gray-600 mt-1">{tip.articulationTip}</p>
+                        </div>
+
+                        <div>
+                          <span className="font-medium text-gray-700">예시 단어:</span>
+                          <div className="flex flex-wrap gap-1.5 mt-1">
+                            {tip.examples.map((example, i) => (
+                              <span key={i} className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs font-medium">
+                                {example}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        {tip.commonMistakes.length > 0 && (
+                          <div>
+                            <span className="font-medium text-red-600">흔한 실수:</span>
+                            <ul className="mt-1 space-y-0.5">
+                              {tip.commonMistakes.map((mistake, i) => (
+                                <li key={i} className="text-gray-600 text-xs">• {mistake}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        <div>
+                          <span className="font-medium text-blue-600">연습 단어:</span>
+                          <div className="flex flex-wrap gap-1.5 mt-1">
+                            {tip.practiceWords.map((word, i) => (
+                              <button
+                                key={i}
+                                onClick={() => playWord(word)}
+                                className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-medium hover:bg-blue-200 transition-colors"
+                              >
+                                {word} 🔊
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -428,10 +450,10 @@ export default function PronunciationPractice({ targetText, onClose, gradeLevel 
               <button
                 onClick={() => {
                   setAccuracy(null);
-                  setWordResults([]);
+                  setWordAccuracies([]);
                   setRecognizedText('');
                   setFeedback('');
-                  setSuggestions([]);
+                  setPhonemeTips([]);
                 }}
                 className="flex-1 px-4 py-3 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 transition-colors"
               >

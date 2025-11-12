@@ -54,12 +54,12 @@ export default function QuickOnboardingPage() {
 
     const gradeLevel = selectedGrade === '대학생'
       ? '대학교'
-      : \`\${schoolTypeMap[selectedSchoolType]} \${selectedGrade}\`;
+      : `${schoolTypeMap[selectedSchoolType]} ${selectedGrade}`;
 
     createGuestProfile(gradeLevel, [subjectId]);
 
     setTimeout(() => {
-      router.push(\`/tutor/\${subjectId}\`);
+      router.push(`/tutor/${subjectId}`);
     }, 300);
   };
 
@@ -92,9 +92,9 @@ export default function QuickOnboardingPage() {
         </div>
 
         <div className="flex items-center justify-center mb-8 gap-2">
-          <div className={\`w-3 h-3 rounded-full transition-colors \${step === 1 ? 'bg-blue-500' : 'bg-green-500'}\`} />
+          <div className={`w-3 h-3 rounded-full transition-colors \${step === 1 ? 'bg-blue-500' : 'bg-green-500'}`} />
           <div className="w-8 h-0.5 bg-gray-300 dark:bg-gray-600" />
-          <div className={\`w-3 h-3 rounded-full transition-colors \${step === 2 ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'}\`} />
+          <div className={`w-3 h-3 rounded-full transition-colors \${step === 2 ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'}`} />
         </div>
 
         {step === 1 && (
@@ -117,11 +117,11 @@ export default function QuickOnboardingPage() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => handleSchoolTypeSelect(schoolType.id)}
-                  className={\`p-4 rounded-xl border-2 transition-all \${
+                  className={`p-4 rounded-xl border-2 transition-all \${
                     selectedSchoolType === schoolType.id
                       ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
                       : 'border-gray-200 dark:border-gray-700 hover:border-blue-300'
-                  }\`}
+                  }`}
                 >
                   <div className="text-3xl mb-2">{schoolType.icon}</div>
                   <div className="font-semibold text-gray-900 dark:text-white">
@@ -147,11 +147,11 @@ export default function QuickOnboardingPage() {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => handleGradeSelect(grade)}
-                      className={\`py-3 px-4 rounded-lg border-2 font-medium transition-all \${
+                      className={`py-3 px-4 rounded-lg border-2 font-medium transition-all \${
                         selectedGrade === grade
                           ? 'border-blue-500 bg-blue-500 text-white'
                           : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-blue-300'
-                      }\`}
+                      }`}
                     >
                       {grade}
                     </motion.button>
@@ -165,11 +165,11 @@ export default function QuickOnboardingPage() {
               whileTap={{ scale: selectedGrade ? 0.98 : 1 }}
               onClick={handleContinue}
               disabled={!selectedGrade}
-              className={\`w-full py-4 rounded-xl font-semibold text-lg flex items-center justify-center gap-2 transition-all \${
+              className={`w-full py-4 rounded-xl font-semibold text-lg flex items-center justify-center gap-2 transition-all \${
                 selectedGrade
                   ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:shadow-lg'
                   : 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'
-              }\`}
+              }`}
             >
               다음 단계
               <ChevronRight className="w-5 h-5" />
@@ -197,13 +197,13 @@ export default function QuickOnboardingPage() {
                   whileHover={{ scale: 1.03, y: -4 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => handleSubjectSelect(subject.id)}
-                  className={\`relative p-6 rounded-xl border-2 transition-all overflow-hidden group \${
+                  className={`relative p-6 rounded-xl border-2 transition-all overflow-hidden group \${
                     selectedSubject === subject.id
                       ? 'border-blue-500 shadow-lg'
                       : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 hover:shadow-md'
-                  }\`}
+                  }`}
                 >
-                  <div className={\`absolute inset-0 bg-gradient-to-br \${subject.color} opacity-0 group-hover:opacity-10 transition-opacity\`} />
+                  <div className={`absolute inset-0 bg-gradient-to-br \${subject.color} opacity-0 group-hover:opacity-10 transition-opacity`} />
 
                   <div className="relative flex items-start gap-4">
                     <div className="text-4xl">{subject.icon}</div>
