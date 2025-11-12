@@ -39,6 +39,7 @@ import type { RoleplayScenario } from '@/lib/roleplay/scenarios';
 import { parseStepByStepSolution, hasStepByStepFormat } from '@/lib/math/step-parser';
 import { parseErrorDiagnosisResponse, hasErrorDiagnosisFormat, extractCleanContent } from '@/lib/math/error-parser';
 import { parseGraphInfo, type GraphInfo } from '@/lib/math/graph-parser';
+import { MathRenderer, containsMath } from '@/components/chat/MathRenderer';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -924,10 +925,15 @@ ${scenario.initialMessage}`,
                           : message.content;
 
                         return cleanContent && (
-                          <p className="whitespace-pre-wrap leading-relaxed">
-                            {/* TEMP FIX: Disable TypingEffect to test for duplicates */}
-                            {cleanContent}
-                          </p>
+                          containsMath(cleanContent) ? (
+                            <div className="text-sm md:text-base leading-relaxed">
+                              <MathRenderer content={cleanContent} />
+                            </div>
+                          ) : (
+                            <p className="whitespace-pre-wrap leading-relaxed">
+                              {cleanContent}
+                            </p>
+                          )
                         );
                       })()}
 

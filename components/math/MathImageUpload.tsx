@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, X, Camera, Loader2, Check, AlertCircle, Sparkles, Zap, Pen } from 'lucide-react';
 import { smartOCR, getAvailableEngines, hasPremiumOCR } from '@/lib/ocr/smart-ocr';
 import MathHandwritingCanvas from './MathHandwritingCanvas';
+import { MathRenderer, containsMath } from '@/components/chat/MathRenderer';
+import { formatOCRSections } from '@/lib/ocr/latex-formatter';
 
 interface MathImageUploadProps {
   onTextRecognized: (text: string) => void;
@@ -86,21 +88,15 @@ export default function MathImageUpload({ onTextRecognized, onClose }: MathImage
       setOcrEngine(result.engine);
       setConfidence(result.confidence);
 
-      // Combine ALL OCR results for comprehensive context
-      let fullText = result.text || '';
-
-      // Append LaTeX formulas if available
-      if (result.latex) {
-        fullText += (fullText ? '\n\n' : '') + '수식:\n' + result.latex;
-      }
-
-      // Append tables if available
-      if (result.tables && result.tables.length > 0) {
-        fullText += (fullText ? '\n\n' : '') + '표:\n' + result.tables.join('\n\n');
-      }
+      // Format OCR results with proper LaTeX rendering support
+      const formattedText = formatOCRSections({
+        text: result.text,
+        latex: result.latex,
+        tables: result.tables,
+      });
 
       setProgress(100);
-      setRecognizedText(fullText);
+      setRecognizedText(formattedText);
 
       // Small delay to show 100% completion
       setTimeout(() => {
@@ -347,10 +343,16 @@ export default function MathImageUpload({ onTextRecognized, onClose }: MathImage
                 </div>
 
                 <div className="bg-white rounded-lg p-4 border border-green-100">
-                  <p className="text-sm font-medium text-gray-500 mb-2">인식된 텍스트:</p>
-                  <p className="text-gray-900 whitespace-pre-wrap font-mono text-sm">
-                    {recognizedText}
-                  </p>
+                  <p className="text-sm font-medium text-gray-500 mb-2">인식된 내용:</p>
+                  {containsMath(recognizedText) ? (
+                    <div className="text-sm bg-gray-50 p-3 rounded-lg">
+                      <MathRenderer content={recognizedText} />
+                    </div>
+                  ) : (
+                    <p className="text-gray-900 whitespace-pre-wrap font-mono text-sm">
+                      {recognizedText}
+                    </p>
+                  )}
                 </div>
 
                 <p className="text-xs text-green-600">
