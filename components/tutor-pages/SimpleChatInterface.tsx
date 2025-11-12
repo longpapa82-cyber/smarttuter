@@ -41,6 +41,33 @@ import { parseErrorDiagnosisResponse, hasErrorDiagnosisFormat, extractCleanConte
 import { parseGraphInfo, type GraphInfo } from '@/lib/math/graph-parser';
 import { MathRenderer, containsMath } from '@/components/chat/MathRenderer';
 
+/**
+ * Clean markdown formatting from AI responses
+ * Removes code blocks, duplicate labels, and prepares LaTeX for rendering
+ */
+function cleanMarkdownForMath(content: string): string {
+  if (!content) return content;
+
+  let cleaned = content;
+
+  // Remove markdown code blocks (```...```)
+  cleaned = cleaned.replace(/```[\s\S]*?```/g, (match) => {
+    // Extract content inside code block
+    return match.replace(/```(?:\w+)?\n?/g, '').replace(/```$/g, '');
+  });
+
+  // Remove [수식] labels (duplicate with "수식:" from formatOCRSections)
+  cleaned = cleaned.replace(/\[수식\]\s*/g, '');
+
+  // Remove duplicate "수식:" if it appears multiple times
+  const mathLabelCount = (cleaned.match(/수식:/g) || []).length;
+  if (mathLabelCount > 1) {
+    cleaned = cleaned.replace(/수식:\s*/g, '');
+  }
+
+  return cleaned.trim();
+}
+
 interface Message {
   role: 'user' | 'assistant';
   content: string;
@@ -920,9 +947,14 @@ ${scenario.initialMessage}`,
                     <>
                       {/* Extract clean content (without error diagnosis formatting) */}
                       {(() => {
-                        const cleanContent = subject === 'math' && hasErrorDiagnosisFormat(message.content)
+                        let cleanContent = subject === 'math' && hasErrorDiagnosisFormat(message.content)
                           ? extractCleanContent(message.content)
                           : message.content;
+
+                        // Clean markdown formatting for math content
+                        if (subject === 'math') {
+                          cleanContent = cleanMarkdownForMath(cleanContent);
+                        }
 
                         return cleanContent && (
                           containsMath(cleanContent) ? (
