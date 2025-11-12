@@ -16,9 +16,9 @@ export function HomeClient() {
   const handleCTAClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
 
-    // 로그아웃 상태: 로그인 페이지로 이동
+    // 로그아웃 상태: 빠른 시작 (게스트 모드)
     if (!isAuthenticated) {
-      window.location.href = '/login';
+      window.location.href = '/onboarding/quick';
       return;
     }
 

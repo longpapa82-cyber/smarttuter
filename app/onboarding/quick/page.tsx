@@ -1,372 +1,240 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { GRADE_LEVEL_OPTIONS, SUBJECT_OPTIONS, type GradeLevel, type Subject } from '@/types/user';
-import { createUserProfile, saveUserProfile } from '@/lib/user/user-profile';
-import { GradeDetailStep, getGradeLevelKorean } from '@/components/onboarding/GradeDetailStep';
+import { motion } from 'framer-motion';
+import { GraduationCap, BookOpen, ChevronRight, Sparkles } from 'lucide-react';
+import { createGuestProfile } from '@/lib/user/guest-profile';
 
-/**
- * 빠른 온보딩 페이지 (3단계)
- * - Step 0: 학교급 선택
- * - Step 1: 학년 선택
- * - Step 2: 과목 선택
- * - 게스트 모드로 즉시 시작
- */
+const GRADE_LEVELS = [
+  { id: 'elementary', label: '초등학생', icon: '🎒', grades: ['1학년', '2학년', '3학년', '4학년', '5학년', '6학년'] },
+  { id: 'middle', label: '중학생', icon: '📚', grades: ['1학년', '2학년', '3학년'] },
+  { id: 'high', label: '고등학생', icon: '🎓', grades: ['1학년', '2학년', '3학년'] },
+  { id: 'university', label: '대학생', icon: '🏛️', grades: ['대학생'] },
+];
+
+const SUBJECTS = [
+  { id: 'english', label: '영어', icon: '🇬🇧', color: 'from-blue-500 to-cyan-500', description: '실시간 음성 대화' },
+  { id: 'math', label: '수학', icon: '🔢', color: 'from-purple-500 to-pink-500', description: 'OCR 문제 풀이' },
+  { id: 'science', label: '과학', icon: '🔬', color: 'from-green-500 to-emerald-500', description: '실험·개념 학습' },
+  { id: 'social', label: '사회', icon: '🌍', color: 'from-orange-500 to-red-500', description: '역사·지리·경제' },
+];
+
 export default function QuickOnboardingPage() {
   const router = useRouter();
-  const { data: session } = useSession();
-  const [currentStep, setCurrentStep] = useState(0); // 0: 학교급, 1: 학년, 2: 과목
-  const [gradeLevel, setGradeLevel] = useState<GradeLevel | null>(null);
-  const [gradeDetail, setGradeDetail] = useState<string | null>(null);
-  const [subject, setSubject] = useState<Subject | null>(null);
+  const [step, setStep] = useState<1 | 2>(1);
+  const [selectedSchoolType, setSelectedSchoolType] = useState<string>('');
+  const [selectedGrade, setSelectedGrade] = useState<string>('');
+  const [selectedSubject, setSelectedSubject] = useState<string>('');
 
-  // Check if user already has a profile - redirect to dashboard if yes
-  useEffect(() => {
-    async function checkProfile() {
-      if (typeof window === 'undefined') return;
+  const handleSchoolTypeSelect = (schoolType: string) => {
+    setSelectedSchoolType(schoolType);
+    setSelectedGrade('');
+  };
 
-      // 1. Check localStorage for guest users
-      const hasLocalProfile = localStorage.getItem('aipark_user_profile');
-      if (hasLocalProfile) {
-        console.log('✅ Guest user already has profile, redirecting to dashboard');
-        router.replace('/dashboard');
-        return;
-      }
+  const handleGradeSelect = (grade: string) => {
+    setSelectedGrade(grade);
+  };
 
-      // 2. Check server API for authenticated users
-      if (session?.user) {
-        try {
-          const response = await fetch('/api/user/profile');
-          if (response.ok) {
-            const { user: dbUser } = await response.json();
-
-            // If user has gradeLevel and gradeDetail, they completed onboarding
-            if (dbUser?.gradeLevel && dbUser?.gradeDetail) {
-              console.log('✅ Authenticated user already has profile, redirecting to dashboard');
-              router.replace('/dashboard');
-              return;
-            }
-          }
-        } catch (error) {
-          console.error('Failed to check profile:', error);
-        }
-      }
+  const handleContinue = () => {
+    if (step === 1 && selectedSchoolType && selectedGrade) {
+      setStep(2);
     }
+  };
 
-    checkProfile();
-  }, [router, session]);
+  const handleSubjectSelect = (subjectId: string) => {
+    setSelectedSubject(subjectId);
 
-  // Step 0: 학교급 선택
-  const handleGradeLevel = (level: GradeLevel) => {
-    setGradeLevel(level);
+    const schoolTypeMap: Record<string, string> = {
+      elementary: '초등학교',
+      middle: '중학교',
+      high: '고등학교',
+      university: '대학교',
+    };
+
+    const gradeLevel = selectedGrade === '대학생'
+      ? '대학교'
+      : \`\${schoolTypeMap[selectedSchoolType]} \${selectedGrade}\`;
+
+    createGuestProfile(gradeLevel, [subjectId]);
+
     setTimeout(() => {
-      setCurrentStep(1);  // 학년 선택으로 이동
+      router.push(\`/tutor/\${subjectId}\`);
     }, 300);
   };
 
-  // Step 1: 학년 선택
-  const handleGradeDetail = (detail: string) => {
-    setGradeDetail(detail);
-    setTimeout(() => {
-      setCurrentStep(2);  // 과목 선택으로 이동
-    }, 300);
-  };
-
-  // Step 2: 과목 선택 후 완료
-  const handleSubject = async (selectedSubject: Subject) => {
-    setSubject(selectedSubject);
-
-    // 인증된 사용자 프로필 생성
-    const userProfile = createUserProfile({
-      nickname: session?.user?.name || '사용자',
-      email: session?.user?.email || undefined,
-      gradeLevel: gradeLevel!,
-      preferredSubjects: [selectedSubject],
-      provider: session?.user ? 'credentials' : 'guest',
-    });
-
-    // localStorage에 저장
-    saveUserProfile(userProfile);
-
-    // 게스트 모드 쿠키 설정 (로그인하지 않은 경우)
-    if (!session?.user) {
-      document.cookie = 'aipark_guest_mode=true; path=/; max-age=31536000; SameSite=Lax';
-      console.log('✅ Guest mode cookie set');
-    }
-
-    // 서버에 프로필 저장 (로그인 사용자만)
-    if (session?.user) {
-      try {
-        // 실제 선택한 gradeDetail 사용 (자동 생성 제거)
-        const fullGradeDetail = `${getGradeLevelKorean(gradeLevel!)} ${gradeDetail}`;
-
-        const response = await fetch('/api/user/profile', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            gradeLevel: gradeLevel,
-            gradeDetail: fullGradeDetail,  // 실제 선택한 학년 사용
-            preferredSubjects: [selectedSubject],
-          }),
-        });
-
-        if (!response.ok) {
-          console.error('서버 프로필 저장 실패:', await response.text());
-          // 저장 실패 시에도 계속 진행 (localStorage 프로필 사용)
-        } else {
-          console.log('✅ 서버 프로필 저장 성공');
-
-          // 프로필 저장 확인 (재시도 로직)
-          let retries = 0;
-          const maxRetries = 3;
-          while (retries < maxRetries) {
-            await new Promise(resolve => setTimeout(resolve, 300));
-            const checkResponse = await fetch('/api/user/profile');
-            if (checkResponse.ok) {
-              const { user } = await checkResponse.json();
-              if (user?.gradeLevel && user?.gradeDetail) {
-                console.log('✅ 프로필 확인 완료:', user.gradeDetail);
-                break;
-              }
-            }
-            retries++;
-          }
-        }
-      } catch (error) {
-        console.error('프로필 저장 API 오류:', error);
-      }
-    }
-
-    // 선택한 과목의 대시보드로 이동
-    // 'social-studies' → 'social' URL로 변환
-    const dashboardPath = selectedSubject === 'social-studies' ? 'social' : selectedSubject;
-    router.push(`/dashboard/${dashboardPath}`);
+  const getSchoolTypeData = () => {
+    return GRADE_LEVELS.find((s) => s.id === selectedSchoolType);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-6xl">
-        {/* Progress Bar */}
-        <div className="mb-8">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            {[0, 1, 2].map((step) => (
-              <div
-                key={step}
-                className={`h-2 rounded-full transition-all ${
-                  currentStep > step
-                    ? 'w-16 bg-gradient-to-r from-purple-600 to-pink-600'
-                    : 'w-12 bg-gray-300'
-                }`}
-              />
-            ))}
-          </div>
-          <div className="text-center text-sm text-gray-600">
-            {currentStep + 1}/3 단계 완료
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-4xl"
+      >
+        <div className="text-center mb-8">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+            className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mb-4"
+          >
+            <Sparkles className="w-8 h-8 text-white" />
+          </motion.div>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">
+            AI Park에 오신 것을 환영합니다! 🎉
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 text-lg">
+            {step === 1 ? '학년을 선택하고 바로 시작하세요' : '학습할 과목을 선택하세요'}
+          </p>
         </div>
 
-        {/* Step Content */}
-        <AnimatePresence mode="wait">
-          {currentStep === 0 && (
-            <GradeLevelQuickStep key="grade-level" onSelect={handleGradeLevel} />
-          )}
+        <div className="flex items-center justify-center mb-8 gap-2">
+          <div className={\`w-3 h-3 rounded-full transition-colors \${step === 1 ? 'bg-blue-500' : 'bg-green-500'}\`} />
+          <div className="w-8 h-0.5 bg-gray-300 dark:bg-gray-600" />
+          <div className={\`w-3 h-3 rounded-full transition-colors \${step === 2 ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'}\`} />
+        </div>
 
-          {currentStep === 1 && gradeLevel && (
-            <GradeDetailStep key="grade-detail" gradeLevel={gradeLevel} onSelect={handleGradeDetail} />
-          )}
-
-          {currentStep === 2 && (
-            <SubjectQuickStep key="subject" onSelect={handleSubject} />
-          )}
-        </AnimatePresence>
-      </div>
-    </div>
-  );
-}
-
-/**
- * Step 1: 학교급 선택 (빠른 버전)
- */
-function GradeLevelQuickStep({ onSelect }: { onSelect: (level: GradeLevel) => void }) {
-  const [selectedLevel, setSelectedLevel] = useState<GradeLevel | null>(null);
-
-  const handleSelect = (level: GradeLevel) => {
-    setSelectedLevel(level);
-    setTimeout(() => {
-      onSelect(level);
-    }, 300);
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: 100 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -100 }}
-      className="flex flex-col items-center justify-center min-h-[600px] px-6"
-    >
-      {/* Title */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="text-center mb-12"
-      >
-        <h2 className="text-4xl font-bold mb-3 text-gray-900">
-          어떤 학습자이신가요?
-        </h2>
-        <p className="text-lg text-gray-600">
-          학습 수준에 맞는 콘텐츠를 제공해드립니다
-        </p>
-      </motion.div>
-
-      {/* Grade Level Options - 2x2 Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl w-full">
-        {GRADE_LEVEL_OPTIONS.map((option, index) => (
-          <motion.button
-            key={option.value}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2 + index * 0.1 }}
-            whileHover={{ scale: 1.05, y: -4 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => handleSelect(option.value)}
-            className={`
-              p-8 rounded-2xl border-2 transition-all text-left
-              ${
-                selectedLevel === option.value
-                  ? 'border-purple-600 bg-gradient-to-br from-purple-50 to-pink-50 shadow-xl'
-                  : 'border-gray-200 bg-white hover:border-purple-300 hover:shadow-lg'
-              }
-            `}
+        {step === 1 && (
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 md:p-8"
           >
-            <div className="flex items-start gap-4">
-              <div className="text-5xl">{option.emoji}</div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="text-2xl font-bold text-gray-900">
-                    {option.label}
-                  </h3>
-                  {selectedLevel === option.value && (
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center"
-                    >
-                      <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </motion.div>
-                  )}
-                </div>
-                <p className="text-gray-600 text-sm mb-1">{option.description}</p>
-                <p className="text-xs text-gray-500">{option.ageRange}</p>
-              </div>
+            <div className="flex items-center gap-3 mb-6">
+              <GraduationCap className="w-6 h-6 text-blue-500" />
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                학교급 선택
+              </h2>
             </div>
-          </motion.button>
-        ))}
-      </div>
-    </motion.div>
-  );
-}
 
-/**
- * Step 2: 과목 선택 (빠른 버전 - 단일 선택)
- */
-function SubjectQuickStep({ onSelect }: { onSelect: (subject: Subject) => void }) {
-  const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              {GRADE_LEVELS.map((schoolType) => (
+                <motion.button
+                  key={schoolType.id}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleSchoolTypeSelect(schoolType.id)}
+                  className={\`p-4 rounded-xl border-2 transition-all \${
+                    selectedSchoolType === schoolType.id
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-blue-300'
+                  }\`}
+                >
+                  <div className="text-3xl mb-2">{schoolType.icon}</div>
+                  <div className="font-semibold text-gray-900 dark:text-white">
+                    {schoolType.label}
+                  </div>
+                </motion.button>
+              ))}
+            </div>
 
-  const handleSelect = (subject: Subject) => {
-    setSelectedSubject(subject);
-    setTimeout(() => {
-      onSelect(subject);
-    }, 300);
-  };
+            {selectedSchoolType && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="mb-6"
+              >
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                  학년 선택
+                </h3>
+                <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+                  {getSchoolTypeData()?.grades.map((grade) => (
+                    <motion.button
+                      key={grade}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleGradeSelect(grade)}
+                      className={\`py-3 px-4 rounded-lg border-2 font-medium transition-all \${
+                        selectedGrade === grade
+                          ? 'border-blue-500 bg-blue-500 text-white'
+                          : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-blue-300'
+                      }\`}
+                    >
+                      {grade}
+                    </motion.button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: 100 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -100 }}
-      className="flex flex-col items-center justify-center min-h-[600px] px-6"
-    >
-      {/* Title */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="text-center mb-12"
-      >
-        <h2 className="text-4xl font-bold mb-3 text-gray-900">
-          어떤 과목을 시작할까요?
-        </h2>
-        <p className="text-lg text-gray-600">
-          지금 바로 학습을 시작해보세요
+            <motion.button
+              whileHover={{ scale: selectedGrade ? 1.02 : 1 }}
+              whileTap={{ scale: selectedGrade ? 0.98 : 1 }}
+              onClick={handleContinue}
+              disabled={!selectedGrade}
+              className={\`w-full py-4 rounded-xl font-semibold text-lg flex items-center justify-center gap-2 transition-all \${
+                selectedGrade
+                  ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:shadow-lg'
+                  : 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'
+              }\`}
+            >
+              다음 단계
+              <ChevronRight className="w-5 h-5" />
+            </motion.button>
+          </motion.div>
+        )}
+
+        {step === 2 && (
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 md:p-8"
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <BookOpen className="w-6 h-6 text-purple-500" />
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                과목 선택
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              {SUBJECTS.map((subject) => (
+                <motion.button
+                  key={subject.id}
+                  whileHover={{ scale: 1.03, y: -4 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => handleSubjectSelect(subject.id)}
+                  className={\`relative p-6 rounded-xl border-2 transition-all overflow-hidden group \${
+                    selectedSubject === subject.id
+                      ? 'border-blue-500 shadow-lg'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 hover:shadow-md'
+                  }\`}
+                >
+                  <div className={\`absolute inset-0 bg-gradient-to-br \${subject.color} opacity-0 group-hover:opacity-10 transition-opacity\`} />
+
+                  <div className="relative flex items-start gap-4">
+                    <div className="text-4xl">{subject.icon}</div>
+                    <div className="flex-1 text-left">
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+                        {subject.label}
+                      </h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {subject.description}
+                      </p>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-blue-500 transition-colors" />
+                  </div>
+                </motion.button>
+              ))}
+            </div>
+
+            <button
+              onClick={() => setStep(1)}
+              className="w-full py-3 rounded-xl border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              이전 단계
+            </button>
+          </motion.div>
+        )}
+
+        <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
+          게스트로 시작하시면 7일간 체험 가능합니다 ✨<br />
+          학습 기록을 저장하려면 회원가입이 필요합니다
         </p>
       </motion.div>
-
-      {/* Subject Options - 1x2 Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl w-full">
-        {SUBJECT_OPTIONS.map((option, index) => {
-          const isSelected = selectedSubject === option.value;
-
-          return (
-            <motion.button
-              key={option.value}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 + index * 0.15 }}
-              whileHover={{ scale: 1.05, y: -8 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => handleSelect(option.value)}
-              className={`
-                relative p-10 rounded-3xl transition-all text-left h-80 flex flex-col justify-between overflow-hidden
-                ${
-                  isSelected
-                    ? `bg-gradient-to-br ${option.color} text-white shadow-2xl`
-                    : 'bg-white border-2 border-gray-200 text-gray-900 hover:border-purple-300 hover:shadow-xl'
-                }
-              `}
-            >
-              {/* Checkmark */}
-              {isSelected && (
-                <motion.div
-                  initial={{ scale: 0, rotate: -180 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  className="absolute top-6 right-6 w-10 h-10 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center"
-                >
-                  <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                </motion.div>
-              )}
-
-              <div>
-                <div className="text-7xl mb-6">{option.emoji}</div>
-                <h3 className="text-4xl font-bold mb-3">{option.label}</h3>
-                <p className={`text-lg ${isSelected ? 'text-white/90' : 'text-gray-600'}`}>
-                  {option.description}
-                </p>
-              </div>
-
-              <div className="flex items-center gap-3 text-xl font-semibold">
-                {isSelected ? (
-                  <>
-                    <span>시작하기</span>
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                  </>
-                ) : (
-                  <span>선택하기</span>
-                )}
-              </div>
-            </motion.button>
-          );
-        })}
-      </div>
-    </motion.div>
+    </div>
   );
 }

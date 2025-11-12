@@ -11,10 +11,12 @@ import { getSubjectDefaultSettings, shouldAutoStartVoice } from '@/lib/voice/sub
 import { detectVoiceCommand, getConfirmationMessage, adjustVoiceSpeed } from '@/lib/voice/voice-command-processor';
 import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
 import { usePuterTTS } from '@/hooks/usePuterTTS';
+import { useGoogleTTS } from '@/hooks/useGoogleTTS';
 import { startSession, updateCurrentSession, endSession } from '@/lib/utils/learningData';
 import { TypingEffect } from '@/components/ui/TypingEffect';
 import Avatar from '@/components/ui/Avatar';
 import { BetaBadge } from '@/components/common/BetaBadge';
+import { GuestConversionBanner } from '@/components/guest/GuestConversionBanner';
 import EnglishImageUpload from '@/components/chat/EnglishImageUpload';
 import MathImageUpload from '@/components/math/MathImageUpload';
 import MathHandwritingCanvas from '@/components/math/MathHandwritingCanvas';
@@ -149,10 +151,28 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
     engine: voiceSettings.puterEngine,
   });
 
-  // Select active TTS based on settings
-  const activeTTS = voiceSettings.ttsEngine === 'puter' ? puterTTS : browserTTS;
+  // Google Cloud TTS (Premium quality)
+  const googleTTS = useGoogleTTS({
+    gradeLevel: gradeLevel,
+    language: voiceSettings.outputLanguage,
+    onError: (error) => {
+      console.error('❌ Google TTS error:', error);
+      console.log('⚠️ Falling back to alternative TTS');
+    },
+    onStart: () => console.log('🎤 Google TTS speaking...'),
+    onEnd: () => console.log('✅ Google TTS finished'),
+  });
+
+  // Select active TTS based on settings (Priority: Google > Puter > Browser)
+  const activeTTS =
+    voiceSettings.ttsEngine === 'google' ? googleTTS :
+    voiceSettings.ttsEngine === 'puter' ? puterTTS :
+    browserTTS;
   const { speak, stop, isSpeaking } = activeTTS;
-  const isTTSSupported = voiceSettings.ttsEngine === 'puter' ? puterTTS.isReady : browserTTS.isSupported;
+  const isTTSSupported =
+    voiceSettings.ttsEngine === 'google' ? true : // Google TTS always supported (has fallback)
+    voiceSettings.ttsEngine === 'puter' ? puterTTS.isReady :
+    browserTTS.isSupported;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({
@@ -739,6 +759,9 @@ ${scenario.initialMessage}`,
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+      {/* Guest Conversion Banner */}
+      <GuestConversionBanner />
+
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-md border-b border-gray-200 p-4 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto flex items-center justify-between">

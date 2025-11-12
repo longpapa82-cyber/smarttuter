@@ -17,7 +17,7 @@ export interface VoiceSettingsConfig {
   voiceSpeed: number // 0.5 - 2.0
   voicePitch: number // 0.0 - 2.0
   voiceVolume: number // 0.0 - 1.0
-  ttsEngine: 'browser' | 'puter' // TTS engine selection
+  ttsEngine: 'browser' | 'puter' | 'google' // TTS engine selection
   puterEngine: 'standard' | 'neural' | 'generative' // Puter.js engine quality
 
   // Advanced
@@ -34,7 +34,7 @@ export const DEFAULT_VOICE_SETTINGS: VoiceSettingsConfig = {
   voiceSpeed: 1.0,
   voicePitch: 1.0,
   voiceVolume: 0.8,
-  ttsEngine: 'puter', // Use Puter.js by default for better quality
+  ttsEngine: 'google', // Use Google Cloud TTS by default for best quality
   puterEngine: 'neural', // Use neural engine for balance of quality and speed
   noiseSuppression: true,
   echoCancellation: true,
@@ -266,11 +266,12 @@ export function VoiceSettings({
                 onChange={(e) => handleChange('ttsEngine', e.target.value)}
                 className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="puter">Puter.js (High Quality, Recommended)</option>
+                <option value="google">Google Cloud TTS (Premium, Recommended) ⭐</option>
+                <option value="puter">Puter.js (High Quality)</option>
                 <option value="browser">Browser TTS (Standard)</option>
               </select>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Puter.js provides more natural-sounding voices
+                Google Cloud TTS provides the most natural-sounding voices with Neural2 technology
               </p>
             </div>
 
