@@ -56,26 +56,41 @@ function cleanMarkdownForMath(content: string): string {
     return match.replace(/```(?:\w+)?\n?/g, '').replace(/```$/g, '');
   });
 
-  // Remove [수식] section headers completely
-  cleaned = cleaned.replace(/\[수식\]\s*/g, '');
+  // Remove [수식] section and all its content until next section or end
+  cleaned = cleaned.replace(/\[수식\][\s\S]*?(?=\n\n[^*\s]|\n수식:|$)/g, '');
 
-  // Remove "수식:" section headers completely
+  // Remove "수식:" section headers
   cleaned = cleaned.replace(/수식:\s*/g, '');
 
+  // Remove all backticks (markdown inline code)
+  cleaned = cleaned.replace(/`/g, '');
+
+  // Remove bullet points from LaTeX lines
+  cleaned = cleaned.replace(/^\s*\*\s+/gm, '');
+
   // Remove duplicate consecutive LaTeX lines
-  // Split by lines and remove exact duplicates
   const lines = cleaned.split('\n');
   const uniqueLines: string[] = [];
   const seenLatex = new Set<string>();
 
   for (const line of lines) {
     const trimmedLine = line.trim();
-    // If it's a LaTeX line (starts with $)
-    if (trimmedLine.startsWith('$') && trimmedLine.endsWith('$')) {
+
+    // Skip empty lines
+    if (!trimmedLine) {
+      uniqueLines.push(line);
+      continue;
+    }
+
+    // If it's a LaTeX line (contains \overline, \text, etc.)
+    if (trimmedLine.match(/\\(overline|text|frac|sqrt)/)) {
+      // Normalize by removing $ and whitespace for comparison
+      const normalized = trimmedLine.replace(/[\$\s]/g, '');
+
       // Only add if we haven't seen this exact equation
-      if (!seenLatex.has(trimmedLine)) {
+      if (!seenLatex.has(normalized)) {
         uniqueLines.push(line);
-        seenLatex.add(trimmedLine);
+        seenLatex.add(normalized);
       }
     } else {
       // Non-LaTeX lines always added
