@@ -21,30 +21,33 @@
  * // → '$$\\overline{AB}^2 + \\overline{AC}^2$$'
  *
  * @example
- * // 일반 텍스트
- * formatLaTeXForRendering('이것은 일반 텍스트입니다.')
- * // → '이것은 일반 텍스트입니다.' (변경 없음)
+ * // 작은따옴표로 감싸진 LaTeX
+ * formatLaTeXForRendering("'\\overline{AB}^2 + \\overline{AC}^2'")
+ * // → '$$\\overline{AB}^2 + \\overline{AC}^2$$'
  */
 export function formatLaTeXForRendering(text: string): string {
   if (!text) return text;
 
+  // 작은따옴표나 큰따옴표로 감싸진 LaTeX 제거
+  let cleanedText = text.replace(/^['"`](.+)['"`]$/g, '$1');
+
   // 이미 $ 또는 $$ 패턴이 있으면 그대로 반환
-  if (/\$\$?[^$]+\$\$?/.test(text)) {
-    return text;
+  if (/\$\$?[^$]+\$\$?/.test(cleanedText)) {
+    return cleanedText;
   }
 
-  // LaTeX 명령어 패턴 감지
-  const latexCommandPattern = /\\(overline|underline|text|frac|sqrt|sum|int|limits|infty|cdot|times|div|pm|leq|geq|neq|approx|equiv|subset|supset|in|notin|cap|cup|emptyset|angle|perp|parallel|triangle|square|circ|sin|cos|tan|log|ln|lim|partial|nabla|alpha|beta|gamma|delta|epsilon|theta|lambda|mu|pi|sigma|phi|psi|omega)/g;
+  // LaTeX 명령어 패턴 감지 (더 포괄적)
+  const latexCommandPattern = /\\(overline|underline|text|textbf|textit|frac|dfrac|tfrac|sqrt|sum|prod|int|iint|iiint|oint|limits|infty|cdot|times|div|pm|mp|leq|geq|neq|approx|equiv|cong|sim|propto|subset|supset|subseteq|supseteq|in|notin|ni|cap|cup|emptyset|varnothing|angle|perp|parallel|triangle|square|circ|bullet|star|sin|cos|tan|cot|sec|csc|arcsin|arccos|arctan|sinh|cosh|tanh|log|ln|lg|exp|lim|limsup|liminf|max|min|sup|inf|arg|det|dim|ker|deg|gcd|lcm|partial|nabla|Delta|alpha|beta|gamma|delta|epsilon|varepsilon|zeta|eta|theta|vartheta|iota|kappa|lambda|mu|nu|xi|pi|rho|sigma|tau|upsilon|phi|varphi|chi|psi|omega|Gamma|Lambda|Sigma|Psi|Omega|left|right|big|Big|bigg|Bigg|to|rightarrow|leftarrow|leftrightarrow|Rightarrow|Leftarrow|Leftrightarrow|mapsto|implies|iff)/;
 
-  const hasLatexCommands = latexCommandPattern.test(text);
+  const hasLatexCommands = latexCommandPattern.test(cleanedText);
 
   if (hasLatexCommands) {
     // LaTeX 명령어가 포함된 경우, 전체를 display 수식으로 감싸기
-    return `$$${text}$$`;
+    return `$$${cleanedText}$$`;
   }
 
   // 일반 텍스트는 그대로 반환
-  return text;
+  return cleanedText;
 }
 
 /**

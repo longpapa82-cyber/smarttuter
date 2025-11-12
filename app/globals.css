@@ -92,3 +92,52 @@ button[aria-label*="Open Next.js Dev Tools"] {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }
+
+/* Math content overflow handling */
+.math-content {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.katex-display-wrapper {
+  display: block;
+  margin: 1rem 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.5rem 0;
+}
+
+.katex-display-wrapper .katex-display {
+  margin: 0;
+}
+
+.katex-inline-wrapper {
+  display: inline-block;
+  max-width: 100%;
+  overflow-x: auto;
+  vertical-align: middle;
+}
+
+/* Scrollbar styling for math content */
+.math-content::-webkit-scrollbar,
+.katex-display-wrapper::-webkit-scrollbar {
+  height: 6px;
+}
+
+.math-content::-webkit-scrollbar-track,
+.katex-display-wrapper::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.math-content::-webkit-scrollbar-thumb,
+.katex-display-wrapper::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+.math-content::-webkit-scrollbar-thumb:hover,
+.katex-display-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
