@@ -56,14 +56,34 @@ function cleanMarkdownForMath(content: string): string {
     return match.replace(/```(?:\w+)?\n?/g, '').replace(/```$/g, '');
   });
 
-  // Remove [수식] labels (duplicate with "수식:" from formatOCRSections)
+  // Remove [수식] section headers completely
   cleaned = cleaned.replace(/\[수식\]\s*/g, '');
 
-  // Remove duplicate "수식:" if it appears multiple times
-  const mathLabelCount = (cleaned.match(/수식:/g) || []).length;
-  if (mathLabelCount > 1) {
-    cleaned = cleaned.replace(/수식:\s*/g, '');
+  // Remove "수식:" section headers completely
+  cleaned = cleaned.replace(/수식:\s*/g, '');
+
+  // Remove duplicate consecutive LaTeX lines
+  // Split by lines and remove exact duplicates
+  const lines = cleaned.split('\n');
+  const uniqueLines: string[] = [];
+  const seenLatex = new Set<string>();
+
+  for (const line of lines) {
+    const trimmedLine = line.trim();
+    // If it's a LaTeX line (starts with $)
+    if (trimmedLine.startsWith('$') && trimmedLine.endsWith('$')) {
+      // Only add if we haven't seen this exact equation
+      if (!seenLatex.has(trimmedLine)) {
+        uniqueLines.push(line);
+        seenLatex.add(trimmedLine);
+      }
+    } else {
+      // Non-LaTeX lines always added
+      uniqueLines.push(line);
+    }
   }
+
+  cleaned = uniqueLines.join('\n');
 
   return cleaned.trim();
 }
