@@ -18,8 +18,14 @@ const LATEX_COMMAND_PATTERN = /\\(overline|underline|text|textbf|textit|frac|dfr
  * 텍스트를 LaTeX 렌더링 가능한 형태로 전처리
  */
 function preprocessLaTeX(text: string): string {
-  // 작은따옴표나 큰따옴표로 감싸진 LaTeX 제거
+  // 작은따옴표나 큰따옴표, backtick으로 감싸진 LaTeX 제거
   let processed = text.replace(/^['"`](.+)['"`]$/gm, '$1');
+
+  // 각 줄의 시작과 끝에 있는 backtick 제거 (마크다운 코드 표시)
+  processed = processed.replace(/^`|`$/gm, '');
+
+  // 모든 backtick 제거 (LaTeX에서는 backtick이 의미 없음)
+  processed = processed.replace(/`/g, '');
 
   // 이미 $ 패턴이 있으면 그대로 반환
   if (/\$\$?[\s\S]+?\$\$?/.test(processed)) {

@@ -28,8 +28,14 @@
 export function formatLaTeXForRendering(text: string): string {
   if (!text) return text;
 
-  // 작은따옴표나 큰따옴표로 감싸진 LaTeX 제거
-  let cleanedText = text.replace(/^['"`](.+)['"`]$/g, '$1');
+  // 작은따옴표나 큰따옴표, backtick으로 감싸진 LaTeX 제거
+  let cleanedText = text.replace(/^['"`](.+)['"`]$/gm, '$1');
+
+  // 각 줄의 시작과 끝에 있는 backtick 제거 (마크다운 코드 표시)
+  cleanedText = cleanedText.replace(/^`|`$/gm, '');
+
+  // 모든 backtick 제거 (LaTeX에서는 backtick이 의미 없음)
+  cleanedText = cleanedText.replace(/`/g, '');
 
   // 이미 $ 또는 $$ 패턴이 있으면 그대로 반환
   if (/\$\$?[^$]+\$\$?/.test(cleanedText)) {
