@@ -86,21 +86,42 @@ async function handleAnalyze(body: AnalyzeRequest) {
 
   try {
     console.log('[Step-by-Step] Calling Vertex AI...');
-    const result = await callVertexAI(prompt);
+    const result = await callVertexAI(prompt, true, true); // expectJSON=true, validateSteps=true
     console.log('[Step-by-Step] Vertex AI response received, length:', result.length);
     console.log('[Step-by-Step] Vertex AI response preview:', result.substring(0, 200));
+    console.log('[Step-by-Step] Full Vertex AI response:', result);
 
     console.log('[Step-by-Step] Parsing response...');
     const parsed = parseVertexAIResponse(result);
 
-    console.log('[Step-by-Step] ✅ Analysis complete');
+    console.log('[Step-by-Step] Parsed object keys:', Object.keys(parsed));
+    console.log('[Step-by-Step] Parsed steps type:', typeof parsed.steps);
+    console.log('[Step-by-Step] Parsed steps value:', JSON.stringify(parsed.steps));
     console.log(`[Step-by-Step] Generated ${parsed.steps?.length || 0} steps`);
+
+    // Validate steps array
+    if (!parsed.steps || !Array.isArray(parsed.steps) || parsed.steps.length === 0) {
+      console.error('[Step-by-Step] ❌ Invalid or empty steps array');
+      console.error('[Step-by-Step] Parsed object:', JSON.stringify(parsed, null, 2));
+      throw new Error('AI did not generate valid steps. Please try again with a simpler problem.');
+    }
+
+    // Validate each step has required fields
+    for (let i = 0; i < parsed.steps.length; i++) {
+      const step = parsed.steps[i];
+      if (!step.instruction || !step.stepNumber) {
+        console.error(`[Step-by-Step] ❌ Step ${i} missing required fields:`, step);
+        throw new Error(`Invalid step format at step ${i + 1}`);
+      }
+    }
+
+    console.log('[Step-by-Step] ✅ Analysis complete and validated');
 
     return NextResponse.json({
       success: true,
       problemType: parsed.problemType || 'other',
       difficulty: parsed.difficulty || 'medium',
-      steps: parsed.steps || [],
+      steps: parsed.steps,
       finalAnswer: parsed.finalAnswer,
     });
   } catch (error: any) {
@@ -130,7 +151,7 @@ async function handleValidate(body: ValidateRequest) {
   );
 
   try {
-    const result = await callVertexAI(prompt);
+    const result = await callVertexAI(prompt, true, false); // expectJSON=true, validateSteps=false
     const parsed = parseVertexAIResponse(result);
 
     console.log('[Step-by-Step] ✅ Validation complete');
@@ -168,7 +189,7 @@ async function handleHint(body: HintRequest) {
   );
 
   try {
-    const result = await callVertexAI(prompt, false); // JSON 파싱 안 함
+    const result = await callVertexAI(prompt, false, false); // expectJSON=false, validateSteps=false
     const hint = result.trim();
 
     console.log('[Step-by-Step] ✅ Hint generated');
@@ -190,37 +211,84 @@ async function handleHint(body: HintRequest) {
 }
 
 /**
- * Vertex AI 호출 (무제한 할당량)
+ * Vertex AI 호출 with 재시도 로직 (무제한 할당량)
+ * @param validateSteps - true면 steps 배열을 검증 (analyze용), false면 검증 안 함 (validate/hint용)
  */
-async function callVertexAI(prompt: string, expectJSON: boolean = true): Promise<any> {
+async function callVertexAI(
+  prompt: string,
+  expectJSON: boolean = true,
+  validateSteps: boolean = false,
+  retries: number = 2
+): Promise<any> {
   console.log('[Step-by-Step] callVertexAI started');
   console.log('[Step-by-Step] Prompt length:', prompt.length);
+  console.log('[Step-by-Step] Validate steps:', validateSteps);
+  console.log('[Step-by-Step] Retries remaining:', retries);
 
-  try {
-    // Use Vertex AI client for unlimited quota
-    const text = await vertexAIClient.generateContent(
-      prompt,
-      'flash', // Use flash tier for step-by-step
-      {
-        temperature: 0.7,
-        maxTokens: 2048,
-        topP: 0.95,
-        topK: 40,
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      if (attempt > 0) {
+        console.log(`[Step-by-Step] ⚠️ Retry attempt ${attempt}/${retries}`);
       }
-    );
 
-    console.log('[Step-by-Step] ✅ Vertex AI response received, length:', text.length);
+      // Use Vertex AI client for unlimited quota
+      const text = await vertexAIClient.generateContent(
+        prompt,
+        'flash', // Use flash tier for step-by-step
+        {
+          temperature: attempt === 0 ? 0.7 : 0.5, // Lower temperature on retry for more consistent output
+          maxTokens: 2048,
+          topP: 0.95,
+          topK: 40,
+        }
+      );
 
-    if (!expectJSON) {
-      return text;
+      console.log('[Step-by-Step] ✅ Vertex AI response received, length:', text.length);
+
+      if (!expectJSON) {
+        return text;
+      }
+
+      // Validate that we can parse the JSON before returning
+      try {
+        const parsed = parseVertexAIResponse(text);
+
+        // Only validate steps array if requested (for analyze action)
+        if (validateSteps) {
+          if (!parsed.steps || !Array.isArray(parsed.steps) || parsed.steps.length === 0) {
+            throw new Error('Response has empty or invalid steps array');
+          }
+        }
+
+        console.log('[Step-by-Step] ✅ JSON validation passed');
+        return text;
+      } catch (parseError: any) {
+        console.error(`[Step-by-Step] ❌ Parsing failed on attempt ${attempt + 1}:`, parseError.message);
+
+        if (attempt < retries) {
+          console.log('[Step-by-Step] Will retry with lower temperature...');
+          continue; // Try again
+        }
+
+        // Last attempt failed, throw error
+        throw new Error(`Failed to get valid JSON after ${retries + 1} attempts: ${parseError.message}`);
+      }
+    } catch (error: any) {
+      console.error(`[Step-by-Step] ❌ callVertexAI exception on attempt ${attempt + 1}:`, error);
+
+      if (attempt < retries) {
+        console.log('[Step-by-Step] Will retry...');
+        await new Promise(resolve => setTimeout(resolve, 300)); // Wait 300ms before retry
+        continue;
+      }
+
+      // Last attempt failed
+      console.error('[Step-by-Step] Error stack:', error.stack);
+      throw error;
     }
-
-    return text;
-  } catch (error: any) {
-    console.error('[Step-by-Step] ❌ callVertexAI exception:', error);
-    console.error('[Step-by-Step] Error stack:', error.stack);
-    throw error;
   }
+
+  throw new Error('Failed to get response after all retries');
 }
 
 /**

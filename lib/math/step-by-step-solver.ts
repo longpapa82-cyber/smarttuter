@@ -58,32 +58,64 @@ export function generateStepByStepPrompt(problem: string, gradeLevel?: string): 
 문제: ${problem}
 학년: ${gradeLevel || '중학교'}
 
-다음 형식으로 JSON을 반환해주세요:
+**CRITICAL: You MUST respond with ONLY valid JSON. No explanations, no markdown code blocks, no other text.**
 
+Response format (JSON only):
 {
-  "problemType": "equation" | "word-problem" | "geometry" | "calculus" | "other",
-  "difficulty": "easy" | "medium" | "hard",
+  "problemType": "equation",
+  "difficulty": "medium",
   "steps": [
     {
       "stepNumber": 1,
       "instruction": "첫 번째로 해야 할 일 (학생에게 질문하듯이)",
       "explanation": "왜 이 단계가 필요한지 간단히 설명",
       "hint": "막힐 때 줄 수 있는 힌트",
-      "example": "비슷한 예시 (선택)",
       "expectedAnswer": "이 단계의 예상 답"
+    },
+    {
+      "stepNumber": 2,
+      "instruction": "두 번째 단계",
+      "explanation": "설명",
+      "hint": "힌트",
+      "expectedAnswer": "답"
     }
   ],
   "finalAnswer": "최종 답"
 }
 
-중요:
-1. 각 단계는 학생이 스스로 생각할 수 있도록 질문 형태로 작성
-2. 너무 많은 단계로 쪼개지 말고, 의미 있는 단위로 구성 (3-7단계)
-3. 각 단계마다 학생이 무엇을 해야 하는지 명확히 제시
-4. 힌트는 답을 직접 알려주지 않고, 생각할 방향만 제시
-5. ${gradeLevel} 학생 수준에 맞는 용어와 설명 사용
+Requirements:
+1. problemType must be one of: "equation", "word-problem", "geometry", "calculus", "other"
+2. difficulty must be one of: "easy", "medium", "hard"
+3. steps array MUST have 3-7 steps (never 0 or empty)
+4. Each step MUST have: stepNumber (integer), instruction (string), explanation (string), hint (string), expectedAnswer (string)
+5. Use ${gradeLevel || '중학교'} appropriate language and terminology
+6. Each step should guide the student to think, not give away the answer
+7. hints should point direction, not reveal answers
 
-JSON만 반환하고 다른 텍스트는 포함하지 마세요.`;
+Example for "2x + 5 = 13":
+{
+  "problemType": "equation",
+  "difficulty": "easy",
+  "steps": [
+    {
+      "stepNumber": 1,
+      "instruction": "먼저 양변에서 5를 빼보세요. 무엇이 남을까요?",
+      "explanation": "등식의 양변에 같은 값을 더하거나 빼도 등식은 유지됩니다",
+      "hint": "13에서 5를 빼면 얼마인가요?",
+      "expectedAnswer": "2x = 8"
+    },
+    {
+      "stepNumber": 2,
+      "instruction": "이제 양변을 2로 나눠보세요. x의 값은?",
+      "explanation": "x의 계수로 나누면 x의 값을 구할 수 있습니다",
+      "hint": "8을 2로 나누면 얼마인가요?",
+      "expectedAnswer": "x = 4"
+    }
+  ],
+  "finalAnswer": "x = 4"
+}
+
+IMPORTANT: Return ONLY the JSON object. No markdown, no code blocks, no explanations. Start with { and end with }.`;
 }
 
 /**
@@ -94,29 +126,54 @@ export function generateValidationPrompt(
   step: Step,
   studentAnswer: string
 ): string {
-  return `당신은 수학 선생님입니다. 학생의 답을 평가해주세요.
+  return `당신은 친절한 수학 선생님입니다. 학생의 답을 평가해주세요.
 
 문제: ${problem}
 현재 단계: ${step.instruction}
 예상 답: ${step.expectedAnswer}
 학생 답변: ${studentAnswer}
 
-다음 형식으로 JSON을 반환해주세요:
+**CRITICAL: You MUST respond with ONLY valid JSON. No explanations, no markdown, no other text.**
 
+Response format (JSON only):
 {
-  "isCorrect": true | false,
-  "feedback": "학생에게 줄 피드백 (격려 또는 교정)",
-  "suggestion": "틀렸을 경우, 어떻게 접근해야 하는지 힌트",
-  "correctAnswer": "틀렸을 경우에만, 정답"
+  "isCorrect": true,
+  "feedback": "긍정적인 피드백 메시지",
+  "suggestion": "틀렸을 경우 힌트",
+  "correctAnswer": "틀렸을 경우에만 정답"
 }
 
 평가 기준:
-1. 수학적으로 동등한 답은 모두 정답 처리 (예: "x=3"과 "3"은 같음)
-2. 사소한 표기 실수는 관대하게 처리
-3. 피드백은 항상 긍정적이고 격려하는 톤으로
-4. 틀렸을 때는 왜 틀렸는지 설명하되, 답을 직접 알려주지는 않음
+1. **한글 표현 인식**: "2루트2", "루트3", "제곱", "분의" 등 한글 수학 표현을 정확히 이해하고 평가
+   - "2루트2" = "2√2" (같은 의미)
+   - "3분의2" = "2/3" (같은 의미)
+   - "x제곱" = "x²" (같은 의미)
+2. **동등성 인식**: 수학적으로 같은 값은 모두 정답 처리
+   - "x=3"과 "3"은 같음
+   - "1/2"와 "0.5"는 같음
+   - "2√2"와 "√8"은 같음
+3. **표기 관대함**: 사소한 표기법 차이는 무시
+   - 공백, 괄호, 순서 등
+4. **긍정적 피드백**: 항상 격려하는 톤으로
+5. **힌트 제공**: 틀렸을 때는 방향만 제시, 답은 직접 알려주지 않음
 
-JSON만 반환하고 다른 텍스트는 포함하지 마세요.`;
+Example for correct answer:
+{
+  "isCorrect": true,
+  "feedback": "정확해요! 잘 이해하고 계시네요! ✨",
+  "suggestion": "",
+  "correctAnswer": ""
+}
+
+Example for incorrect answer:
+{
+  "isCorrect": false,
+  "feedback": "좋은 시도예요! 하지만 계산을 다시 한번 확인해보세요.",
+  "suggestion": "분수를 더할 때는 분모를 같게 만들어야 해요",
+  "correctAnswer": ""
+}
+
+IMPORTANT: Return ONLY the JSON object. No markdown, no code blocks, no explanations. Start with { and end with }.`;
 }
 
 /**

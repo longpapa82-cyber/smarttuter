@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useAuth } from '@/hooks/useAuth';
 
 interface DifferentiationFeature {
   icon: string;
@@ -49,6 +50,37 @@ const features: DifferentiationFeature[] = [
 ];
 
 export function AIDifferentiationSection() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  const handleCTAClick = async (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+
+    // 로그아웃 상태: 게스트 모드로 체험 시작
+    if (!isAuthenticated) {
+      window.location.href = '/onboarding/quick';
+      return;
+    }
+
+    // 로그인 상태: 서버에서 프로필 확인
+    try {
+      const response = await fetch('/api/user/profile');
+      if (response.ok) {
+        const { user } = await response.json();
+
+        // 프로필이 완성되어 있는지 확인 (gradeLevel과 gradeDetail이 모두 있어야 함)
+        const hasCompleteProfile = user?.gradeLevel && user?.gradeDetail;
+        window.location.href = hasCompleteProfile ? '/dashboard' : '/onboarding/quick';
+      } else {
+        // API 실패 시 온보딩으로 이동
+        window.location.href = '/onboarding/quick';
+      }
+    } catch (error) {
+      console.error('프로필 확인 실패:', error);
+      // 에러 발생 시 온보딩으로 이동
+      window.location.href = '/onboarding/quick';
+    }
+  };
+
   return (
     <section className="relative py-20 px-4 bg-gradient-to-br from-white via-indigo-50 to-purple-50 overflow-hidden">
       {/* Animated Background Elements */}
@@ -193,10 +225,11 @@ export function AIDifferentiationSection() {
         {/* CTA */}
         <div className="text-center mt-12 animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
           <Link
-            href="/login"
+            href="/onboarding/quick"
+            onClick={handleCTAClick}
             className="inline-flex items-center px-10 py-4 bg-gradient-to-r from-primary-500 via-secondary-500 to-accent-500 text-white rounded-full font-semibold text-lg hover:shadow-2xl hover:scale-105 transform transition-all duration-300 group"
           >
-            <span>AI Park 무료 체험하기</span>
+            <span>{isLoading ? '로딩 중...' : 'AI Park 무료 체험하기'}</span>
             <span className="ml-2 group-hover:translate-x-1 transition-transform duration-300">→</span>
           </Link>
         </div>

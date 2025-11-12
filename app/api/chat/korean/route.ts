@@ -240,7 +240,7 @@ ${ragContext ? `\n**검증된 교육 자료**:\n${ragContext}\n` : ''}
             const result = await vertexAIClient.generateContentStream(fullPrompt, 'flash', {
               systemInstruction: systemPrompt,
               temperature: 0.7,
-              maxTokens: 2048
+              maxTokens: 4096 // Increased from 2048 to allow longer responses
             });
 
             for await (const chunkText of result) {
@@ -257,7 +257,11 @@ ${ragContext ? `\n**검증된 교육 자료**:\n${ragContext}\n` : ''}
             });
 
             const chat = model.startChat({
-              history: formattedHistory
+              history: formattedHistory,
+              generationConfig: {
+                maxOutputTokens: 4096, // Allow longer responses
+                temperature: 0.7,
+              },
             });
 
             const result = await chat.sendMessageStream(message);

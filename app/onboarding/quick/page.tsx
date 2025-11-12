@@ -1,10 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { GraduationCap, BookOpen, ChevronRight, Sparkles } from 'lucide-react';
 import { createGuestProfile } from '@/lib/user/guest-profile';
+import { createUserProfile, saveUserProfile } from '@/lib/user/user-profile';
+import { useAuth } from '@/hooks/useAuth';
+import type { GradeLevel, Subject } from '@/types/user';
 
 const GRADE_LEVELS = [
   { id: 'elementary', label: '초등학생', icon: '🎒', grades: ['1학년', '2학년', '3학년', '4학년', '5학년', '6학년'] },
@@ -17,15 +20,43 @@ const SUBJECTS = [
   { id: 'english', label: '영어', icon: '🇬🇧', color: 'from-blue-500 to-cyan-500', description: '실시간 음성 대화' },
   { id: 'math', label: '수학', icon: '🔢', color: 'from-purple-500 to-pink-500', description: 'OCR 문제 풀이' },
   { id: 'science', label: '과학', icon: '🔬', color: 'from-green-500 to-emerald-500', description: '실험·개념 학습' },
-  { id: 'social', label: '사회', icon: '🌍', color: 'from-orange-500 to-red-500', description: '역사·지리·경제' },
+  { id: 'social-studies', label: '사회', icon: '🌍', color: 'from-orange-500 to-red-500', description: '역사·지리·경제' },
 ];
 
 export default function QuickOnboardingPage() {
   const router = useRouter();
+  const { isAuthenticated, isLoading } = useAuth();
   const [step, setStep] = useState<1 | 2>(1);
   const [selectedSchoolType, setSelectedSchoolType] = useState<string>('');
   const [selectedGrade, setSelectedGrade] = useState<string>('');
   const [selectedSubject, setSelectedSubject] = useState<string>('');
+
+  // 로그인 상태 + 프로필 존재 시 대시보드로 리디렉션
+  useEffect(() => {
+    async function checkProfileAndRedirect() {
+      if (!isLoading && isAuthenticated && typeof window !== 'undefined') {
+        try {
+          // 서버에서 프로필 확인
+          const response = await fetch('/api/user/profile');
+          if (response.ok) {
+            const { user } = await response.json();
+
+            // 프로필이 완성되어 있으면 대시보드로 리다이렉트
+            const hasCompleteProfile = user?.gradeLevel && user?.gradeDetail;
+            if (hasCompleteProfile) {
+              console.log('✅ Logged in user with existing profile - redirecting to dashboard');
+              router.push('/dashboard');
+            }
+          }
+        } catch (error) {
+          console.error('프로필 확인 실패:', error);
+          // 에러 발생 시 온보딩 계속 진행
+        }
+      }
+    }
+
+    checkProfileAndRedirect();
+  }, [isAuthenticated, isLoading, router]);
 
   const handleSchoolTypeSelect = (schoolType: string) => {
     setSelectedSchoolType(schoolType);
@@ -52,11 +83,29 @@ export default function QuickOnboardingPage() {
       university: '대학교',
     };
 
-    const gradeLevel = selectedGrade === '대학생'
+    const gradeLevelText = selectedGrade === '대학생'
       ? '대학교'
       : `${schoolTypeMap[selectedSchoolType]} ${selectedGrade}`;
 
-    createGuestProfile(gradeLevel, [subjectId]);
+    // 로그인 상태 확인 후 적절한 프로필 생성
+    if (isAuthenticated) {
+      // 로그인 사용자: 실제 사용자 프로필 생성
+      const gradeLevelKey: GradeLevel = selectedSchoolType as GradeLevel;
+      const subjectKey: Subject = subjectId as Subject;
+
+      const profile = createUserProfile({
+        nickname: '학습자', // 기본 닉네임 (나중에 설정 페이지에서 변경 가능)
+        gradeLevel: gradeLevelKey,
+        preferredSubjects: [subjectKey],
+        provider: 'credentials',
+      });
+
+      saveUserProfile(profile);
+      console.log('✅ User profile created:', profile.id);
+    } else {
+      // 비로그인 게스트: 게스트 프로필 생성
+      createGuestProfile(gradeLevelText, [subjectId]);
+    }
 
     setTimeout(() => {
       router.push(`/tutor/${subjectId}`);
@@ -124,7 +173,7 @@ export default function QuickOnboardingPage() {
                   }`}
                 >
                   <div className="text-3xl mb-2">{schoolType.icon}</div>
-                  <div className="font-semibold text-gray-900 dark:text-white">
+                  <div className="font-semibold text-gray-900">
                     {schoolType.label}
                   </div>
                 </motion.button>
@@ -147,7 +196,7 @@ export default function QuickOnboardingPage() {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => handleGradeSelect(grade)}
-                      className={`py-3 px-4 rounded-lg border-2 font-medium transition-all \${
+                      className={`py-3 px-4 rounded-lg border-2 font-medium transition-all ${
                         selectedGrade === grade
                           ? 'border-blue-500 bg-blue-500 text-white'
                           : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-blue-300'

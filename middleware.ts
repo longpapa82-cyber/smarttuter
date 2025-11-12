@@ -52,6 +52,21 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith(route)
   )
 
+  // Define truly public routes that don't require authentication or redirection
+  const trulyPublicRoutes = [
+    '/onboarding/quick',  // Guest onboarding for 7-day trial
+    '/',  // Homepage
+  ]
+
+  const isTrulyPublicRoute = trulyPublicRoutes.some(route =>
+    pathname === route || pathname.startsWith(route)
+  )
+
+  // Allow truly public routes without any authentication check
+  if (isTrulyPublicRoute) {
+    return NextResponse.next()
+  }
+
   // Redirect /onboarding to /onboarding/quick to prevent flash
   if (pathname === '/onboarding') {
     return NextResponse.redirect(new URL('/onboarding/quick', request.url))

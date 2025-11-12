@@ -88,9 +88,24 @@ export function formatOCRSections(sections: {
     parts.push('\n\n수식:\n' + formattedLatex);
   }
 
-  // 표 데이터 추가
+  // 표 데이터 추가 (유효한 테이블만)
   if (sections.tables && sections.tables.length > 0) {
-    parts.push('\n\n표:\n' + sections.tables.join('\n\n'));
+    // Filter out "not found" messages - only show actual table data
+    const validTables = sections.tables.filter(table => {
+      const normalized = table.toLowerCase();
+      // Exclude negative messages (없음, 발견되지, 스캔했으나, not found, none, etc.)
+      return !normalized.includes('없음') &&
+             !normalized.includes('발견되지') &&
+             !normalized.includes('스캔했으나') &&
+             !normalized.includes('not found') &&
+             normalized !== 'none' &&
+             // Must contain actual table structure (| character for markdown tables)
+             table.includes('|');
+    });
+
+    if (validTables.length > 0) {
+      parts.push('\n\n표:\n' + validTables.join('\n\n'));
+    }
   }
 
   return parts.join('');

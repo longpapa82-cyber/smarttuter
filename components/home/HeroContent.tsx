@@ -6,20 +6,32 @@ import { useAuth } from '@/hooks/useAuth';
 export function HeroContent() {
   const { isAuthenticated, isLoading } = useAuth();
 
-  const handleCTAClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleCTAClick = async (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
 
-    // 로그아웃 상태: 로그인 페이지로 이동
+    // 로그아웃 상태: 게스트 모드로 체험 시작 (7일 무료)
     if (!isAuthenticated) {
-      window.location.href = '/login';
+      window.location.href = '/onboarding/quick';
       return;
     }
 
-    // 로그인 상태: 프로필 확인
-    if (typeof window !== 'undefined') {
-      const hasProfile = localStorage.getItem('aipark_user_profile');
-      // 프로필 없으면 온보딩, 있으면 대시보드
-      window.location.href = hasProfile ? '/dashboard' : '/onboarding/quick';
+    // 로그인 상태: 서버에서 프로필 확인
+    try {
+      const response = await fetch('/api/user/profile');
+      if (response.ok) {
+        const { user } = await response.json();
+
+        // 프로필이 완성되어 있는지 확인 (gradeLevel과 gradeDetail이 모두 있어야 함)
+        const hasCompleteProfile = user?.gradeLevel && user?.gradeDetail;
+        window.location.href = hasCompleteProfile ? '/dashboard' : '/onboarding/quick';
+      } else {
+        // API 실패 시 온보딩으로 이동
+        window.location.href = '/onboarding/quick';
+      }
+    } catch (error) {
+      console.error('프로필 확인 실패:', error);
+      // 에러 발생 시 온보딩으로 이동
+      window.location.href = '/onboarding/quick';
     }
   };
 

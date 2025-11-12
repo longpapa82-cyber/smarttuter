@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Step {
   id: number;
@@ -95,6 +96,36 @@ const steps: Step[] = [
 
 export function HowItWorksSection() {
   const [activeStep, setActiveStep] = useState<number>(1);
+  const { isAuthenticated, isLoading } = useAuth();
+
+  const handleCTAClick = async (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+
+    // 로그아웃 상태: 게스트 모드로 체험 시작
+    if (!isAuthenticated) {
+      window.location.href = '/onboarding/quick';
+      return;
+    }
+
+    // 로그인 상태: 서버에서 프로필 확인
+    try {
+      const response = await fetch('/api/user/profile');
+      if (response.ok) {
+        const { user } = await response.json();
+
+        // 프로필이 완성되어 있는지 확인 (gradeLevel과 gradeDetail이 모두 있어야 함)
+        const hasCompleteProfile = user?.gradeLevel && user?.gradeDetail;
+        window.location.href = hasCompleteProfile ? '/dashboard' : '/onboarding/quick';
+      } else {
+        // API 실패 시 온보딩으로 이동
+        window.location.href = '/onboarding/quick';
+      }
+    } catch (error) {
+      console.error('프로필 확인 실패:', error);
+      // 에러 발생 시 온보딩으로 이동
+      window.location.href = '/onboarding/quick';
+    }
+  };
 
   return (
     <section id="how-it-works" className="relative py-20 px-4 bg-gradient-to-br from-gray-900 via-indigo-900 to-purple-900 overflow-hidden">
@@ -529,10 +560,11 @@ export function HowItWorksSection() {
         {/* CTA Button */}
         <div className="text-center mt-12 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
           <Link
-            href="/login"
+            href="/onboarding/quick"
+            onClick={handleCTAClick}
             className="inline-flex items-center px-10 py-4 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-full font-semibold text-lg hover:shadow-2xl hover:scale-105 transform transition-all duration-300 group"
           >
-            <span>지금 무료로 시작하기</span>
+            <span>{isLoading ? '로딩 중...' : '지금 무료로 시작하기'}</span>
             <span className="ml-2 group-hover:translate-x-1 transition-transform duration-300">→</span>
           </Link>
           <p className="mt-4 text-gray-400 text-sm">

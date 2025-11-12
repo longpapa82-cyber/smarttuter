@@ -439,7 +439,7 @@ ${recentHistory.map((msg: { role: string; content: string }) => `${msg.role === 
                 modelTier,
                 {
                   temperature: 0.7,
-                  maxTokens: 3072, // Increased from 2048 to allow complete problem solutions
+                  maxTokens: 8192, // Increased from 4096 to allow very long math problem solutions with LaTeX
                 }
               );
 
@@ -456,7 +456,7 @@ ${recentHistory.map((msg: { role: string; content: string }) => `${msg.role === 
               const chat = model.startChat({
                 history: chatHistory,
                 generationConfig: {
-                  maxOutputTokens: 2048,
+                  maxOutputTokens: 8192, // Increased from 4096 to allow very long math solutions with complete LaTeX
                   temperature: 0.7,
                 },
               });

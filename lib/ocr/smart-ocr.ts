@@ -86,7 +86,7 @@ export async function smartOCRv2(imageFile: File): Promise<SmartOCRv2Result> {
         let latex = '';
         if (result.formulas && result.formulas.length > 0) {
           latex = result.formulas.join('\n');
-          fullText += '\n\n[수식]\n' + latex;
+          // Don't add formulas to fullText - they will be displayed separately via latex field
         }
 
         return {

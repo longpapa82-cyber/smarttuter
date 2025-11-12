@@ -44,6 +44,7 @@ import { MathRenderer, containsMath } from '@/components/chat/MathRenderer';
 /**
  * Clean markdown formatting from AI responses
  * Removes code blocks, duplicate labels, and prepares LaTeX for rendering
+ * Enhanced to handle incomplete LaTeX expressions
  */
 function cleanMarkdownForMath(content: string): string {
   if (!content) return content;
@@ -67,6 +68,11 @@ function cleanMarkdownForMath(content: string): string {
 
   // Remove bullet points from LaTeX lines
   cleaned = cleaned.replace(/^\s*\*\s+/gm, '');
+
+  // 🔧 FIX: Remove incomplete LaTeX expressions (ending with backslash or incomplete braces)
+  cleaned = cleaned.replace(/\$[^$]*\\+\s*$/gm, ''); // Remove lines ending with backslash in $...$
+  cleaned = cleaned.replace(/\$\$[^$]*\\+\s*$/gm, ''); // Remove lines ending with backslash in $$...$$
+  cleaned = cleaned.replace(/\\(overline|text|frac|sqrt)\{[^}]*$/gm, ''); // Remove incomplete LaTeX commands
 
   // Remove duplicate consecutive LaTeX lines
   const lines = cleaned.split('\n');
@@ -384,12 +390,10 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
     // Format the message with OCR metadata
     const formattedMessage = `📷 이미지에서 인식된 텍스트:
 
-${text}
+${text}`;
 
-이 내용을 설명해주세요.`;
-
-    // Send the OCR text as a user message
-    handleSubmit(undefined, formattedMessage);
+    // Send the OCR text as a user message (with OCR flag to skip voice command detection)
+    handleSubmit(undefined, formattedMessage, true);
 
     // Close the upload panel
     setIsImageUploadOpen(false);
@@ -517,12 +521,13 @@ ${scenario.initialMessage}`,
     return true; // 명령어가 실행되었음
   };
 
-  const handleSubmit = async (e?: React.FormEvent, messageText?: string) => {
+  const handleSubmit = async (e?: React.FormEvent, messageText?: string, isFromOCR?: boolean) => {
     console.log('🚀 ===== handleSubmit CALLED =====', {
       timestamp: new Date().toISOString(),
       messageText,
       inputValue: input,
       isLoading,
+      isFromOCR,
     });
 
     e?.preventDefault();
@@ -535,8 +540,8 @@ ${scenario.initialMessage}`,
     const userMessage = messageText || input.trim();
     if (!userMessage || isLoading) return;
 
-    // Phase 2 (P0): 음성 명령어 먼저 확인
-    if (messageText) {
+    // Phase 2 (P0): 음성 명령어 먼저 확인 (OCR이 아닌 경우만)
+    if (messageText && !isFromOCR) {
       // 음성 입력인 경우에만 명령어 감지
       const isCommand = handleVoiceCommand(userMessage);
       if (isCommand) {
@@ -544,8 +549,8 @@ ${scenario.initialMessage}`,
       }
     }
 
-    // Smart TTS: 음성 입력 시 TTS 켜기, 텍스트 입력 시 TTS 끄기
-    const isVoiceInput = !!messageText; // messageText가 있으면 음성 입력
+    // Smart TTS: 음성 입력 시 TTS 켜기, 텍스트 입력 시 TTS 끄기 (OCR 제외)
+    const isVoiceInput = !!messageText && !isFromOCR; // messageText가 있고 OCR이 아니면 음성 입력
     if (isVoiceInput && !isTTSEnabled) {
       console.log('🔊 Voice input detected - enabling TTS');
       setIsTTSEnabled(true);
@@ -1027,7 +1032,14 @@ ${scenario.initialMessage}`,
                       )}
                     </>
                   ) : (
-                    <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                    // User message: also render LaTeX for math content
+                    subject === 'math' && containsMath(message.content) ? (
+                      <div className="text-sm md:text-base leading-relaxed">
+                        <MathRenderer content={message.content} />
+                      </div>
+                    ) : (
+                      <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                    )
                   )}
                   </motion.div>
                 </motion.div>
@@ -1095,13 +1107,24 @@ ${scenario.initialMessage}`,
             )}
           </AnimatePresence>
 
-          {/* Image Upload Modal - Math */}
+          {/* Image Upload Panel - Math */}
           <AnimatePresence>
             {isImageUploadOpen && subject === 'math' && (
-              <MathImageUpload
-                onTextRecognized={handleImageTextRecognized}
-                onClose={() => setIsImageUploadOpen(false)}
-              />
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="overflow-hidden"
+              >
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+                  <MathImageUpload
+                    inline={true}
+                    onTextRecognized={handleImageTextRecognized}
+                    onClose={() => setIsImageUploadOpen(false)}
+                  />
+                </div>
+              </motion.div>
             )}
           </AnimatePresence>
 

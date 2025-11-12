@@ -62,9 +62,9 @@ export default function StepByStepGuide({
       console.log('[StepByStepGuide] Problem:', problem);
       console.log('[StepByStepGuide] Grade level:', gradeLevel);
 
-      // 타임아웃 설정 (15초)
+      // 타임아웃 설정 (30초) - 재시도 로직을 고려하여 충분한 시간 제공
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
 
       const response = await fetch('/api/math/step-by-step', {
         method: 'POST',
@@ -147,6 +147,10 @@ export default function StepByStepGuide({
     try {
       console.log('[StepByStepGuide] Validating answer...');
 
+      // 타임아웃 설정 (20초)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 20000);
+
       const response = await fetch('/api/math/step-by-step', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -156,7 +160,10 @@ export default function StepByStepGuide({
           step: currentStep,
           studentAnswer,
         }),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error('Failed to validate answer');
@@ -226,6 +233,10 @@ export default function StepByStepGuide({
     try {
       console.log('[StepByStepGuide] Requesting hint...');
 
+      // 타임아웃 설정 (20초)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 20000);
+
       const response = await fetch('/api/math/step-by-step', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -235,7 +246,10 @@ export default function StepByStepGuide({
           step: currentStep,
           studentAttempts: attempts,
         }),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error('Failed to get hint');

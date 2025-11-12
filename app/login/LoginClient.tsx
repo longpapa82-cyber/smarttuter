@@ -47,22 +47,41 @@ export function LoginClient() {
         setError('이메일 또는 비밀번호가 올바르지 않습니다.');
       } else if (result?.ok) {
         // callbackUrl 확인
-        const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+        const callbackUrl = searchParams.get('callbackUrl');
 
-        // 프로필 확인 (로그인 직후)
-        const hasProfile = typeof window !== 'undefined'
-          ? localStorage.getItem('aipark_user_profile')
-          : null;
+        // callbackUrl이 명시적으로 지정된 경우 해당 URL로 이동
+        if (callbackUrl && callbackUrl !== '/dashboard') {
+          router.push(callbackUrl);
+          router.refresh();
+          return;
+        }
 
-        // 우선순위: callbackUrl > 프로필 유무
-        const redirectUrl = callbackUrl !== '/dashboard'
-          ? callbackUrl
-          : hasProfile
-            ? '/dashboard'
-            : '/onboarding/quick';
+        // 서버에서 프로필 확인
+        try {
+          // 짧은 대기 후 프로필 확인 (세션 업데이트 시간 고려)
+          await new Promise(resolve => setTimeout(resolve, 300));
 
-        router.push(redirectUrl);
-        router.refresh();
+          const response = await fetch('/api/user/profile');
+          if (response.ok) {
+            const { user } = await response.json();
+
+            // 프로필이 완성되어 있으면 대시보드로, 아니면 온보딩으로
+            const hasCompleteProfile = user?.gradeLevel && user?.gradeDetail;
+            const redirectUrl = hasCompleteProfile ? '/dashboard' : '/onboarding/quick';
+
+            router.push(redirectUrl);
+            router.refresh();
+          } else {
+            // API 실패 시 온보딩으로 이동
+            router.push('/onboarding/quick');
+            router.refresh();
+          }
+        } catch (error) {
+          console.error('프로필 확인 실패:', error);
+          // 에러 발생 시 온보딩으로 이동
+          router.push('/onboarding/quick');
+          router.refresh();
+        }
       }
     } catch (err) {
       setError('로그인 중 오류가 발생했습니다.');

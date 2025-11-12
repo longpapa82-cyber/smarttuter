@@ -2,8 +2,8 @@
 
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, Image as ImageIcon, X, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
-import { recognizeEnglishText, classifyEnglishContent, compressImage, type OCRResult } from '@/lib/ocr/tesseract-client';
+import { Upload, Image as ImageIcon, X, Loader2, CheckCircle2, AlertCircle, Sparkles, Zap } from 'lucide-react';
+import { smartOCR } from '@/lib/ocr/smart-ocr';
 
 interface EnglishImageUploadProps {
   onTextRecognized: (text: string, metadata?: { confidence: number; contentType: string }) => void;
@@ -14,8 +14,9 @@ export default function EnglishImageUpload({ onTextRecognized, onClose }: Englis
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [result, setResult] = useState<OCRResult | null>(null);
-  const [contentType, setContentType] = useState<string>('');
+  const [recognizedText, setRecognizedText] = useState<string>('');
+  const [ocrEngine, setOcrEngine] = useState<string>('');
+  const [confidence, setConfidence] = useState<number>(0);
   const [error, setError] = useState<string>('');
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -50,84 +51,99 @@ export default function EnglishImageUpload({ onTextRecognized, onClose }: Englis
   };
 
   const processImage = async (file: File) => {
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError('이미지 파일만 업로드 가능합니다.');
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      setError('파일 크기는 10MB 이하여야 합니다.');
+      return;
+    }
+
     setError('');
-    setResult(null);
     setIsProcessing(true);
     setProgress(0);
 
+    // Create preview
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+
     try {
-      // Create preview
-      const preview = URL.createObjectURL(file);
-      setPreviewUrl(preview);
+      // Use Smart OCR with automatic fallback
+      setProgress(20);
+      console.log('🚀 Starting Smart OCR for English content...');
 
-      // Compress image for better performance
-      const compressedBlob = await compressImage(file, 1920, 1080);
-      const compressedFile = new File([compressedBlob], file.name, { type: 'image/jpeg' });
+      const result = await smartOCR(file);
 
-      // Run OCR
-      const ocrResult = await recognizeEnglishText(compressedFile, (prog) => {
-        setProgress(prog);
-      });
+      console.log(`✅ OCR complete via ${result.engine} (confidence: ${Math.round(result.confidence * 100)}%)`);
 
-      // Classify content type
-      const classification = classifyEnglishContent(ocrResult.text);
+      setProgress(80);
+      setOcrEngine(result.engine);
+      setConfidence(result.confidence);
 
-      setResult(ocrResult);
-      setContentType(classification.type);
-      setIsProcessing(false);
+      // Use text for English content
+      const recognizedContent = result.text || '';
+
+      setProgress(100);
+      setRecognizedText(recognizedContent);
+
+      // Small delay to show 100% completion
+      setTimeout(() => {
+        setIsProcessing(false);
+      }, 500);
+
     } catch (err) {
-      console.error('OCR 처리 실패:', err);
+      console.error('OCR 처리 중 오류:', err);
       setError('텍스트 인식에 실패했습니다. 다시 시도해주세요.');
       setIsProcessing(false);
     }
   };
 
   const handleSendToTutor = () => {
-    if (result) {
-      onTextRecognized(result.text, {
-        confidence: result.confidence,
-        contentType: contentType,
+    console.log('📤 [EnglishImageUpload] handleSendToTutor called');
+    console.log('📝 recognizedText:', recognizedText);
+    console.log('🎯 confidence:', confidence);
+
+    if (!recognizedText || recognizedText.trim() === '') {
+      console.error('❌ No recognized text to send');
+      setError('인식된 텍스트가 없습니다. 다시 시도해주세요.');
+      return;
+    }
+
+    try {
+      console.log('✅ Calling onTextRecognized callback...');
+      onTextRecognized(recognizedText, {
+        confidence: confidence,
+        contentType: 'english',
       });
+      console.log('✅ OCR content sent successfully');
+
+      // Reset state and close modal
       handleReset();
+      if (onClose) {
+        onClose(); // ✅ Close the upload panel
+      }
+    } catch (err) {
+      console.error('❌ Error sending to tutor:', err);
+      setError('전송 중 오류가 발생했습니다. 다시 시도해주세요.');
     }
   };
 
   const handleReset = () => {
-    setResult(null);
+    setRecognizedText('');
     setPreviewUrl('');
     setProgress(0);
     setError('');
-    setContentType('');
+    setOcrEngine('');
+    setConfidence(0);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
-  const getContentTypeLabel = (type: string) => {
-    switch (type) {
-      case 'reading':
-        return '독해 문제';
-      case 'vocabulary':
-        return '어휘 문제';
-      case 'grammar':
-        return '문법 문제';
-      default:
-        return '일반 텍스트';
-    }
-  };
-
-  const getContentTypeColor = (type: string) => {
-    switch (type) {
-      case 'reading':
-        return 'bg-blue-500';
-      case 'vocabulary':
-        return 'bg-green-500';
-      case 'grammar':
-        return 'bg-purple-500';
-      default:
-        return 'bg-gray-500';
-    }
-  };
 
   return (
     <div className="space-y-4">
@@ -209,7 +225,7 @@ export default function EnglishImageUpload({ onTextRecognized, onClose }: Englis
               alt="Preview"
               className="w-full max-h-64 object-contain"
             />
-            {!isProcessing && !result && (
+            {!isProcessing && !recognizedText && (
               <button
                 onClick={handleReset}
                 className="absolute top-2 right-2 p-2 bg-white/90 backdrop-blur-sm rounded-lg hover:bg-white transition-colors shadow-lg"
@@ -260,7 +276,7 @@ export default function EnglishImageUpload({ onTextRecognized, onClose }: Englis
           )}
 
           {/* Result */}
-          {result && (
+          {recognizedText && !isProcessing && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -271,15 +287,29 @@ export default function EnglishImageUpload({ onTextRecognized, onClose }: Englis
                 <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0" />
                 <div className="flex-1">
                   <p className="font-medium text-green-900">텍스트 인식 완료</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-sm text-green-700">
-                      신뢰도: {result.confidence.toFixed(1)}%
-                    </span>
-                    <span className="text-gray-300">|</span>
-                    <span className={`text-xs px-2 py-1 rounded-full text-white ${getContentTypeColor(contentType)}`}>
-                      {getContentTypeLabel(contentType)}
-                    </span>
-                  </div>
+                  {ocrEngine && (
+                    <div className="flex items-center gap-2 mt-1">
+                      {ocrEngine === 'gemini-vision' && <Sparkles className="w-4 h-4 text-indigo-500" />}
+                      {ocrEngine === 'mathpix' && <Sparkles className="w-4 h-4 text-purple-500" />}
+                      {ocrEngine === 'google-vision' && <Zap className="w-4 h-4 text-blue-500" />}
+                      {ocrEngine === 'pix2text' && <Zap className="w-4 h-4 text-orange-500" />}
+                      <span className="text-xs text-gray-600">
+                        {ocrEngine === 'gemini-vision' ? 'Gemini Vision AI (프리미엄)' :
+                         ocrEngine === 'mathpix' ? 'Mathpix (프리미엄)' :
+                         ocrEngine === 'google-vision' ? 'Google Vision' :
+                         ocrEngine === 'pix2text' ? 'Pix2Text' :
+                         'Tesseract (무료)'}
+                      </span>
+                      {confidence > 0 && (
+                        <>
+                          <span className="text-gray-300">|</span>
+                          <span className="text-xs text-green-700">
+                            신뢰도: {Math.round(confidence * 100)}%
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -288,12 +318,9 @@ export default function EnglishImageUpload({ onTextRecognized, onClose }: Englis
                 <p className="text-sm font-medium text-gray-500 mb-2">인식된 텍스트:</p>
                 <div className="max-h-48 overflow-y-auto p-3 bg-gray-50 rounded-lg">
                   <p className="text-gray-900 whitespace-pre-wrap leading-relaxed">
-                    {result.text}
+                    {recognizedText}
                   </p>
                 </div>
-                <p className="text-xs text-gray-400 mt-2">
-                  {result.words.length}개 단어 • {result.lines.length}줄
-                </p>
               </div>
 
               {/* Actions */}
@@ -306,7 +333,12 @@ export default function EnglishImageUpload({ onTextRecognized, onClose }: Englis
                 </button>
                 <button
                   onClick={handleSendToTutor}
-                  className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-medium hover:shadow-lg transition-all"
+                  disabled={!recognizedText || recognizedText.trim() === ''}
+                  className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all ${
+                    recognizedText && recognizedText.trim() !== ''
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:shadow-lg hover:scale-105 active:scale-95'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
                 >
                   튜터에게 질문하기 →
                 </button>

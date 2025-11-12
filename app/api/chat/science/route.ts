@@ -393,7 +393,7 @@ ${recentHistory.map((msg: { role: string; content: string }) => `${msg.role === 
                 modelTier,
                 {
                   temperature: 0.7,
-                  maxTokens: 3072,
+                  maxTokens: 4096, // Increased from 3072 to allow longer responses
                 }
               );
 
@@ -410,7 +410,7 @@ ${recentHistory.map((msg: { role: string; content: string }) => `${msg.role === 
               const chat = model.startChat({
                 history: chatHistory,
                 generationConfig: {
-                  maxOutputTokens: 2048,
+                  maxOutputTokens: 4096, // Increased from 2048 to allow longer responses
                   temperature: 0.7,
                 },
               });
