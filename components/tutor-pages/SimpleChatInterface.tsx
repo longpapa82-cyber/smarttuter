@@ -926,7 +926,7 @@ ${scenario.initialMessage}`,
 
                         return cleanContent && (
                           containsMath(cleanContent) ? (
-                            <div className="text-sm md:text-base leading-relaxed">
+                            <div className="text-sm md:text-base leading-relaxed text-gray-900">
                               <MathRenderer content={cleanContent} />
                             </div>
                           ) : (

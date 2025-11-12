@@ -345,7 +345,7 @@ export default function MathImageUpload({ onTextRecognized, onClose }: MathImage
                 <div className="bg-white rounded-lg p-4 border border-green-100">
                   <p className="text-sm font-medium text-gray-500 mb-2">인식된 내용:</p>
                   {containsMath(recognizedText) ? (
-                    <div className="text-sm bg-gray-50 p-3 rounded-lg">
+                    <div className="text-sm bg-gray-50 p-3 rounded-lg text-gray-900">
                       <MathRenderer content={recognizedText} />
                     </div>
                   ) : (
