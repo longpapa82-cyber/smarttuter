@@ -30,9 +30,15 @@ export function createGuestProfile(gradeLevel: string, subjects: string[]): Gues
     sessionCount: 0,
   };
 
-  // Save to localStorage
+  // Save to localStorage and set cookie for authentication
   if (typeof window !== 'undefined') {
     localStorage.setItem(GUEST_PROFILE_KEY, JSON.stringify(profile));
+
+    // Set guest mode cookie with 7-day expiration
+    const expiryDate = new Date();
+    expiryDate.setTime(expiryDate.getTime() + GUEST_SESSION_DURATION);
+    document.cookie = `aipark_guest_mode=true; expires=${expiryDate.toUTCString()}; path=/; SameSite=Strict`;
+
     console.log('✅ Guest profile created:', profile.id);
   }
 
@@ -59,10 +65,35 @@ export function getGuestProfile(): GuestProfile | null {
       return null;
     }
 
+    // Sync cookie if guest profile exists but cookie is missing
+    syncGuestCookie();
+
     return profile;
   } catch (error) {
     console.error('❌ Error loading guest profile:', error);
     return null;
+  }
+}
+
+/**
+ * Sync guest mode cookie with localStorage profile
+ * Ensures cookie is set if guest profile exists
+ */
+function syncGuestCookie(): void {
+  if (typeof window === 'undefined') return;
+
+  // Check if cookie exists
+  const hasCookie = document.cookie.split(';').some(c => c.trim().startsWith('aipark_guest_mode='));
+
+  // If no cookie but localStorage has profile, set the cookie
+  if (!hasCookie) {
+    const stored = localStorage.getItem(GUEST_PROFILE_KEY);
+    if (stored) {
+      const expiryDate = new Date();
+      expiryDate.setTime(expiryDate.getTime() + GUEST_SESSION_DURATION);
+      document.cookie = `aipark_guest_mode=true; expires=${expiryDate.toUTCString()}; path=/; SameSite=Strict`;
+      console.log('✅ Guest mode cookie synced');
+    }
   }
 }
 
@@ -95,6 +126,10 @@ export function isGuest(): boolean {
 export function clearGuestProfile(): void {
   if (typeof window !== 'undefined') {
     localStorage.removeItem(GUEST_PROFILE_KEY);
+
+    // Remove guest mode cookie
+    document.cookie = 'aipark_guest_mode=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Strict';
+
     console.log('✅ Guest profile cleared');
   }
 }

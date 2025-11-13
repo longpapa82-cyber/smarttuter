@@ -7,6 +7,7 @@ import { ServiceWorkerProvider } from "@/components/providers/ServiceWorkerProvi
 import { NavigationProvider } from "@/components/providers/NavigationProvider";
 import { SessionProvider } from "@/components/providers/SessionProvider";
 import { ProfileSyncProvider } from "@/components/providers/ProfileSyncProvider";
+import { GuestCookieSync } from "@/components/providers/GuestCookieSync";
 import { WebVitalsReporter } from "@/components/WebVitalsReporter";
 import { TopNavigation } from "@/components/navigation/TopNavigation";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
@@ -141,6 +142,7 @@ export default function RootLayout({
                 <NotificationProvider>
                   <ServiceWorkerProvider>
                     <NavigationProvider>
+                      <GuestCookieSync />
                       <TopNavigation />
                       {children}
                     </NavigationProvider>

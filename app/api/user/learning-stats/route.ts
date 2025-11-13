@@ -209,10 +209,20 @@ function getEmptyStats(subject: string | null) {
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    const guestMode = request.cookies.get('aipark_guest_mode')?.value === 'true';
+    const guestModeCookie = request.cookies.get('aipark_guest_mode');
+    const guestMode = guestModeCookie?.value === 'true';
+
+    // Debug logging
+    console.log('[Learning Stats] Auth check:', {
+      hasSession: !!session?.user,
+      guestModeCookie: guestModeCookie?.value,
+      guestMode,
+      cookies: request.cookies.getAll().map(c => ({ name: c.name, value: c.value }))
+    });
 
     // Check for session and user identifier (email or id) OR guest mode
     if (!session?.user && !guestMode) {
+      console.log('[Learning Stats] Unauthorized: No session and no guest mode');
       return createErrorResponse('인증이 필요합니다', 401, 'UNAUTHORIZED');
     }
 
