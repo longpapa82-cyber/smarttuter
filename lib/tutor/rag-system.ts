@@ -4025,8 +4025,10 @@ export async function retrieveVerifiedContent(
 
     // Use AI to identify relevant topics
     const relevantTopics = await identifyRelevantTopics(question, subject);
-    console.log(`[RAG DEBUG] Question: "${question}"`);
-    console.log(`[RAG DEBUG] AI identified topics:`, relevantTopics);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[RAG DEBUG] Question: "${question}"`);
+      console.log(`[RAG DEBUG] AI identified topics:`, relevantTopics);
+    }
 
     // Find matching verified content
     const matches: Array<{ content: VerifiedContent; score: number }> = [];
@@ -4068,15 +4070,19 @@ export async function retrieveVerifiedContent(
       score += Math.min(overlap * 2, 30);
 
       matches.push({ content: verifiedContent, score: Math.min(score, 100) });
-      console.log(`[RAG DEBUG] Matched: ${verifiedContent.topic} (Grade ${verifiedContent.gradeLevel}) - Score: ${score}`);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[RAG DEBUG] Matched: ${verifiedContent.topic} (Grade ${verifiedContent.gradeLevel}) - Score: ${score}`);
+      }
     }
 
     // Sort by relevance score
     matches.sort((a, b) => b.score - a.score);
 
-    console.log(`[RAG DEBUG] Total matches: ${matches.length}`);
-    if (matches.length > 0) {
-      console.log(`[RAG DEBUG] Top 3 matches:`, matches.slice(0, 3).map(m => `${m.content.topic} (${m.score})`));
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[RAG DEBUG] Total matches: ${matches.length}`);
+      if (matches.length > 0) {
+        console.log(`[RAG DEBUG] Top 3 matches:`, matches.slice(0, 3).map(m => `${m.content.topic} (${m.score})`));
+      }
     }
 
     // Return top results
@@ -4142,7 +4148,9 @@ division`;
       text += chunk;
     }
 
-    console.log(`[Topic ID DEBUG] Raw AI response:`, text);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[Topic ID DEBUG] Raw AI response:`, text);
+    }
 
     // Parse topics (one per line)
     const topics = text
@@ -4162,7 +4170,9 @@ division`;
         return line.length >= 2;
       });
 
-    console.log(`[Topic ID DEBUG] Parsed topics:`, topics);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[Topic ID DEBUG] Parsed topics:`, topics);
+    }
 
     return topics.slice(0, 5); // Max 5 topics
 

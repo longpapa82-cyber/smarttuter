@@ -743,13 +743,6 @@ ${scenario.initialMessage}`,
                 if (parsed.text) {
                   assistantMessage += parsed.text;
                   setMessages(prev => {
-                    console.log('🔍 DEBUG - Before update:', {
-                      sessionId: streamingSessionId,
-                      prevLength: prev.length,
-                      lastRole: prev[prev.length - 1]?.role,
-                      assistantMessageLength: assistantMessage.length,
-                    });
-
                     // CRITICAL FIX: Use ref to track which sessions have created messages
                     // This prevents React Strict Mode double-render from creating duplicates
                     const lastMessage = prev[prev.length - 1];
