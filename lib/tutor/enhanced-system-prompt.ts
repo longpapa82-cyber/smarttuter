@@ -70,7 +70,7 @@ export function generateEnhancedSystemPrompt(config: SystemPromptConfig): string
   sections.push(buildAccuracySection(includeChainOfThought));
 
   // 6. Communication Style
-  sections.push(buildCommunicationSection(grade, schoolLevel, studentGreeting));
+  sections.push(buildCommunicationSection(grade, schoolLevel, studentGreeting, subject));
 
   // 7. Response Format
   sections.push(buildResponseFormatSection(includeChainOfThought, subject));
@@ -301,13 +301,42 @@ ${includeChainOfThought ? `
 function buildCommunicationSection(
   grade: string,
   schoolLevel: SchoolLevel,
-  studentGreeting: string
+  studentGreeting: string,
+  subject?: Subject
 ): string {
   const isElementary = schoolLevel === 'elementary';
   const isYoung = schoolLevel === 'elementary' || schoolLevel === 'middle';
 
-  return `# 💬 소통 스타일 (Communication Style)
+  // English tutor MUST respond in English
+  const languageInstruction = subject === 'english'
+    ? `
 
+⚠️ **CRITICAL: LANGUAGE REQUIREMENT**
+✅ **YOU MUST RESPOND IN ENGLISH ONLY**
+✅ All explanations, examples, and instructions must be in English
+✅ This is an English tutoring session - Korean responses are NOT allowed
+✅ If asked in Korean, respond in English
+
+**Example Correct Response**:
+User: "Report는 뭐야?"
+You: "**'Report'** has two main meanings:
+
+1. **Noun - Document**: A written account giving information
+   Example: "I wrote a school report about dinosaurs."
+
+2. **Verb - To tell**: To give information about something
+   Example: "Report an accident to the police."
+
+Which meaning would you like to know more about?"
+
+**Example WRONG Response**:
+❌ "'Report'는 주로 두 가지 의미로 사용될 수 있어요!" (This is Korean - NEVER do this!)
+
+`
+    : '';
+
+  return `# 💬 소통 스타일 (Communication Style)
+${languageInstruction}
 **핵심 원칙**:
 ✅ 친근하지만 간결하게
 ✅ ${isElementary ? '쉬운 단어, 짧은 문장' : isYoung ? '명확한 설명, 실용적 예시' : '정확한 전문용어, 논리적 설명'}
@@ -327,8 +356,26 @@ function buildResponseFormatSection(
   includeChainOfThought: boolean,
   subject: Subject
 ): string {
-  const baseFormat = `# 📝 답변 형식 (Response Format)
+  // English tutor additional language requirement
+  const englishLanguageRequirement = subject === 'english'
+    ? `
 
+⚠️ **CRITICAL REMINDER: ENGLISH ONLY**
+✅ Every single word in your response MUST be in English
+✅ Even if the user asks in Korean, respond in English
+✅ Use simple, clear English for explanations
+✅ Provide examples in English
+
+**Forbidden**:
+❌ Any Korean text in your response
+❌ Mixed Korean-English responses
+❌ Korean words in parentheses or explanations
+
+`
+    : '';
+
+  const baseFormat = `# 📝 답변 형식 (Response Format)
+${englishLanguageRequirement}
 **⚠️ 답변 길이 제한 (중요!)**:
 - **개념 질문**: 300자 이내 (초등) / 500자 이내 (중고등) / 700자 이내 (대학)
 - **문제 풀이**: 800-1200자 (단계별 설명 필요 시)

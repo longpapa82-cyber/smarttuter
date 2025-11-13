@@ -70,7 +70,7 @@ export default function EmotionEnhancedChat({ subject, gradeLevel }: EmotionEnha
 
       {/* 감정 감지 오버레이 */}
       {isEmotionEnabled && (
-        <div className="absolute top-4 right-4 z-10 space-y-3">
+        <div className="fixed top-20 right-4 z-50 space-y-3">
           {/* 감정 토글 버튼 */}
           <motion.button
             onClick={() => setIsEmotionEnabled(!isEmotionEnabled)}
@@ -187,7 +187,7 @@ export default function EmotionEnhancedChat({ subject, gradeLevel }: EmotionEnha
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed bottom-24 right-4 z-10 bg-purple-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2"
+            className="fixed bottom-24 right-4 z-50 bg-purple-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2"
           >
             <motion.div
               animate={{ rotate: 360 }}

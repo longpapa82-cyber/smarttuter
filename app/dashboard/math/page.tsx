@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Calculator, ArrowRight, TrendingUp, Target, Award, BarChart3, BookOpen, Gamepad2, FileEdit } from "lucide-react";
 import { useUserStore } from "@/lib/gamification/store";
+import { useAuth } from "@/hooks/useAuth";
 import { EmptySubjectDashboard } from "@/components/dashboard/EmptySubjectDashboard";
 import { BetaBadge } from "@/components/common/BetaBadge";
 import type { MathDetailedStats } from "@/types/learning-stats";
@@ -18,6 +19,7 @@ function LoadingSpinner() {
 }
 
 function MathDashboardContent() {
+  const { isAuthenticated, user } = useAuth();
   const profile = useUserStore((state) => state.profile);
   const [stats, setStats] = useState<MathDetailedStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -25,6 +27,13 @@ function MathDashboardContent() {
   // Fetch Math learning stats from API
   useEffect(() => {
     async function loadStats() {
+      // Guest mode or not authenticated - show empty state without API call
+      if (!isAuthenticated || !user) {
+        setStats(null);
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
         const response = await fetch('/api/user/learning-stats?subject=math');
@@ -53,7 +62,7 @@ function MathDashboardContent() {
     // Auto-refresh every 60 seconds
     const interval = setInterval(loadStats, 60000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isAuthenticated, user]);
 
   // Loading state
   if (loading) {
