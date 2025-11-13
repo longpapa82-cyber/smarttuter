@@ -309,7 +309,7 @@ export function VoiceSettings({
                       ⚠️ Puter.js TTS is not installed
                     </p>
                     <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
-                      Voice quality settings will not work. The browser's default voice will be used instead.
+                      Voice quality settings will not work. The browser&apos;s default voice will be used instead.
                     </p>
                   </div>
                 )}

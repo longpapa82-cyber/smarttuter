@@ -86,7 +86,7 @@ export default function MicrolearningPage() {
             moduleId,
             score,
             completedAt: new Date().toISOString(),
-            timeSpent: Math.round(selectedModule.estimatedTime * 60), // minutes to seconds
+            timeSpent: Math.round(selectedModule.estimatedMinutes * 60), // minutes to seconds
             subject: selectedModule.subject,
           }),
         });

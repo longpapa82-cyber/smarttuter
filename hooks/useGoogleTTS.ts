@@ -111,7 +111,14 @@ export function useGoogleTTS({
             resolve();
           };
 
-          audio.onerror = (event) => {
+          audio.onerror = (event: string | Event) => {
+            if (typeof event === 'string') {
+              console.error('❌ Audio playback error:', event);
+              setIsSpeaking(false);
+              onError?.(new Error(event));
+              reject(new Error(event));
+              return;
+            }
             const audioError = event.target as HTMLAudioElement;
             const errorDetails = {
               error: audioError.error,

@@ -70,9 +70,6 @@ const nextConfig: NextConfig = {
     'lucide-react': {
       transform: 'lucide-react/dist/esm/icons/{{kebabCase member}}',
     },
-    '@google/generative-ai': {
-      transform: '@google/generative-ai/{{member}}',
-    },
   },
 
   // Output file tracing for smaller deployments
