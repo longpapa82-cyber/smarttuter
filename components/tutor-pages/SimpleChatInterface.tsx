@@ -147,7 +147,9 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const lastPlayedMessageIdRef = useRef<string | null>(null); // Track last played message to prevent re-playing on settings change
   const createdAssistantMessagesRef = useRef<Set<string>>(new Set()); // Track created message sessions
 
   // Voice settings - subject-specific defaults + grade level optimization
@@ -181,7 +183,8 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
     return baseSettings;
   });
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isTTSEnabled, setIsTTSEnabled] = useState(true);
+  const [isTTSEnabled, setIsTTSEnabled] = useState(() => voiceSettings.autoPlayResponses);
+  const [userTTSOverride, setUserTTSOverride] = useState(false); // Track if user manually toggled TTS
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
   const [isImageUploadOpen, setIsImageUploadOpen] = useState(false);
   const [isHandwritingOpen, setIsHandwritingOpen] = useState(false);
@@ -214,16 +217,18 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
     volume: voiceSettings.voiceVolume,
   });
 
-  // Puter.js TTS (Higher quality)
+  // Puter.js TTS (Higher quality) - only initialize when selected
   const puterTTS = usePuterTTS({
     language: voiceSettings.outputLanguage,
     engine: voiceSettings.puterEngine,
+    enabled: voiceSettings.ttsEngine === 'puter', // Only initialize when Puter is the active TTS engine
   });
 
   // Google Cloud TTS (Premium quality)
   const googleTTS = useGoogleTTS({
     gradeLevel: gradeLevel,
     language: voiceSettings.outputLanguage,
+    voiceName: voiceSettings.googleVoiceName, // User-selected voice
     onError: (error) => {
       console.error('❌ Google TTS error:', error);
       console.log('⚠️ Falling back to alternative TTS');
@@ -244,12 +249,28 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
     browserTTS.isSupported;
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'nearest',  // Prevent excessive scrolling that hides header
-      inline: 'nearest'
+    // Direct scroll to document bottom - most reliable method
+    // This works better with Framer Motion animations and fixed/sticky elements
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: 'smooth'
     });
   };
+
+  // Stop TTS when page unloads (refresh, close, navigate away)
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      // Stop all audio playback before page unloads
+      stop();
+      console.log('🛑 Page unload detected - stopping all TTS audio');
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [stop]);
 
   // Start session on mount and add welcome message
   const hasInitialized = useRef(false);
@@ -332,6 +353,9 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
 
     // End session on unmount
     return () => {
+      // Stop any playing TTS audio when leaving the page
+      stop();
+
       if (typeof window !== 'undefined' && sessionId) {
         // endSession is async, but cleanup functions can't be async
         // So we call it without await
@@ -353,26 +377,86 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
     }
   }, [messages]);
 
+  // Auto-scroll when messages change
   useEffect(() => {
-    // Skip auto-scroll for initial welcome message (1 message total)
-    // This prevents the header from being hidden on page load
-    if (messages.length > 1) {
-      scrollToBottom();
-    }
+    // Always scroll to bottom when messages update
+    // Wait for Framer Motion animations to complete (300ms duration + 50ms buffer)
+    if (messages.length > 0) {
+      const timer = setTimeout(() => {
+        scrollToBottom();
+      }, 350);
 
-    // DEBUG: Log messages array to check for duplicates
-    console.log('📋 Current messages array:', {
-      totalCount: messages.length,
-      details: messages.map((m, i) => ({
-        index: i,
-        role: m.role,
-        messageId: m.messageId,
-        contentStart: m.content.substring(0, 50),
-        contentLength: m.content.length,
-        sessionId: m.streamingSessionId
-      }))
-    });
+      return () => clearTimeout(timer);
+    }
   }, [messages]);
+
+  // Auto-scroll during streaming (for long responses)
+  useEffect(() => {
+    if (isLoading && messages.length > 0) {
+      // Scroll every 500ms during streaming to keep latest content visible
+      const interval = setInterval(() => {
+        scrollToBottom();
+      }, 500);
+
+      return () => clearInterval(interval);
+    }
+  }, [isLoading, messages.length]);
+
+  // Track the currently playing message for voice settings changes
+  const currentPlayingMessageRef = useRef<string | null>(null);
+
+  // Update ref when speaking starts
+  useEffect(() => {
+    if (isSpeaking) {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage && lastMessage.role === 'assistant') {
+        currentPlayingMessageRef.current = lastMessage.content;
+      }
+    } else {
+      currentPlayingMessageRef.current = null;
+    }
+  }, [isSpeaking, messages]);
+
+  // Restart TTS when voice settings change (engine or voice selection)
+  useEffect(() => {
+    // When TTS Engine or Voice Selection changes during playback:
+    // 1. Stop current audio immediately using ALL engines
+    // 2. Restart with new voice settings
+
+    const wasPlaying = currentPlayingMessageRef.current !== null;
+    if (!wasPlaying) return; // No need to do anything if not speaking
+
+    console.log('🔄 Voice settings changed - restarting with new settings');
+
+    // Stop all TTS engines to ensure clean transition
+    googleTTS.stop();
+    puterTTS.stop();
+    browserTTS.stop();
+
+    const messageToReplay = currentPlayingMessageRef.current;
+    if (messageToReplay) {
+      // Small delay to ensure previous audio is fully stopped before restarting
+      const timeoutId = setTimeout(() => {
+        console.log('🔁 Replaying with new voice settings:', {
+          engine: voiceSettings.ttsEngine,
+          googleVoice: voiceSettings.googleVoiceName,
+          puterEngine: voiceSettings.puterEngine,
+        });
+
+        // Use the NEW activeTTS based on updated settings
+        if (voiceSettings.ttsEngine === 'google') {
+          googleTTS.speak(messageToReplay);
+        } else if (voiceSettings.ttsEngine === 'puter') {
+          puterTTS.speak(messageToReplay);
+        } else {
+          browserTTS.speak(messageToReplay);
+        }
+      }, 200);
+
+      return () => clearTimeout(timeoutId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [voiceSettings.ttsEngine, voiceSettings.googleVoiceName, voiceSettings.puterEngine]);
 
   // Auto-play TTS for assistant responses (only after user interaction)
   useEffect(() => {
@@ -380,10 +464,23 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
 
     const lastMessage = messages[messages.length - 1];
     if (lastMessage && lastMessage.role === 'assistant' && !isLoading) {
-      // Speak the last assistant message
-      speak(lastMessage.content);
+      // Only play if this is a NEW message (not already played)
+      if (lastPlayedMessageIdRef.current === lastMessage.messageId) {
+        return; // Skip - already played this message
+      }
+
+      // Stop any currently playing audio before speaking new message
+      stop();
+
+      // Small delay to ensure previous audio is fully stopped
+      const timeoutId = setTimeout(() => {
+        speak(lastMessage.content);
+        lastPlayedMessageIdRef.current = lastMessage.messageId; // Mark as played
+      }, 100);
+
+      return () => clearTimeout(timeoutId);
     }
-  }, [messages, isLoading, voiceSettings.autoPlayResponses, isTTSEnabled, isTTSSupported, hasUserInteracted, speak]);
+  }, [messages, isLoading, voiceSettings.autoPlayResponses, isTTSEnabled, isTTSSupported, hasUserInteracted, speak, stop]);
 
   // Handle OCR recognized text
   const handleImageTextRecognized = (text: string, metadata?: { confidence: number; contentType: string }) => {
@@ -550,13 +647,17 @@ ${scenario.initialMessage}`,
     }
 
     // Smart TTS: 음성 입력 시 TTS 켜기, 텍스트 입력 시 TTS 끄기 (OCR 제외)
-    const isVoiceInput = !!messageText && !isFromOCR; // messageText가 있고 OCR이 아니면 음성 입력
-    if (isVoiceInput && !isTTSEnabled) {
-      console.log('🔊 Voice input detected - enabling TTS');
-      setIsTTSEnabled(true);
-    } else if (!isVoiceInput && isTTSEnabled) {
-      console.log('⌨️ Text input detected - disabling TTS');
-      setIsTTSEnabled(false);
+    // English tutor: Always keep TTS enabled for pronunciation practice
+    // If user manually toggled TTS, respect their preference (don't auto-toggle)
+    if (subject !== 'english' && !userTTSOverride) {
+      const isVoiceInput = !!messageText && !isFromOCR; // messageText가 있고 OCR이 아니면 음성 입력
+      if (isVoiceInput && !isTTSEnabled) {
+        console.log('🔊 Voice input detected - enabling TTS');
+        setIsTTSEnabled(true);
+      } else if (!isVoiceInput && isTTSEnabled) {
+        console.log('⌨️ Text input detected - disabling TTS');
+        setIsTTSEnabled(false);
+      }
     }
 
     setInput('');
@@ -822,6 +923,10 @@ ${scenario.initialMessage}`,
       ]);
     } finally {
       setIsLoading(false);
+      // Auto-focus input field after response completes
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
     }
   };
 
@@ -831,7 +936,7 @@ ${scenario.initialMessage}`,
       <GuestConversionBanner />
 
       {/* Header */}
-      <div className="bg-white/80 backdrop-blur-md border-b border-gray-200 p-4 sticky top-0 z-10">
+      <div className="sticky top-16 z-30 shrink-0 bg-white/80 backdrop-blur-md border-b border-gray-200 p-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div>
             <div className="flex items-center gap-3 mb-1">
@@ -903,6 +1008,7 @@ ${scenario.initialMessage}`,
               <button
                 onClick={() => {
                   setIsTTSEnabled(!isTTSEnabled);
+                  setUserTTSOverride(true); // User manually toggled TTS - respect their preference
                   if (isTTSEnabled) stop();
                 }}
                 className={`min-w-[48px] min-h-[48px] p-3 rounded-lg transition-all touch-manipulation flex items-center justify-center focus-visible:ring-2 focus-visible:ring-offset-2 ${
@@ -930,7 +1036,7 @@ ${scenario.initialMessage}`,
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 min-h-[50vh]">
+      <div className="flex-1 pt-24 px-4 pb-[120px]">
         <div className="max-w-4xl mx-auto space-y-4">
           {messages.length === 0 && (
             <div className="text-center text-gray-500 py-16">
@@ -1084,8 +1190,8 @@ ${scenario.initialMessage}`,
         </div>
       </div>
 
-      {/* Input */}
-      <div className="bg-white/80 backdrop-blur-md border-t border-gray-200 p-4">
+      {/* Input - Fixed to Bottom */}
+      <div className="fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-gray-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
         <div className="max-w-4xl mx-auto space-y-3">
           {/* Image Upload Panel - English */}
           <AnimatePresence>
@@ -1254,6 +1360,7 @@ ${scenario.initialMessage}`,
 
             {/* Text Input */}
             <input
+              ref={inputRef}
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -1280,104 +1387,7 @@ ${scenario.initialMessage}`,
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-8 px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
-            {/* Brand */}
-            <div className="col-span-2 md:col-span-1">
-              <div className="flex items-center space-x-2 mb-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
-                  <span className="text-lg">🎓</span>
-                </div>
-                <span className="text-lg font-bold">AI Park</span>
-              </div>
-              <p className="text-gray-400 text-sm">AI 기반 개인 맞춤형 학습 플랫폼</p>
-            </div>
-
-            {/* Services */}
-            <div>
-              <h4 className="font-semibold mb-3 text-sm">서비스</h4>
-              <ul className="space-y-2 text-gray-400 text-sm">
-                <li>
-                  <a className="hover:text-white transition-colors" href="/dashboard/english">
-                    English
-                  </a>
-                </li>
-                <li>
-                  <a className="hover:text-white transition-colors" href="/dashboard/math">
-                    Math
-                  </a>
-                </li>
-                <li>
-                  <a className="hover:text-white transition-colors" href="/tutor/korean">
-                    Korean 📚
-                  </a>
-                </li>
-                <li>
-                  <a className="hover:text-white transition-colors" href="/dashboard/science">
-                    Science
-                  </a>
-                </li>
-                <li>
-                  <a className="hover:text-white transition-colors" href="/dashboard/social">
-                    Social
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            {/* Dashboard */}
-            <div>
-              <h4 className="font-semibold mb-3 text-sm">대시보드</h4>
-              <ul className="space-y-2 text-gray-400 text-sm">
-                <li>
-                  <a className="hover:text-white transition-colors" href="/dashboard">
-                    전체 대시보드
-                  </a>
-                </li>
-                <li>
-                  <a className="hover:text-white transition-colors" href="/learning-report">
-                    학습 리포트
-                  </a>
-                </li>
-                <li>
-                  <Link className="hover:text-white transition-colors" href="/">
-                    홈으로
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            {/* Support */}
-            <div>
-              <h4 className="font-semibold mb-3 text-sm">지원</h4>
-              <ul className="space-y-2 text-gray-400 text-sm">
-                <li>
-                  <a className="hover:text-white transition-colors" href="/onboarding/quick">
-                    퀵 온보딩
-                  </a>
-                </li>
-                <li>
-                  <Link className="hover:text-white transition-colors" href="/">
-                    도움말
-                  </Link>
-                </li>
-                <li>
-                  <Link className="hover:text-white transition-colors" href="/">
-                    개인정보처리방침
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          {/* Copyright */}
-          <div className="border-t border-gray-800 pt-6 text-center">
-            <p className="text-gray-400 text-sm">© 2025 AI Park. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      {/* Footer removed - content moved to dashboard/settings for cleaner tutor interface */}
 
       {/* Voice Settings Panel */}
       <VoiceSettings
