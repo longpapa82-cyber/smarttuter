@@ -52,8 +52,27 @@ const nextConfig: NextConfig = {
       'recharts',
       'date-fns',
       'd3',
-      'react-hot-toast'
+      'react-hot-toast',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-dropdown-menu',
+      '@radix-ui/react-select',
+      '@radix-ui/react-toast',
+      'next-auth',
+      'react-markdown',
+      'remark-gfm',
+      'remark-math',
+      'rehype-katex',
     ],
+  },
+
+  // Modular imports for tree-shaking
+  modularizeImports: {
+    'lucide-react': {
+      transform: 'lucide-react/dist/esm/icons/{{kebabCase member}}',
+    },
+    '@google/generative-ai': {
+      transform: '@google/generative-ai/{{member}}',
+    },
   },
 
   // Output file tracing for smaller deployments
@@ -128,8 +147,36 @@ const nextConfig: NextConfig = {
   },
 };
 
-// Temporarily disable Sentry to test custom error tracking
-// Will re-enable once custom system is working
-// export default withSentryConfig(withBundleAnalyzer(nextConfig), {...});
+// Enable Sentry only if DSN is configured
+const isSentryEnabled = !!process.env.NEXT_PUBLIC_SENTRY_DSN;
 
-export default withBundleAnalyzer(nextConfig);
+const sentryConfig = {
+  // For all available options, see:
+  // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
+
+  // Suppresses source map uploading logs during build
+  silent: true,
+
+  // Organization and project for source map upload
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+
+  // Upload a larger set of source maps for prettier stack traces (increases build time)
+  widenClientFileUpload: true,
+
+  // Routes browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers (increases server load)
+  tunnelRoute: "/monitoring",
+
+  // Hides source maps from generated client bundles
+  hideSourceMaps: true,
+
+  // Automatically tree-shake Sentry logger statements to reduce bundle size
+  disableLogger: true,
+
+  // Enables automatic instrumentation of Vercel Cron Monitors.
+  automaticVercelMonitors: true,
+};
+
+export default isSentryEnabled
+  ? withSentryConfig(withBundleAnalyzer(nextConfig), sentryConfig)
+  : withBundleAnalyzer(nextConfig);
