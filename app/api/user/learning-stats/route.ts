@@ -24,26 +24,213 @@ function parseRedisData(data: any) {
   }
 }
 
+// Helper function to return empty stats for guest users
+function getEmptyStats(subject: string | null) {
+  if (subject === 'english') {
+    const emptyEnglishStats: EnglishDetailedStats = {
+      lastSession: null,
+      nextTopic: null,
+      cefrLevel: null,
+      monthlyHours: { current: 0, target: 20 },
+      completedTopics: 0,
+      masteredGrammar: [],
+      mastery: { listening: 0, speaking: 0, reading: 0, writing: 0 },
+      analysis: {
+        strengths: [],
+        weaknesses: [],
+        aiRecommendation: '영어 튜터와 대화를 시작하여 학습 분석을 받아보세요!',
+      },
+    };
+    return NextResponse.json({ success: true, data: emptyEnglishStats });
+  }
+
+  if (subject === 'math') {
+    const emptyMathStats: MathDetailedStats = {
+      lastSession: null,
+      nextTopic: null,
+      gradeProgress: null,
+      monthlyHours: { current: 0, target: 15 },
+      chapters: [],
+      analysis: {
+        strengths: [],
+        weaknesses: [],
+        aiRecommendation: '수학 튜터와 학습을 시작하여 진행도 분석을 받아보세요!',
+      },
+    };
+    return NextResponse.json({ success: true, data: emptyMathStats });
+  }
+
+  if (subject === 'science') {
+    const emptyScienceStats: ScienceDetailedStats = {
+      lastSession: null,
+      nextTopic: null,
+      gradeProgress: null,
+      monthlyHours: { current: 0, target: 12 },
+      concepts: [],
+      analysis: {
+        strengths: [],
+        weaknesses: [],
+        aiRecommendation: '과학 튜터와 학습을 시작하여 진행도 분석을 받아보세요!',
+      },
+    };
+    return NextResponse.json({ success: true, data: emptyScienceStats });
+  }
+
+  if (subject === 'social' || subject === 'social-studies') {
+    const emptySocialStats: SocialDetailedStats = {
+      lastSession: null,
+      nextTopic: null,
+      gradeProgress: null,
+      monthlyHours: { current: 0, target: 12 },
+      periods: [],
+      analysis: {
+        strengths: [],
+        weaknesses: [],
+        aiRecommendation: '사회 튜터와 학습을 시작하여 진행도 분석을 받아보세요!',
+      },
+    };
+    return NextResponse.json({ success: true, data: emptySocialStats });
+  }
+
+  // Overall empty stats
+  const emptyOverallStats: LearningStats = {
+    english: {
+      weeklyHours: 0,
+      weeklyGoal: 20,
+      hasData: false,
+      cefrLevel: null,
+      skills: { listening: 0, speaking: 0, reading: 0, writing: 0 },
+      detailed: {
+        lastSession: null,
+        nextTopic: null,
+        cefrLevel: null,
+        monthlyHours: { current: 0, target: 20 },
+        completedTopics: 0,
+        masteredGrammar: [],
+        mastery: { listening: 0, speaking: 0, reading: 0, writing: 0 },
+        analysis: {
+          strengths: [],
+          weaknesses: [],
+          aiRecommendation: '영어 튜터와 대화를 시작하여 학습 분석을 받아보세요!',
+        },
+      },
+    },
+    math: {
+      weeklyHours: 0,
+      weeklyGoal: 15,
+      hasData: false,
+      gradeLevel: null,
+      completedUnits: 0,
+      totalUnits: 0,
+      currentTopic: null,
+      detailed: {
+        lastSession: null,
+        nextTopic: null,
+        gradeProgress: null,
+        monthlyHours: { current: 0, target: 15 },
+        chapters: [],
+        analysis: {
+          strengths: [],
+          weaknesses: [],
+          aiRecommendation: '수학 튜터와 학습을 시작하여 진행도 분석을 받아보세요!',
+        },
+      },
+    },
+    science: {
+      weeklyHours: 0,
+      weeklyGoal: 12,
+      hasData: false,
+      gradeLevel: null,
+      completedUnits: 0,
+      totalUnits: 0,
+      currentTopic: null,
+      detailed: {
+        lastSession: null,
+        nextTopic: null,
+        gradeProgress: null,
+        monthlyHours: { current: 0, target: 12 },
+        concepts: [],
+        analysis: {
+          strengths: [],
+          weaknesses: [],
+          aiRecommendation: '과학 튜터와 학습을 시작하여 진행도 분석을 받아보세요!',
+        },
+      },
+    },
+    social: {
+      weeklyHours: 0,
+      weeklyGoal: 12,
+      hasData: false,
+      gradeLevel: null,
+      completedUnits: 0,
+      totalUnits: 0,
+      currentTopic: null,
+      detailed: {
+        lastSession: null,
+        nextTopic: null,
+        gradeProgress: null,
+        monthlyHours: { current: 0, target: 12 },
+        periods: [],
+        analysis: {
+          strengths: [],
+          weaknesses: [],
+          aiRecommendation: '사회 튜터와 학습을 시작하여 진행도 분석을 받아보세요!',
+        },
+      },
+    },
+    korean: {
+      weeklyHours: 0,
+      weeklyGoal: 12,
+      hasData: false,
+      gradeLevel: null,
+      completedUnits: 0,
+      totalUnits: 0,
+      currentTopic: null,
+      detailed: {
+        lastSession: null,
+        nextTopic: null,
+        gradeProgress: null,
+        monthlyHours: { current: 0, target: 12 },
+        topics: [],
+        analysis: {
+          strengths: [],
+          weaknesses: [],
+          aiRecommendation: '국어 튜터와 학습을 시작하여 진행도 분석을 받아보세요!',
+        },
+      },
+    },
+  };
+  return NextResponse.json({ success: true, data: emptyOverallStats });
+}
+
 // GET /api/user/learning-stats - Get user's learning statistics
 // GET /api/user/learning-stats?subject=english - Get detailed English stats
 // GET /api/user/learning-stats?subject=math - Get detailed Math stats
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
+    const guestMode = request.cookies.get('aipark_guest_mode')?.value === 'true';
 
-    // Check for session and user identifier (email or id)
-    if (!session?.user) {
+    // Check for session and user identifier (email or id) OR guest mode
+    if (!session?.user && !guestMode) {
       return createErrorResponse('인증이 필요합니다', 401, 'UNAUTHORIZED');
     }
 
+    // If guest mode without session, return empty stats
+    const { searchParams } = new URL(request.url);
+    const subject = searchParams.get('subject');
+
+    if (guestMode && !session?.user) {
+      return getEmptyStats(subject);
+    }
+
     // Use email as primary identifier, fallback to user ID
-    const userId = session.user.email || session.user.id;
+    const userId = session!.user!.email || session!.user!.id;
 
     if (!userId) {
       return createErrorResponse('사용자 식별자를 찾을 수 없습니다', 401, 'NO_USER_ID');
     }
-    const { searchParams } = new URL(request.url);
-    const subject = searchParams.get('subject');
+
     const db = await getAuthDb();
 
     // Subject-specific detailed stats
