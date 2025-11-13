@@ -32,6 +32,7 @@ import {
 import { StudyTimeChart } from '@/components/reports/StudyTimeChart';
 import { PerformanceTrendChart } from '@/components/reports/PerformanceTrendChart';
 import { SubjectDistributionChart } from '@/components/reports/SubjectDistributionChart';
+import { generateLearningReportPDF } from '@/lib/utils/pdf-generator';
 
 export default function LearningReportPage() {
   const router = useRouter();
@@ -90,6 +91,19 @@ export default function LearningReportPage() {
     });
   };
 
+  const handleDownloadPDF = async () => {
+    try {
+      const today = new Date();
+      const reportDate = today.toISOString().split('T')[0].replace(/-/g, '');
+      const userName = '학습자'; // Default username, can be replaced with actual user data
+
+      await generateLearningReportPDF(userName, reportDate);
+    } catch (error) {
+      console.error('PDF download error:', error);
+      alert('PDF 다운로드 중 오류가 발생했습니다. 다시 시도해주세요.');
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50">
@@ -128,10 +142,7 @@ export default function LearningReportPage() {
                 <RefreshCw className="w-5 h-5 text-gray-600" />
               </button>
               <button
-                onClick={() => {
-                  // TODO: Implement PDF download
-                  alert('PDF 다운로드 기능은 곧 제공될 예정입니다!');
-                }}
+                onClick={handleDownloadPDF}
                 className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
               >
                 <Download className="w-4 h-4" />
@@ -177,7 +188,7 @@ export default function LearningReportPage() {
             </button>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div id="learning-report-content" className="space-y-6">
             {/* View Mode Toggle */}
             <div className="flex items-center justify-center gap-2 bg-white p-2 rounded-xl border border-gray-200 shadow-sm w-fit mx-auto">
               <button

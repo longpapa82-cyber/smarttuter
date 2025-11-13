@@ -5,7 +5,7 @@
  * instead of using timestamps, enabling better learning progress tracking.
  */
 
-import { generateVertexAIStream } from '@/lib/ai/vertex-ai';
+import { vertexAIClient } from '@/lib/ai/vertex-client';
 
 export type Subject = 'math' | 'english' | 'science' | 'social-studies' | 'korean';
 
@@ -27,8 +27,9 @@ export async function extractConceptId(
     const prompt = createConceptExtractionPrompt(message, subject, gradeLevel);
 
     // Use Gemini Flash for fast concept extraction
-    const streamIterator = await generateVertexAIStream(
+    const streamIterator = await vertexAIClient.generateContentStream(
       prompt,
+      'flash',
       {
         temperature: 0.1, // Low temperature for consistent extraction
         maxTokens: 64,
