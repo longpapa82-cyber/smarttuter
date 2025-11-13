@@ -15,6 +15,8 @@ import type { VoiceSettingsConfig } from '@/components/voice/VoiceSettings';
  * - 한국어 입력 (수식과 한글 설명에 최적화)
  * - Push-to-Talk 모드 (정확한 수학 용어 입력을 위해)
  * - 수동 시작 (사용자가 준비되었을 때 시작)
+ * - TTS 기본 오프 (사용자가 필요할 때 켜서 사용)
+ * - Google Cloud TTS 사용 (고품질 음성)
  */
 export const MATH_TUTOR_DEFAULTS: VoiceSettingsConfig = {
   // Voice Input
@@ -22,14 +24,15 @@ export const MATH_TUTOR_DEFAULTS: VoiceSettingsConfig = {
   inputLanguage: 'ko-KR',
 
   // Voice Output
-  autoPlayResponses: true,
+  autoPlayResponses: true, // Default: ON (Google TTS with Korean voice)
   repeatUserInput: false,
   outputLanguage: 'ko-KR',
   voiceSpeed: 1.0,
   voicePitch: 1.0,
   voiceVolume: 0.8,
-  ttsEngine: 'puter',
+  ttsEngine: 'google', // Use Google Cloud TTS for high quality
   puterEngine: 'neural',
+  googleVoiceName: 'ko-KR-Neural2-A', // Korean Female (Natural voice)
 
   // Advanced
   noiseSuppression: true,
@@ -38,26 +41,28 @@ export const MATH_TUTOR_DEFAULTS: VoiceSettingsConfig = {
 
 /**
  * 영어 튜터 기본 설정
- * - 영국 영어 입력 (자연스러운 영어 발음 연습)
+ * - 미국 영어 입력 (자연스러운 영어 발음 연습)
  * - Push-to-Talk 모드 (사용자가 원할 때 음성 입력 시작)
  * - 수동 시작 (사용자가 버튼을 클릭해야 시작)
+ * - Google Cloud TTS (US Female Neural2 voice)
  *
  * 사용자 요청: "Always Listening" 모드 자동 실행 방지
  */
 export const ENGLISH_TUTOR_DEFAULTS: VoiceSettingsConfig = {
   // Voice Input
   inputMode: 'push-to-talk', // Changed from 'continuous' to prevent auto-render
-  inputLanguage: 'en-GB',
+  inputLanguage: 'en-US',
 
   // Voice Output
   autoPlayResponses: true,
   repeatUserInput: false,
-  outputLanguage: 'en-GB',
+  outputLanguage: 'en-US',
   voiceSpeed: 1.0,
   voicePitch: 1.0,
   voiceVolume: 0.8,
-  ttsEngine: 'puter',
+  ttsEngine: 'google', // Use Google Cloud TTS for high quality
   puterEngine: 'neural',
+  googleVoiceName: 'en-US-Neural2-F', // US Female (Natural voice)
 
   // Advanced
   noiseSuppression: true,
@@ -69,6 +74,7 @@ export const ENGLISH_TUTOR_DEFAULTS: VoiceSettingsConfig = {
  * - 한국어 입력 (과학 용어와 한글 설명에 최적화)
  * - Push-to-Talk 모드 (정확한 과학 용어 입력을 위해)
  * - 수동 시작 (사용자가 준비되었을 때 시작)
+ * - Google Cloud TTS 사용 (고품질 음성)
  */
 export const SCIENCE_TUTOR_DEFAULTS: VoiceSettingsConfig = {
   // Voice Input
@@ -82,8 +88,9 @@ export const SCIENCE_TUTOR_DEFAULTS: VoiceSettingsConfig = {
   voiceSpeed: 1.0,
   voicePitch: 1.0,
   voiceVolume: 0.8,
-  ttsEngine: 'puter',
+  ttsEngine: 'google', // Use Google Cloud TTS for high quality
   puterEngine: 'neural',
+  googleVoiceName: 'ko-KR-Neural2-A', // Korean Female (Natural voice)
 
   // Advanced
   noiseSuppression: true,
@@ -95,6 +102,7 @@ export const SCIENCE_TUTOR_DEFAULTS: VoiceSettingsConfig = {
  * - 한국어 입력 (사회 용어와 한글 설명에 최적화)
  * - Push-to-Talk 모드 (정확한 사회 용어 입력을 위해)
  * - 수동 시작 (사용자가 준비되었을 때 시작)
+ * - Google Cloud TTS 사용 (고품질 음성)
  */
 export const SOCIAL_STUDIES_TUTOR_DEFAULTS: VoiceSettingsConfig = {
   // Voice Input
@@ -108,8 +116,9 @@ export const SOCIAL_STUDIES_TUTOR_DEFAULTS: VoiceSettingsConfig = {
   voiceSpeed: 1.0,
   voicePitch: 1.0,
   voiceVolume: 0.8,
-  ttsEngine: 'puter',
+  ttsEngine: 'google', // Use Google Cloud TTS for high quality
   puterEngine: 'neural',
+  googleVoiceName: 'ko-KR-Neural2-A', // Korean Female (Natural voice)
 
   // Advanced
   noiseSuppression: true,

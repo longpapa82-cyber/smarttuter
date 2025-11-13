@@ -6,7 +6,14 @@ import textToSpeech from '@google-cloud/text-to-speech';
 
 export async function POST(request: NextRequest) {
   try {
-    const { text, gradeLevel, language = 'ko-KR' } = await request.json();
+    const { text, gradeLevel, language = 'ko-KR', voiceName } = await request.json();
+
+    console.log('🎤 Google TTS Request:', {
+      textLength: text?.length,
+      gradeLevel,
+      language,
+      voiceName: voiceName || 'default (ko-KR-Neural2-A)',
+    });
 
     if (!text) {
       return NextResponse.json(
@@ -33,8 +40,9 @@ export async function POST(request: NextRequest) {
     // Generate SSML based on grade level
     const ssml = generateSSML(text, gradeLevel);
 
-    // Select voice based on language and grade level
-    const voice = selectVoice(language, gradeLevel);
+    // Select voice based on language, grade level, and user preference
+    const voice = selectVoice(language, gradeLevel, voiceName);
+    console.log('🎙️ Selected Voice:', voice);
 
     // Configure audio
     const audioConfig = {
@@ -110,20 +118,22 @@ function generateSSML(text: string, gradeLevel: string): string {
 }
 
 // Select best voice for language and grade level
-function selectVoice(language: string, gradeLevel: string) {
+function selectVoice(language: string, gradeLevel: string, voiceName?: string) {
   const isKorean = language.startsWith('ko');
 
   if (isKorean) {
-    // Use Neural2 voices for best quality
+    // Use specified voice or default to Neural2-A (female, most natural)
+    const defaultVoice = 'ko-KR-Neural2-A';
     return {
       languageCode: 'ko-KR',
-      name: 'ko-KR-Neural2-A', // Female voice, most natural
+      name: voiceName || defaultVoice,
     };
   } else {
-    // English
+    // English - use specified voice or default
+    const defaultVoice = 'en-US-Neural2-F';
     return {
       languageCode: 'en-US',
-      name: 'en-US-Neural2-F', // Female voice, natural
+      name: voiceName || defaultVoice,
     };
   }
 }
@@ -142,7 +152,7 @@ function getSpeakingRate(gradeLevel: string): number {
 function getPitch(gradeLevel: string): number {
   const isElementary = gradeLevel.includes('초등');
 
-  if (isElementary) return 2.0; // Higher pitch for friendliness
+  if (isElementary) return 0.5; // Slightly higher pitch for friendliness (reduced from 2.0 for more natural sound)
   return 0.0; // Normal pitch
 }
 

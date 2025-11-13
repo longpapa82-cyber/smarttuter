@@ -5,6 +5,24 @@ import { motion } from 'framer-motion'
 import { Volume2, VolumeX, Mic, Settings, X } from 'lucide-react'
 import { AudioLevelMeter } from './VoiceWaveform'
 
+// Declare Puter.js types globally
+declare global {
+  interface Window {
+    puter?: {
+      ai: {
+        txt2speech: (
+          text: string,
+          options?: {
+            voice?: string;
+            engine?: 'standard' | 'neural' | 'generative';
+            language?: string;
+          }
+        ) => Promise<HTMLAudioElement>;
+      };
+    };
+  }
+}
+
 export interface VoiceSettingsConfig {
   // Voice Input
   inputMode: 'push-to-talk' | 'continuous' | 'disabled'
@@ -19,6 +37,7 @@ export interface VoiceSettingsConfig {
   voiceVolume: number // 0.0 - 1.0
   ttsEngine: 'browser' | 'puter' | 'google' // TTS engine selection
   puterEngine: 'standard' | 'neural' | 'generative' // Puter.js engine quality
+  googleVoiceName?: string // Google TTS voice selection (e.g., 'ko-KR-Neural2-A')
 
   // Advanced
   noiseSuppression: boolean
@@ -36,6 +55,7 @@ export const DEFAULT_VOICE_SETTINGS: VoiceSettingsConfig = {
   voiceVolume: 0.8,
   ttsEngine: 'google', // Use Google Cloud TTS by default for best quality
   puterEngine: 'neural', // Use neural engine for balance of quality and speed
+  googleVoiceName: 'en-US-Neural2-F', // Default: US Female voice for English tutor
   noiseSuppression: true,
   echoCancellation: true,
 }
@@ -281,17 +301,66 @@ export function VoiceSettings({
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">
                   Voice Quality
                 </label>
+
+                {/* Warning: Puter.js not available */}
+                {typeof window !== 'undefined' && !window.puter?.ai?.txt2speech && (
+                  <div className="mb-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                    <p className="text-xs text-yellow-800 dark:text-yellow-200 font-medium">
+                      ⚠️ Puter.js TTS is not installed
+                    </p>
+                    <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
+                      Voice quality settings will not work. The browser's default voice will be used instead.
+                    </p>
+                  </div>
+                )}
+
                 <select
                   value={localSettings.puterEngine}
                   onChange={(e) => handleChange('puterEngine', e.target.value)}
                   className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  disabled={typeof window !== 'undefined' && !window.puter?.ai?.txt2speech}
                 >
                   <option value="standard">Standard (Fast)</option>
                   <option value="neural">Neural (Balanced, Recommended)</option>
                   <option value="generative">Generative (Most Natural)</option>
                 </select>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Higher quality may be slightly slower
+                  {typeof window !== 'undefined' && !window.puter?.ai?.txt2speech
+                    ? 'Install Puter.js to enable high-quality voice synthesis'
+                    : 'Higher quality may be slightly slower'}
+                </p>
+              </div>
+            )}
+
+            {/* Google Voice Selection (only show if Google TTS is selected) */}
+            {localSettings.ttsEngine === 'google' && (
+              <div className="mt-4">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">
+                  Voice Selection
+                </label>
+                <select
+                  value={localSettings.googleVoiceName || 'ko-KR-Neural2-A'}
+                  onChange={(e) => handleChange('googleVoiceName', e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <optgroup label="Korean (한국어)">
+                    <option value="ko-KR-Neural2-A">🎤 Korean Female (Natural) - Recommended</option>
+                    <option value="ko-KR-Neural2-B">🎤 Korean Female (Clear)</option>
+                    <option value="ko-KR-Neural2-C">🎤 Korean Male (Natural)</option>
+                    <option value="ko-KR-Wavenet-A">🎤 Korean Female (Wavenet)</option>
+                    <option value="ko-KR-Wavenet-B">🎤 Korean Female (Wavenet Alt)</option>
+                    <option value="ko-KR-Wavenet-C">🎤 Korean Male (Wavenet)</option>
+                    <option value="ko-KR-Wavenet-D">🎤 Korean Male (Wavenet Alt)</option>
+                  </optgroup>
+                  <optgroup label="English (영어)">
+                    <option value="en-US-Neural2-F">🎤 US Female (Natural)</option>
+                    <option value="en-US-Neural2-A">🎤 US Male (Natural)</option>
+                    <option value="en-GB-Neural2-A">🎤 UK Female (Natural)</option>
+                    <option value="en-GB-Neural2-B">🎤 UK Male (Natural)</option>
+                  </optgroup>
+                </select>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Neural2 voices provide the most natural sound quality
                 </p>
               </div>
             )}

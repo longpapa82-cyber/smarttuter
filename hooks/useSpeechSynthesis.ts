@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useLayoutEffect } from "react";
 
 interface UseSpeechSynthesisProps {
   lang?: string;
@@ -29,6 +29,14 @@ export function useSpeechSynthesis({
 
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
+  // Use ref to always read the latest settings dynamically
+  const settingsRef = useRef({ lang, rate, pitch, volume });
+
+  // Use useLayoutEffect to update settings synchronously before other effects
+  useLayoutEffect(() => {
+    settingsRef.current = { lang, rate, pitch, volume };
+  }, [lang, rate, pitch, volume]);
+
   useEffect(() => {
     // Check if Speech Synthesis API is supported
     if (typeof window !== "undefined" && window.speechSynthesis) {
@@ -49,17 +57,20 @@ export function useSpeechSynthesis({
       // Cancel any ongoing speech
       window.speechSynthesis.cancel();
 
+      // Read the latest settings dynamically from ref
+      const currentSettings = settingsRef.current;
+
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = lang;
-      utterance.rate = rate;
-      utterance.pitch = pitch;
-      utterance.volume = volume;
+      utterance.lang = currentSettings.lang;
+      utterance.rate = currentSettings.rate;
+      utterance.pitch = currentSettings.pitch;
+      utterance.volume = currentSettings.volume;
 
       // Select best available voice for the language
       const voices = window.speechSynthesis.getVoices();
       if (voices.length > 0) {
         // Try to find a voice that matches the language
-        const matchingVoice = voices.find(voice => voice.lang.startsWith(lang.split('-')[0]));
+        const matchingVoice = voices.find(voice => voice.lang.startsWith(currentSettings.lang.split('-')[0]));
         if (matchingVoice) {
           utterance.voice = matchingVoice;
           console.log('🎤 Selected voice:', matchingVoice.name, '(' + matchingVoice.lang + ')');
@@ -101,7 +112,7 @@ export function useSpeechSynthesis({
         setIsPaused(false);
       }
     },
-    [lang, rate, pitch, volume]
+    []
   );
 
   const stop = useCallback(() => {
