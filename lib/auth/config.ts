@@ -5,6 +5,7 @@
 import type { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
+import GitHubProvider from 'next-auth/providers/github';
 import KakaoProvider from 'next-auth/providers/kakao';
 import { dbUser, dbSession, dbAccount } from './db-redis';
 import { verifyPassword } from './password';
@@ -20,6 +21,17 @@ export const authOptions: NextAuthOptions = {
           prompt: 'consent',
           access_type: 'offline',
           response_type: 'code',
+        },
+      },
+    }),
+
+    // GitHub OAuth
+    GitHubProvider({
+      clientId: process.env.GITHUB_CLIENT_ID || '',
+      clientSecret: process.env.GITHUB_CLIENT_SECRET || '',
+      authorization: {
+        params: {
+          scope: 'read:user user:email',
         },
       },
     }),
@@ -128,7 +140,7 @@ export const authOptions: NextAuthOptions = {
           await dbAccount.create({
             userId: newUser.id,
             type: account.type as 'oauth' | 'email',
-            provider: account.provider as 'google' | 'apple' | 'kakao' | 'credentials',
+            provider: account.provider as 'google' | 'github' | 'apple' | 'kakao' | 'credentials',
             providerAccountId: account.providerAccountId,
             refresh_token: account.refresh_token ?? null,
             access_token: account.access_token ?? null,
@@ -157,7 +169,7 @@ export const authOptions: NextAuthOptions = {
             await dbAccount.create({
               userId: existingUser.id,
               type: account.type as 'oauth' | 'email',
-              provider: account.provider as 'google' | 'apple' | 'kakao' | 'credentials',
+              provider: account.provider as 'google' | 'github' | 'apple' | 'kakao' | 'credentials',
               providerAccountId: account.providerAccountId,
               refresh_token: account.refresh_token ?? null,
               access_token: account.access_token ?? null,

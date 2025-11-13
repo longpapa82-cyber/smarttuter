@@ -21,7 +21,7 @@ export interface Account {
   id: string;
   userId: string;
   type: 'oauth' | 'email';
-  provider: 'google' | 'apple' | 'kakao' | 'credentials';
+  provider: 'google' | 'github' | 'apple' | 'kakao' | 'credentials';
   providerAccountId: string;
   refresh_token?: string | null;
   access_token?: string | null;
