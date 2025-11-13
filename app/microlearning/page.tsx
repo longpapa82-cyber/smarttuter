@@ -71,9 +71,46 @@ export default function MicrolearningPage() {
       moduleProgress[m.id]?.status === 'mastered'
   ).reduce((sum, m) => sum + m.xpReward, 0);
 
-  const handleModuleComplete = (moduleId: string, score?: number) => {
+  const handleModuleComplete = async (moduleId: string, score?: number) => {
     console.log(`Module ${moduleId} completed with score: ${score}`);
-    // TODO: Update progress in store/API
+
+    // Update progress in API
+    if (score !== undefined && selectedModule) {
+      try {
+        const response = await fetch('/api/user/save-microlearning-progress', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            moduleId,
+            score,
+            completedAt: new Date().toISOString(),
+            timeSpent: Math.round(selectedModule.estimatedTime * 60), // minutes to seconds
+            subject: selectedModule.subject,
+          }),
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          console.log('✅ Microlearning progress saved:', result.data);
+          alert(
+            `모듈 완료! 🎉\n` +
+            `점수: ${score}점\n` +
+            `획득 XP: +${result.data.earnedXP}\n` +
+            `상태: ${result.data.status === 'mastered' ? '마스터 🏆' : '완료 ✓'}`
+          );
+        } else {
+          console.error('❌ Failed to save progress:', result.error);
+          alert(`모듈 완료! (데이터 저장 실패)`);
+        }
+      } catch (error) {
+        console.error('Error saving microlearning progress:', error);
+        alert(`모듈 완료! (데이터 저장 오류)`);
+      }
+    }
+
     setSelectedModule(null);
   };
 

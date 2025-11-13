@@ -15,11 +15,13 @@ import {
   type DailyEmotionStats,
   type EmotionPattern,
 } from '@/lib/emotion/emotion-storage';
+import { useAuth } from '@/hooks/useAuth';
 
 type TimePeriod = 'week' | 'month';
 
 export default function EmotionReportPage() {
-  const userId = 'demo-user'; // TODO: 실제 사용자 ID로 교체
+  const { user, isAuthenticated } = useAuth();
+  const userId = user?.email || user?.id || 'guest-user';
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('week');
   const [stats, setStats] = useState<DailyEmotionStats[]>([]);
   const [pattern, setPattern] = useState<EmotionPattern | null>(null);

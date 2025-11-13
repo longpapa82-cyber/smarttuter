@@ -59,13 +59,39 @@ export default function ReviewPage() {
   const mathCards = dueCards.filter((c) => c.subject === 'math');
   const englishCards = dueCards.filter((c) => c.subject === 'english');
 
-  const handleSessionComplete = (session: ReviewSessionType) => {
+  const handleSessionComplete = async (session: ReviewSessionType) => {
     console.log('Session completed:', session);
-    // TODO: Save session to database/store
-    setIsSessionActive(false);
 
-    // Show success message
-    alert(`복습 완료! +${session.earnedXP} XP 획득`);
+    // Save session to database
+    try {
+      const response = await fetch('/api/user/save-review-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(session),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        console.log('✅ Review session saved:', result.stats);
+        // Show success message with stats
+        alert(
+          `복습 완료! +${session.earnedXP} XP 획득\n` +
+          `전체 정확도: ${result.stats.overallAccuracy}%\n` +
+          `연속 학습: ${result.stats.currentStreak}일`
+        );
+      } else {
+        console.error('❌ Failed to save review session:', result.error);
+        alert(`복습 완료! +${session.earnedXP} XP 획득\n(데이터 저장 실패)`);
+      }
+    } catch (error) {
+      console.error('Error saving review session:', error);
+      alert(`복습 완료! +${session.earnedXP} XP 획득\n(데이터 저장 오류)`);
+    }
+
+    setIsSessionActive(false);
   };
 
   if (isSessionActive && sortedDueCards.length > 0) {
