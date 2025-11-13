@@ -8,6 +8,7 @@ import { contentLevelDetector } from "@/lib/tutor/content-level-detector";
 import { getRandomGuidanceMessage } from "@/lib/tutor/guidance-messages";
 import { trackLearningEvent } from "@/lib/learning-progress/progress-tracker";
 import type { LearningEvent } from "@/lib/learning-progress/types";
+import { extractConceptId } from "@/lib/learning/concept-extractor";
 import { classifyQuestion, isObviouslyOffTopic } from "@/lib/tutor/question-classifier";
 import { filterBySubject } from "@/lib/tutor/response-filter";
 import { retrieveVerifiedContent, formatRetrievedContext } from "@/lib/tutor/rag-system";
@@ -480,28 +481,34 @@ ${recentHistory.map((msg: { role: string; content: string }) => `${msg.role === 
             }
 
             // Track learning event (Phase 8: Progress tracking integration)
+            // Extract meaningful concept from the conversation using AI
             const responseTime = Math.round((Date.now() - startTime) / 1000); // seconds
-            const learningEvent: LearningEvent = {
-              userId,
-              eventType: 'conversation_turn',
-              subject: 'english',
-              conceptId: `english_conversation_${Date.now()}`, // TODO: Extract topic from conversation
-              gradeLevel: userProfile.gradeLevel as any,
-              success: true, // Assume success if we got a response
-              timestamp: new Date(),
-              responseTime,
-              hintsUsed: 0, // Not applicable for conversation
-              metadata: {
-                message: message.substring(0, 200), // Store truncated message
-                responseLength: fullResponse.length,
-                turnCount: (conversationHistory?.length || 0) + 1,
-                outOfScope: false,
-              },
-            };
 
-            trackLearningEvent(learningEvent).catch(err => {
-              console.error('Failed to track learning event:', err);
-            });
+            extractConceptId(message, 'english', gradeStr)
+              .then(conceptId => {
+                const learningEvent: LearningEvent = {
+                  userId,
+                  eventType: 'conversation_turn',
+                  subject: 'english',
+                  conceptId, // AI-extracted concept (e.g., "english_past_tense", "english_vocabulary")
+                  gradeLevel: userProfile.gradeLevel as any,
+                  success: true, // Assume success if we got a response
+                  timestamp: new Date(),
+                  responseTime,
+                  hintsUsed: 0, // Not applicable for conversation
+                  metadata: {
+                    message: message.substring(0, 200), // Store truncated message
+                    responseLength: fullResponse.length,
+                    turnCount: (conversationHistory?.length || 0) + 1,
+                    outOfScope: false,
+                  },
+                };
+
+                return trackLearningEvent(learningEvent);
+              })
+              .catch(err => {
+                console.error('Failed to extract concept or track learning event:', err);
+              });
           } catch (error) {
             console.error("Streaming error:", error);
             controller.error(error);
