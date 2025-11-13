@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import textToSpeech from '@google-cloud/text-to-speech';
 
 // Google Cloud TTS API endpoint
 // Provides natural Korean and English voices with SSML support
+// Using direct HTTP requests instead of SDK for better serverless compatibility
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,11 +32,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Initialize TTS client
-    const client = new textToSpeech.TextToSpeechClient({
-      apiKey: apiKey,
-    });
-
     // Generate SSML based on grade level
     const ssml = generateSSML(text, gradeLevel);
 
@@ -46,28 +41,43 @@ export async function POST(request: NextRequest) {
 
     // Configure audio
     const audioConfig = {
-      audioEncoding: 'MP3' as const,
+      audioEncoding: 'MP3',
       speakingRate: getSpeakingRate(gradeLevel),
       pitch: getPitch(gradeLevel),
     };
 
-    // Make TTS request
-    const [response] = await client.synthesizeSpeech({
-      input: { ssml },
-      voice,
-      audioConfig,
-    });
+    // Make direct HTTP request to Google TTS API
+    const ttsResponse = await fetch(
+      `https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          input: { ssml },
+          voice,
+          audioConfig,
+        }),
+      }
+    );
 
-    if (!response.audioContent) {
+    if (!ttsResponse.ok) {
+      const errorText = await ttsResponse.text();
+      console.error('❌ Google TTS API error:', ttsResponse.status, errorText);
+      throw new Error(`Google TTS API returned ${ttsResponse.status}: ${errorText}`);
+    }
+
+    const ttsData = await ttsResponse.json();
+
+    if (!ttsData.audioContent) {
       throw new Error('No audio content received from Google TTS');
     }
 
-    // Return audio as base64
-    const audioBase64 = Buffer.from(response.audioContent as Uint8Array).toString('base64');
-
+    // Audio content is already base64 encoded from Google API
     return NextResponse.json({
       success: true,
-      audio: audioBase64,
+      audio: ttsData.audioContent,
       contentType: 'audio/mp3',
     });
 
