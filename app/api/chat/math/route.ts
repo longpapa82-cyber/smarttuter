@@ -6,14 +6,19 @@ import { generateSystemPrompt } from "@/lib/tutor/system-prompt-generator";
 import { generateEnhancedSystemPrompt } from "@/lib/tutor/enhanced-system-prompt";
 import { contentLevelDetector } from "@/lib/tutor/content-level-detector";
 import { getRandomGuidanceMessage } from "@/lib/tutor/guidance-messages";
+import { enhancedGradeLevelFilter, logGradeLevelDecision } from "@/lib/tutor/enhanced-grade-level-filter";
 import { trackLearningEvent } from "@/lib/learning-progress/progress-tracker";
 import type { LearningEvent } from "@/lib/learning-progress/types";
 import { extractConceptId } from "@/lib/learning/concept-extractor";
 import { classifyQuestion, isObviouslyOffTopic } from "@/lib/tutor/question-classifier";
 import { filterBySubject } from "@/lib/tutor/response-filter";
+import { enhancedFilterBySubject, logFilterDecision } from "@/lib/tutor/enhanced-subject-filter";
 import { retrieveVerifiedContent, formatRetrievedContext } from "@/lib/tutor/rag-system";
+import { logRAGDirectUsage } from "@/lib/tutor/rag-quality-logger";
 import { responseCache } from "@/lib/cache/response-cache";
 import { quickClassify, apiTracker } from "@/lib/cache/api-optimizer";
+import { classifyComplexity, getResponseStyle } from "@/lib/tutor/complexity-classifier";
+import { generateComplexityAwarePrompt } from "@/lib/tutor/prompt-templates";
 import { vertexAIClient } from "@/lib/ai/vertex-client";
 import { intelligentRouter } from "@/lib/ai/intelligent-router";
 import { getCurrentDifficulty, difficultyToPromptGuidance } from "@/lib/learning/difficulty-tracker";
@@ -85,6 +90,10 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // 🚀 Phase 1.5: Classify question complexity (NEW - no API call)
+    const complexityAnalysis = classifyComplexity(message, 'math');
+    console.log(`[Complexity] Math question: "${message.substring(0, 50)}" → ${complexityAnalysis.complexity} (confidence: ${complexityAnalysis.confidence})`);
+
     // 🚀 Phase 2: Quick keyword-based classification (no API call)
     const quickClassification = quickClassify(message, 'math');
 
@@ -136,26 +145,120 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // 🎯 Week 1: AI-based Subject Classification
-    const classification = await classifyQuestion(message, 'math');
-    const filterResult = filterBySubject(classification, 'math');
+    // 🚀 Phase 5: RAG-FIRST Pipeline - Execute RAG retrieval BEFORE Enhanced Filter
+    // Rationale: RAG Direct (90%+ confidence) should return immediately without filter overhead
+    let ragContext: string | undefined = undefined;
+    let ragDirectAnswer: string | undefined = undefined;
 
-    if (!filterResult.shouldRespond) {
+    try {
+      const gradeStr = String(userProfile.gradeLevelDetail || '5');
+      const retrievedContext = await retrieveVerifiedContent(
+        message,
+        'math',
+        gradeStr,
+        3 // Max 3 relevant content pieces
+      );
+
+      if (retrievedContext.content.length > 0) {
+        ragContext = formatRetrievedContext(retrievedContext);
+
+        // If RAG confidence is very high (>90%) and content is comprehensive,
+        // we can answer directly without API call OR Enhanced Filter
+        const avgConfidence = retrievedContext.content.reduce((sum, c) => sum + (c.confidence ?? 1.0), 0) / retrievedContext.content.length;
+
+        // Phase 5: RAG Direct bypasses Enhanced Filter for high-confidence answers
+        if (avgConfidence > 0.9 && retrievedContext.content.length >= 1) {
+          // Use Korean content if available, fallback to English
+          const contentToUse = retrievedContext.content.map(c => c.contentKo || c.content);
+
+          // Try to construct answer from RAG content only
+          ragDirectAnswer = `📚 **검증된 수학 교육 자료를 바탕으로 답변드려요:**
+
+${contentToUse.join('\n\n---\n\n')}
+
+💡 더 궁금한 점이 있으시면 언제든 질문해주세요!`;
+
+          console.log(`[Math RAG Direct KO] High confidence (${avgConfidence.toFixed(2)}) - answering without API or filter`);
+
+          // Cache this RAG-based answer
+          responseCache.set(message, 'math', gradeStr, ragDirectAnswer);
+
+          // 📊 Log RAG Direct usage for quality metrics
+          logRAGDirectUsage({
+            subject: 'math',
+            question: message,
+            confidence: avgConfidence,
+            contentCount: retrievedContext.content.length,
+            ragDirectUsed: true,
+            timestamp: new Date().toISOString(),
+            gradeLevel: gradeStr,
+            relevanceScores: retrievedContext.relevanceScores,
+            apiSaved: true,
+          });
+
+          const encoder = new TextEncoder();
+          const ragStream = new ReadableStream({
+            start(controller) {
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: ragDirectAnswer })}\n\n`));
+              controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+              controller.close();
+            },
+          });
+
+          const stats = apiTracker.getStats();
+          return new Response(ragStream, {
+            headers: {
+              "Content-Type": "text/event-stream",
+              "Cache-Control": "no-cache",
+              "Connection": "keep-alive",
+              "X-RAG-Direct": "true",
+              "X-API-Saved": "4",
+              "X-API-Remaining": stats.remaining.toString(),
+              "X-Filter-Bypassed": "true", // Phase 5: Enhanced Filter bypassed
+            },
+          });
+        } else {
+          // RAG content retrieved but didn't meet criteria for RAG Direct
+          // 📊 Log for quality metrics and continue to Enhanced Filter
+          logRAGDirectUsage({
+            subject: 'math',
+            question: message,
+            confidence: avgConfidence,
+            contentCount: retrievedContext.content.length,
+            ragDirectUsed: false,
+            timestamp: new Date().toISOString(),
+            gradeLevel: gradeStr,
+            relevanceScores: retrievedContext.relevanceScores,
+            apiSaved: false,
+          });
+          console.log(`[Math RAG] Low confidence (${avgConfidence.toFixed(2)}) - continuing to Enhanced Filter`);
+        }
+      }
+    } catch (error) {
+      console.error('[RAG] Failed to retrieve verified content:', error);
+      // Continue to Enhanced Filter - graceful degradation
+    }
+
+    // 🎯 Phase 2-1: Enhanced AI-based Subject Classification with Confidence Threshold
+    // Phase 5: Now only executed if RAG Direct failed
+    const classification = await classifyQuestion(message, 'math');
+    const enhancedFilterResult = enhancedFilterBySubject(
+      classification,
+      quickClassification,
+      'math'
+    );
+
+    // Log filter decision with detailed info
+    logFilterDecision('math', message, enhancedFilterResult);
+
+    if (!enhancedFilterResult.shouldRespond) {
       const encoder = new TextEncoder();
       const filterStream = new ReadableStream({
         start(controller) {
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: filterResult.redirectMessage })}\n\n`));
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: enhancedFilterResult.redirectMessage })}\n\n`));
           controller.enqueue(encoder.encode("data: [DONE]\n\n"));
           controller.close();
         },
-      });
-
-      // Log filter event
-      console.log('[Subject Filter] Math Tutor:', {
-        message: message.substring(0, 50),
-        detected: classification.subject,
-        confidence: classification.confidence,
-        filtered: true
       });
 
       return new Response(filterStream, {
@@ -164,12 +267,14 @@ export async function POST(req: NextRequest) {
           "Cache-Control": "no-cache",
           "Connection": "keep-alive",
           "X-Subject-Filter": classification.subject,
-          "X-Filter-Confidence": classification.confidence.toString(),
+          "X-Filter-Confidence": (enhancedFilterResult.confidence * 100).toFixed(1),
+          "X-Validation-Method": enhancedFilterResult.validationMethod,
+          "X-Filter-Reason": enhancedFilterResult.filterReason,
         },
       });
     }
 
-    // Content level detection
+    // 🎯 Phase 2-2: Enhanced Grade Level Detection with Review Allowance
     const levelCheck = await contentLevelDetector.detect(
       message,
       userProfile.gradeLevel,
@@ -177,22 +282,20 @@ export async function POST(req: NextRequest) {
       userProfile.gradeLevelDetail
     );
 
-    // If out of scope, return guidance message
-    if (levelCheck.outOfScope && levelCheck.confidence > 0.7) {
-      const guidanceMsg = getRandomGuidanceMessage(
-        userProfile.gradeLevel,
-        'math',
-        {
-          '학생 이름': userId,
-          '현재 학년 적절한 개념': '현재 배우고 있는 내용',
-          '관련된 기초 개념': '기초 개념',
-        }
-      );
+    const gradeLevelResult = enhancedGradeLevelFilter(
+      levelCheck,
+      userProfile.gradeLevel,
+      'math'
+    );
 
+    // Log grade level decision with detailed info
+    logGradeLevelDecision('math', message, userProfile.gradeLevel, gradeLevelResult);
+
+    if (!gradeLevelResult.shouldRespond) {
       const encoder = new TextEncoder();
       const guidanceStream = new ReadableStream({
         start(controller) {
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: guidanceMsg })}\n\n`));
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: gradeLevelResult.guidanceMessage })}\n\n`));
           controller.enqueue(encoder.encode("data: [DONE]\n\n"));
           controller.close();
         },
@@ -203,7 +306,9 @@ export async function POST(req: NextRequest) {
           "Content-Type": "text/event-stream",
           "Cache-Control": "no-cache",
           "Connection": "keep-alive",
-          "X-Out-Of-Scope": "true",
+          "X-Grade-Level-Filter": gradeLevelResult.levelAssessment,
+          "X-Grade-Confidence": (gradeLevelResult.confidence * 100).toFixed(1),
+          "X-Filter-Reason": gradeLevelResult.filterReason,
         },
       });
     }
@@ -285,69 +390,8 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // 🚀 Phase 3: P1-1: RAG-First Strategy (Try to answer without API if possible)
-    let ragContext: string | undefined = undefined;
-    let ragDirectAnswer: string | undefined = undefined;
-
-    try {
-      const retrievedContext = await retrieveVerifiedContent(
-        message,
-        'math',
-        gradeStr,
-        3 // Max 3 relevant content pieces
-      );
-
-      if (retrievedContext.content.length > 0) {
-        ragContext = formatRetrievedContext(retrievedContext);
-
-        // If RAG confidence is very high (>90%) and content is comprehensive,
-        // we can potentially answer directly without API call
-        const avgConfidence = retrievedContext.content.reduce((sum, c) => sum + (c.confidence ?? 1.0), 0) / retrievedContext.content.length;
-
-        // ✅ P0-2 COMPLETED: RAG Direct re-enabled with Korean content support
-        // High confidence answers can be served directly from verified content
-        if (avgConfidence > 0.9 && retrievedContext.content.length >= 2) {
-          // Use Korean content if available, fallback to English
-          const contentToUse = retrievedContext.content.map(c => c.contentKo || c.content);
-
-          // Try to construct answer from RAG content only
-          ragDirectAnswer = `📚 **검증된 수학 교육 자료를 바탕으로 답변드려요:**
-
-${contentToUse.join('\n\n---\n\n')}
-
-💡 더 궁금한 점이 있으시면 언제든 질문해주세요!`;
-
-          console.log(`[Math RAG Direct KO] High confidence (${avgConfidence.toFixed(2)}) - answering without API`);
-
-          // Cache this RAG-based answer
-          responseCache.set(message, 'math', gradeStr, ragDirectAnswer);
-
-          const encoder = new TextEncoder();
-          const ragStream = new ReadableStream({
-            start(controller) {
-              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: ragDirectAnswer })}\n\n`));
-              controller.enqueue(encoder.encode("data: [DONE]\n\n"));
-              controller.close();
-            },
-          });
-
-          const stats = apiTracker.getStats();
-          return new Response(ragStream, {
-            headers: {
-              "Content-Type": "text/event-stream",
-              "Cache-Control": "no-cache",
-              "Connection": "keep-alive",
-              "X-RAG-Direct": "true",
-              "X-API-Saved": "4",
-              "X-API-Remaining": stats.remaining.toString(),
-            },
-          });
-        }
-      }
-    } catch (error) {
-      console.error('[RAG] Failed to retrieve verified content:', error);
-      // Continue without RAG context - graceful degradation
-    }
+    // Phase 5: RAG retrieval moved to BEFORE Enhanced Filter (see lines 148-240)
+    // ragContext variable is already set from early RAG execution if applicable
 
     // Get current difficulty level (P0.1: Adaptive Difficulty)
     const currentDifficulty = await getCurrentDifficulty(userId, 'math', userProfile.gradeLevel);
@@ -356,24 +400,54 @@ ${contentToUse.join('\n\n---\n\n')}
     // Generate enhanced system prompt (Week 4: Integrates all accuracy systems)
     const gradeForPrompt = String(userProfile.gradeLevelDetail || '5');
 
-    // P0.3: Socratic Questioning System (초기 구현)
-    const { createInitialConversationState } = await import('@/lib/tutor/socratic-prompts');
-    const socraticState = createInitialConversationState();
+    // Phase 1: Complexity-Aware Prompt Generation (NEW)
+    let systemPrompt: string;
 
-    const systemPrompt = generateEnhancedSystemPrompt({
-      subject: 'math',
-      grade: gradeForPrompt,
-      schoolLevel: userProfile.gradeLevel,
-      studentName: userId,
-      includeChainOfThought: true,
-      difficultyLevel: currentDifficulty,
-      difficultyGuidance: difficultyGuidance,
-      includeRAGContext: ragContext !== undefined, // P1-1: Enable RAG
-      ragContext,
-      // P0.3: Enable Socratic Mode
-      enableSocraticMode: true,
-      socraticState: socraticState,
-    });
+    if (complexityAnalysis.complexity === 'simple') {
+      // For SIMPLE questions: Use concise prompt template
+      console.log('[Prompt] Using CONCISE mode for simple question');
+      systemPrompt = generateComplexityAwarePrompt({
+        subject: 'math',
+        complexity: 'simple',
+        grade: gradeForPrompt,
+        schoolLevel: userProfile.gradeLevel,
+        question: message
+      });
+
+      // Add RAG context if available (for simple questions, RAG can answer directly)
+      if (ragContext) {
+        systemPrompt += `\n\n참고 자료:\n${ragContext}`;
+      }
+    } else {
+      // For INTERMEDIATE/ADVANCED questions: Use standard enhanced prompt with complexity guidance
+      console.log(`[Prompt] Using STANDARD mode for ${complexityAnalysis.complexity} question`);
+
+      // P0.3: Socratic Questioning System (초기 구현)
+      const { createInitialConversationState } = await import('@/lib/tutor/socratic-prompts');
+      const socraticState = createInitialConversationState();
+
+      // Generate base prompt
+      const basePrompt = generateEnhancedSystemPrompt({
+        subject: 'math',
+        grade: gradeForPrompt,
+        schoolLevel: userProfile.gradeLevel,
+        studentName: userId,
+        includeChainOfThought: complexityAnalysis.complexity === 'advanced', // Only for advanced
+        difficultyLevel: currentDifficulty,
+        difficultyGuidance: difficultyGuidance,
+        includeRAGContext: ragContext !== undefined, // P1-1: Enable RAG
+        ragContext,
+        // P0.3: Enable Socratic Mode
+        enableSocraticMode: false, // Disable for now to avoid conflicts
+        socraticState: socraticState,
+      });
+
+      // Add complexity-specific guidance
+      const responseStyle = getResponseStyle(complexityAnalysis.complexity);
+      const complexityGuidance = `\n\n답변 길이 가이드: 최대 ${responseStyle.maxSentences}문장 내로 ${responseStyle.style} 스타일로 작성하세요.`;
+
+      systemPrompt = basePrompt + complexityGuidance;
+    }
 
     // Decide which AI service to use
     let modelTier: 'flash' | 'pro' = 'flash'; // Default to flash

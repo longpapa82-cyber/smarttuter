@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserStore } from '@/lib/gamification/store';
+import { useAuth } from '@/hooks/useAuth';
 import EmotionEnhancedChat from './EmotionEnhancedChat';
 
 function LoadingSpinner() {
@@ -18,6 +19,7 @@ export default function SocialTutorClient() {
   const [isMounted, setIsMounted] = useState(false);
   const [isReady, setIsReady] = useState(false);
 
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const storeProfile = useUserStore((state) => state.profile);
   const profile = isMounted ? storeProfile : null;
 
@@ -29,17 +31,26 @@ export default function SocialTutorClient() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Authentication check: redirect to login if not authenticated
   useEffect(() => {
-    if (isMounted && isReady && !profile) {
+    if (isMounted && isReady && !authLoading && !isAuthenticated) {
+      sessionStorage.setItem('redirectAfterLogin', '/tutor/social');
+      router.push('/login');
+    }
+  }, [isMounted, isReady, authLoading, isAuthenticated, router]);
+
+  // Profile check: redirect to onboarding if authenticated but no profile
+  useEffect(() => {
+    if (isMounted && isReady && !authLoading && isAuthenticated && !profile) {
       router.push('/onboarding');
     }
-  }, [isMounted, isReady, profile, router]);
+  }, [isMounted, isReady, authLoading, isAuthenticated, profile, router]);
 
-  if (!isMounted || !isReady) {
+  if (!isMounted || !isReady || authLoading) {
     return <LoadingSpinner />;
   }
 
-  if (!profile) {
+  if (!isAuthenticated || !profile) {
     return <LoadingSpinner />;
   }
 

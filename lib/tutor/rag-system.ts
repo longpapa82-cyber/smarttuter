@@ -23,6 +23,9 @@ import {
   type CurriculumTopic
 } from './curriculum-database';
 import { KOREAN_VERIFIED_CONTENT } from './korean-rag-content';
+import { normalizeTopicQuery, getTopicSearchTerms } from './topic-dictionary';
+import { classifyQuestionComplexity, logComplexityClassification } from './question-complexity-classifier';
+import { identifyTopicsWithRetry, extractKeywordsFromQuestion } from './ai-retry-handler';
 
 // Re-export types for use in other modules
 export type { Subject, SchoolLevel };
@@ -4023,11 +4026,47 @@ export async function retrieveVerifiedContent(
       subject === 'korean' ? KOREAN_VERIFIED_CONTENT :
       [];
 
-    // Use AI to identify relevant topics
-    const relevantTopics = await identifyRelevantTopics(question, subject);
+    // Phase 7: Check question complexity first
+    const complexityCheck = classifyQuestionComplexity(question, subject);
+    if (process.env.NODE_ENV === 'development') {
+      logComplexityClassification(question, complexityCheck);
+    }
+
+    // If problem-solving or creative task, skip RAG Direct immediately
+    if (!complexityCheck.allowRAGDirect) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[RAG] 🚫 Complexity check failed - skipping RAG Direct for ${complexityCheck.type} question`);
+      }
+      // Return empty result to force API fallback
+      return {
+        content: [],
+        relevanceScores: [],
+        citations: [],
+      };
+    }
+
+    // Phase 7: Use AI to identify relevant topics with retry mechanism
+    const rawTopics = await identifyTopicsWithRetry(
+      question,
+      subject,
+      () => identifyRelevantTopics(question, subject)
+    );
+
     if (process.env.NODE_ENV === 'development') {
       console.log(`[RAG DEBUG] Question: "${question}"`);
-      console.log(`[RAG DEBUG] AI identified topics:`, relevantTopics);
+      console.log(`[RAG DEBUG] AI identified topics (raw):`, rawTopics);
+    }
+
+    // Phase 6: Normalize topics using Topic Dictionary
+    const normalizedTopics = new Set<string>();
+    for (const rawTopic of rawTopics) {
+      const canonical = normalizeTopicQuery(rawTopic, subject);
+      canonical.forEach(t => normalizedTopics.add(t));
+    }
+    const relevantTopics = Array.from(normalizedTopics);
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[RAG DEBUG] Normalized topics:`, relevantTopics);
     }
 
     // Find matching verified content
@@ -4037,8 +4076,19 @@ export async function retrieveVerifiedContent(
       let score = 0;
       let topicMatched = false;
 
-      // Check if any relevant topic matches
+      // Phase 6: Enhanced topic matching with aliases
       for (const topic of relevantTopics) {
+        // Direct canonical match (highest priority)
+        if (
+          verifiedContent.topic.toLowerCase() === topic.toLowerCase() ||
+          verifiedContent.topicKo === topic
+        ) {
+          score += 50; // Increased from 30 for direct match
+          topicMatched = true;
+          continue;
+        }
+
+        // Partial match (legacy behavior)
         if (
           verifiedContent.topic.toLowerCase().includes(topic.toLowerCase()) ||
           verifiedContent.topicKo.includes(topic) ||
@@ -4106,31 +4156,72 @@ export async function retrieveVerifiedContent(
 
 /**
  * Identify relevant topics from a question using AI
+ * Phase 6: Subject-specific prompts for better accuracy
  */
 async function identifyRelevantTopics(
   question: string,
   subject: Subject
 ): Promise<string[]> {
   try {
-    const prompt = `You are an educational content expert. Analyze this ${subject} question and identify the MAIN mathematical/educational topic it's asking about.
+    // Phase 6: Subject-specific prompts
+    const subjectPrompts = {
+      math: `You are a math education expert. Identify the SPECIFIC mathematical concept or operation from this question.
 
-IMPORTANT:
-- Identify the SPECIFIC mathematical operation or concept (e.g., "addition", "subtraction", "multiplication", "fractions")
-- For Korean questions about math, provide BOTH the English term AND the complete Korean term
-- Do NOT use generic words like "basic", "fundamental", "simple", "arithmetic"
-- Be PRECISE - for "1+1=2", the topic is "addition" (덧셈), NOT "arithmetic"
+Examples of GOOD topics:
+- "addition" or "덧셈" for addition problems
+- "fractions" or "분수" for fraction questions
+- "quadratic equations" or "이차 방정식" for quadratic problems
+
+Do NOT use generic words like "basic", "arithmetic", "fundamental", "math".`,
+
+      english: `You are an English grammar expert. Identify the SPECIFIC grammar concept or language skill from this question.
+
+Examples of GOOD topics:
+- "present tense" or "현재 시제" for present tense questions
+- "present perfect" or "현재완료" for present perfect questions
+- "passive voice" or "수동태" for passive voice questions
+
+Do NOT use generic words like "grammar", "English", "language", "verb tense" (be more specific like "present tense").`,
+
+      science: `You are a science education expert. Identify the SPECIFIC scientific concept or phenomenon from this question.
+
+Examples of GOOD topics:
+- "photosynthesis" or "광합성" for plant energy questions
+- "cell structure" or "세포 구조" for cell questions
+- "evolution" or "진화" for evolutionary biology questions
+
+Do NOT use generic words like "science", "biology", "nature", "scientific".`,
+
+      'social-studies': `You are a social studies expert. Identify the SPECIFIC historical event, political concept, or social system from this question.
+
+Examples of GOOD topics:
+- "democracy" or "민주주의" for democracy questions
+- "government systems" or "정부 체계" for government structure questions
+- "ancient civilizations" or "고대 문명" for early civilizations
+
+Do NOT use generic words like "civics", "history", "social studies", "politics".`,
+
+      korean: `You are a Korean language expert. Identify the SPECIFIC grammar concept or language skill from this question.
+
+Examples of GOOD topics:
+- "조사" for particle questions
+- "존댓말" for honorifics questions
+- "시제" for tense questions`
+    };
+
+    const subjectInstruction = subjectPrompts[subject] || subjectPrompts.math;
+
+    const prompt = `${subjectInstruction}
+
+CRITICAL RULES:
+- For Korean questions, provide BOTH English AND Korean terms
+- Be SPECIFIC, not generic
+- Maximum 3 topics
+- One topic per line
 
 Question: "${question}"
 
-Return ONLY specific topic names, one per line. Maximum 3 topics.
-
-Example for "1더하기1은왜2야?" (Korean):
-addition
-덧셈
-
-Example for "What are fractions?" (English):
-fractions
-division`;
+Return ONLY specific topic names:`;
 
     // Use Vertex AI with flash tier
     const streamIterator = await vertexAIClient.generateContentStream(

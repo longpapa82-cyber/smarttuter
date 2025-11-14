@@ -30,11 +30,12 @@ export function NewsletterSection() {
 
   return (
     <section
+      id="newsletter"
       className="py-16 sm:py-20 md:py-24 relative overflow-hidden"
       aria-labelledby="newsletter-heading"
     >
       {/* Animated Background Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary-600 via-secondary-600 to-accent-600" aria-hidden="true" />
+      <div className="absolute inset-0 bg-gradient-to-r from-primary-600 via-secondary-600 to-accent-600" aria-hidden="true" />
 
       {/* Animated Blobs */}
       <div className="absolute inset-0 overflow-hidden opacity-30" aria-hidden="true">

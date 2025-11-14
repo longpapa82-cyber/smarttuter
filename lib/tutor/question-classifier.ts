@@ -8,7 +8,7 @@
 import { vertexAIClient } from '@/lib/ai/vertex-client';
 
 export interface QuestionClassification {
-  subject: 'english' | 'math' | 'science' | 'social-studies' | 'other';
+  subject: 'english' | 'math' | 'science' | 'social-studies' | 'korean' | 'other';
   confidence: number; // 0-100
   isOnTopic: boolean;
   reason: string;
@@ -19,12 +19,12 @@ export interface QuestionClassification {
  * AI를 사용하여 질문이 어느 교과에 해당하는지 분류
  *
  * @param question 학생의 질문
- * @param expectedSubject 기대하는 교과 ('english' | 'math')
+ * @param expectedSubject 기대하는 교과
  * @returns 분류 결과
  */
 export async function classifyQuestion(
   question: string,
-  expectedSubject: 'english' | 'math' | 'science' | 'social-studies'
+  expectedSubject: 'english' | 'math' | 'science' | 'social-studies' | 'korean'
 ): Promise<QuestionClassification> {
   try {
     const prompt = `당신은 교육 전문가입니다. 다음 질문이 어느 교과에 해당하는지 정확하게 분류하세요.
@@ -61,7 +61,13 @@ export async function classifyQuestion(
    - 사회 현상, 문화
    - 예: "한국전쟁", "수도는?", "민주주의"
 
-5. **other** (기타):
+5. **korean** (국어):
+   - 한국어 문법, 어휘, 맞춤법, 발음
+   - 한국 문학, 시, 소설, 작문
+   - 한글, 국어 독해
+   - 예: "높임말", "시 해석", "맞춤법", "한글 자음"
+
+6. **other** (기타):
    - 일상 대화, 인사, 잡담
    - 교과와 무관한 질문
    - **주의**: 모호한 경우 'other'가 아닌 가장 가능성 높은 교과로 분류
@@ -75,7 +81,7 @@ export async function classifyQuestion(
 
 JSON 형식으로만 응답하세요:
 {
-  "subject": "분류된 교과 (english|math|science|social|other)",
+  "subject": "분류된 교과 (english|math|science|social|korean|other)",
   "confidence": 신뢰도 (0-100),
   "reason": "분류 이유 (한국어)",
   "detectedKeywords": ["감지된 키워드들"]
@@ -141,7 +147,7 @@ JSON 형식으로만 응답하세요:
  */
 function fallbackClassification(
   question: string,
-  expectedSubject: 'english' | 'math' | 'science' | 'social-studies'
+  expectedSubject: 'english' | 'math' | 'science' | 'social-studies' | 'korean'
 ): QuestionClassification {
   const lowerQuestion = question.toLowerCase();
 

@@ -1,0 +1,73 @@
+/* Fullscreen Mode Styles */
+
+/* 전체 화면 모드일 때 비디오 컨테이너 스타일 */
+.video-container:fullscreen {
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+}
+
+.video-container:-webkit-full-screen {
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+}
+
+.video-container:-moz-full-screen {
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+}
+
+.video-container:-ms-fullscreen {
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* 전체 화면 모드일 때 비디오 플레이어 스타일 */
+.video-container:fullscreen .video-player,
+.video-container:-webkit-full-screen .video-player,
+.video-container:-moz-full-screen .video-player,
+.video-container:-ms-fullscreen .video-player {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100vw;
+  max-height: 100vh;
+}
+
+/* 전체 화면 모드일 때 카드 콘텐츠(설명) 숨김 */
+.video-container:fullscreen .card-content,
+.video-container:-webkit-full-screen .card-content,
+.video-container:-moz-full-screen .card-content,
+.video-container:-ms-fullscreen .card-content {
+  display: none !important;
+}
+
+/* 전체 화면 모드일 때 컨트롤 버튼이 더 잘 보이도록 */
+.video-container:fullscreen .fullscreen-controls,
+.video-container:-webkit-full-screen .fullscreen-controls,
+.video-container:-moz-full-screen .fullscreen-controls,
+.video-container:-ms-fullscreen .fullscreen-controls {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.video-container:fullscreen:hover .fullscreen-controls,
+.video-container:-webkit-full-screen:hover .fullscreen-controls,
+.video-container:-moz-full-screen:hover .fullscreen-controls,
+.video-container:-ms-fullscreen:hover .fullscreen-controls {
+  opacity: 1;
+}

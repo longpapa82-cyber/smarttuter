@@ -324,7 +324,7 @@ export function InteractiveLearningTools() {
   const activeTool = learningTools.find((tool) => tool.id === activeToolId)!;
 
   return (
-    <section className="py-16 sm:py-20 md:py-24 bg-gradient-to-br from-gray-50 via-white to-indigo-50 relative overflow-hidden">
+    <section className="py-16 sm:py-20 md:py-24 bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50 relative overflow-hidden">
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />

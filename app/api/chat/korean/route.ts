@@ -5,6 +5,15 @@ import { retrieveVerifiedContent, formatRetrievedContext } from "@/lib/tutor/rag
 import { responseCache } from "@/lib/cache/response-cache";
 import { quickClassify, apiTracker } from "@/lib/cache/api-optimizer";
 import { vertexAIClient } from "@/lib/ai/vertex-client";
+import { getCurrentDifficulty, difficultyToPromptGuidance } from "@/lib/learning/difficulty-tracker";
+import { classifyQuestion } from "@/lib/tutor/question-classifier";
+import { enhancedFilterBySubject, logFilterDecision } from "@/lib/tutor/enhanced-subject-filter";
+import { contentLevelDetector } from "@/lib/tutor/content-level-detector";
+import { enhancedGradeLevelFilter, logGradeLevelDecision } from "@/lib/tutor/enhanced-grade-level-filter";
+
+// Phase 1: Complexity-Aware System
+import { classifyComplexity, getResponseStyle } from "@/lib/tutor/complexity-classifier";
+import { generateComplexityAwarePrompt } from "@/lib/tutor/prompt-templates";
 
 // Initialize Gemini client (Fallback)
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
@@ -105,6 +114,10 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // 🚀 Phase 1: Classify question complexity (NEW - no API call)
+    const complexityAnalysis = classifyComplexity(message, 'korean');
+    console.log(`[Complexity] Korean question: "${message.substring(0, 50)}" → ${complexityAnalysis.complexity} (confidence: ${complexityAnalysis.confidence})`);
+
     // 🚀 Phase 2: Quick keyword-based classification (no API call)
     const quickClassification = quickClassify(message, 'korean');
 
@@ -127,6 +140,79 @@ export async function POST(req: NextRequest) {
           "Content-Type": "text/event-stream",
           "Cache-Control": "no-cache",
           "Connection": "keep-alive",
+        },
+      });
+    }
+
+    // 🎯 Phase 2-1: Enhanced AI-based Subject Classification with Confidence Threshold
+    const classification = await classifyQuestion(message, 'korean');
+    const enhancedFilterResult = enhancedFilterBySubject(
+      classification,
+      quickClassification,
+      'korean'
+    );
+
+    // Log filter decision with detailed info
+    logFilterDecision('korean', message, enhancedFilterResult);
+
+    if (!enhancedFilterResult.shouldRespond) {
+      const encoder = new TextEncoder();
+      const filterStream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: enhancedFilterResult.redirectMessage })}\n\n`));
+          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+          controller.close();
+        },
+      });
+
+      return new Response(filterStream, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          "Connection": "keep-alive",
+          "X-Subject-Filter": classification.subject,
+          "X-Filter-Confidence": (enhancedFilterResult.confidence * 100).toFixed(1),
+          "X-Validation-Method": enhancedFilterResult.validationMethod,
+          "X-Filter-Reason": enhancedFilterResult.filterReason,
+        },
+      });
+    }
+
+    // 🎯 Phase 2-2: Enhanced Grade Level Detection with Review Allowance
+    const levelCheck = await contentLevelDetector.detect(
+      message,
+      userProfile.gradeLevel,
+      'korean',
+      userProfile.gradeLevelDetail
+    );
+
+    const gradeLevelResult = enhancedGradeLevelFilter(
+      levelCheck,
+      userProfile.gradeLevel,
+      'korean'
+    );
+
+    // Log grade level decision with detailed info
+    logGradeLevelDecision('korean', message, userProfile.gradeLevel, gradeLevelResult);
+
+    if (!gradeLevelResult.shouldRespond) {
+      const encoder = new TextEncoder();
+      const guidanceStream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: gradeLevelResult.guidanceMessage })}\n\n`));
+          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+          controller.close();
+        },
+      });
+
+      return new Response(guidanceStream, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          "Connection": "keep-alive",
+          "X-Grade-Level-Filter": gradeLevelResult.levelAssessment,
+          "X-Grade-Confidence": (gradeLevelResult.confidence * 100).toFixed(1),
+          "X-Filter-Reason": gradeLevelResult.filterReason,
         },
       });
     }
@@ -187,8 +273,34 @@ ${retrievedContext.content.map(c => c.contentKo || c.content).join('\n\n---\n\n'
     }
 
     // 🚀 Phase 4: Gemini AI 호출
-    const detailedGradePrompt = getDetailedGradePrompt(gradeLevel, undefined);
-    const systemPrompt = `당신은 학생들의 국어 학습을 돕는 친절한 국어 튜터입니다.
+    const gradeForPrompt = String(userProfile.gradeLevelDetail || '5');
+
+    // Phase 1: Complexity-Aware Prompt Generation (NEW)
+    let systemPrompt: string;
+
+    if (complexityAnalysis.complexity === 'simple') {
+      // For SIMPLE questions: Use concise prompt template
+      console.log('[Prompt] Using CONCISE mode for simple question');
+      systemPrompt = generateComplexityAwarePrompt({
+        subject: 'korean',
+        complexity: 'simple',
+        grade: gradeForPrompt,
+        schoolLevel: userProfile.gradeLevel,
+        question: message
+      });
+
+      // Add RAG context if available (for simple questions, RAG can answer directly)
+      if (ragContext) {
+        systemPrompt += `\n\n참고 자료:\n${ragContext}`;
+      }
+    } else {
+      // For INTERMEDIATE/ADVANCED questions: Use standard custom prompt with complexity guidance
+      console.log(`[Prompt] Using STANDARD mode for ${complexityAnalysis.complexity} question`);
+
+      const detailedGradePrompt = getDetailedGradePrompt(gradeLevel, undefined);
+
+      // Generate base prompt (keep existing Korean-specific prompt structure)
+      const basePrompt = `당신은 학생들의 국어 학습을 돕는 친절한 국어 튜터입니다.
 
 **역할**:
 - ${detailedGradePrompt} 설명합니다
@@ -215,6 +327,13 @@ ${retrievedContext.content.map(c => c.contentKo || c.content).join('\n\n---\n\n'
 ${ragContext ? `\n**검증된 교육 자료**:\n${ragContext}\n` : ''}
 
 학생의 학년과 수준을 고려하여 친절하고 정확하게 답변해주세요.`;
+
+      // Add complexity-specific guidance
+      const responseStyle = getResponseStyle(complexityAnalysis.complexity);
+      const complexityGuidance = `\n\n답변 길이 가이드: 최대 ${responseStyle.maxSentences}문장 내로 ${responseStyle.style} 스타일로 작성하세요.`;
+
+      systemPrompt = basePrompt + complexityGuidance;
+    }
 
     const formattedHistory = conversationHistory?.map((msg: any) => ({
       role: msg.role === 'user' ? 'user' : 'model',

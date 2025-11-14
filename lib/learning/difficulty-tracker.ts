@@ -15,7 +15,7 @@ import {
 /**
  * Redis 키 생성
  */
-function getRedisKey(userId: string, subject: 'english' | 'math'): string {
+function getRedisKey(userId: string, subject: 'english' | 'math' | 'science' | 'social-studies' | 'korean'): string {
   return `difficulty:${userId}:${subject}`;
 }
 
@@ -24,7 +24,7 @@ function getRedisKey(userId: string, subject: 'english' | 'math'): string {
  */
 export async function getQuestionHistory(
   userId: string,
-  subject: 'english' | 'math'
+  subject: 'english' | 'math' | 'science' | 'social-studies' | 'korean'
 ): Promise<QuestionHistory[]> {
   try {
     // TODO: Redis에서 실제로 가져오기
@@ -41,7 +41,7 @@ export async function getQuestionHistory(
  */
 export async function addQuestionHistory(
   userId: string,
-  subject: 'english' | 'math',
+  subject: 'english' | 'math' | 'science' | 'social-studies' | 'korean',
   history: QuestionHistory
 ): Promise<void> {
   try {
@@ -64,7 +64,7 @@ export async function addQuestionHistory(
  */
 export async function getCurrentDifficulty(
   userId: string,
-  subject: 'english' | 'math',
+  subject: 'english' | 'math' | 'science' | 'social-studies' | 'korean',
   gradeLevel: string
 ): Promise<DifficultyLevel> {
   try {

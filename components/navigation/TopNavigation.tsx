@@ -31,13 +31,31 @@ interface NavItemProps {
   isActive: boolean;
   onClick?: () => void;
   showBeta?: boolean;
+  requireAuth?: boolean; // New: Whether this link requires authentication
 }
 
-function NavItem({ href, icon, label, isActive, onClick, showBeta = false }: NavItemProps) {
+function NavItem({ href, icon, label, isActive, onClick, showBeta = false, requireAuth = false }: NavItemProps) {
+  const { navigateProtected, isAuthenticated } = useAuth();
+
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // If authentication is required and user is not authenticated, prevent default and redirect to login
+    if (requireAuth && !isAuthenticated) {
+      e.preventDefault();
+      navigateProtected(href);
+      return;
+    }
+
+    // If custom onClick is provided, call it
+    if (onClick) {
+      onClick();
+    }
+  };
+
   return (
     <Link
       href={href}
-      onClick={onClick}
+      onClick={handleClick}
+      scroll={true}
       className={`
         flex items-center gap-2 px-4 py-2 rounded-lg transition-all touch-manipulation
         min-h-[44px] active:scale-95
@@ -86,6 +104,7 @@ function ProfileDropdown() {
     return (
       <Link
         href="/login"
+        scroll={true}
         className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-full font-semibold text-sm hover:shadow-lg hover:scale-105 transform transition-all"
       >
         시작하기
@@ -126,6 +145,7 @@ function ProfileDropdown() {
                 key={item.href}
                 href={item.href}
                 onClick={() => setIsOpen(false)}
+                scroll={true}
                 className="flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 transition-colors"
               >
                 {item.icon}
@@ -140,6 +160,7 @@ function ProfileDropdown() {
                 <Link
                   href="/admin/errors"
                   onClick={() => setIsOpen(false)}
+                  scroll={true}
                   className="flex items-center gap-3 px-4 py-2.5 text-gray-500 hover:bg-gray-50 transition-colors"
                 >
                   <Settings className="w-4 h-4" />
@@ -199,13 +220,13 @@ function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
   };
 
   const mobileNavItems = [
-    { href: "/", label: "홈", icon: <Home className="w-5 h-5" /> },
-    { href: "/dashboard/english", label: "English", icon: <BookOpen className="w-5 h-5" /> },
-    { href: "/dashboard/math", label: "Math", icon: <Calculator className="w-5 h-5" /> },
-    { href: "/dashboard/science", label: "Science", icon: <Beaker className="w-5 h-5" /> },
-    { href: "/dashboard/social", label: "Social", icon: <Landmark className="w-5 h-5" /> },
-    { href: "/dashboard/korean", label: "Korean 📚", icon: <BookOpen className="w-5 h-5" /> },
-    { href: "/dashboard", label: "DashBoard", icon: <LayoutDashboard className="w-5 h-5" /> },
+    { href: "/", label: "홈", icon: <Home className="w-5 h-5" />, requireAuth: false },
+    { href: "/dashboard/english", label: "English", icon: <BookOpen className="w-5 h-5" />, requireAuth: true },
+    { href: "/dashboard/math", label: "Math", icon: <Calculator className="w-5 h-5" />, requireAuth: true },
+    { href: "/dashboard/science", label: "Science", icon: <Beaker className="w-5 h-5" />, requireAuth: true },
+    { href: "/dashboard/social", label: "Social", icon: <Landmark className="w-5 h-5" />, requireAuth: true },
+    { href: "/dashboard/korean", label: "Korean 📚", icon: <BookOpen className="w-5 h-5" />, requireAuth: true },
+    { href: "/dashboard", label: "DashBoard", icon: <LayoutDashboard className="w-5 h-5" />, requireAuth: true },
   ];
 
   const handleLogout = () => {
@@ -239,7 +260,7 @@ function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
           >
             <div className="p-4 border-b border-gray-200">
               <div className="flex items-center justify-between">
-                <Link href="/" onClick={onClose} className="flex items-center gap-2">
+                <Link href="/" onClick={onClose} scroll={true} className="flex items-center gap-2">
                   <GraduationCap className="w-6 h-6 text-primary-600" />
                   <span className="font-bold text-xl bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent">
                     AI Park
@@ -266,11 +287,25 @@ function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
                   isActive = pathname.includes(subject);
                 }
 
+                const handleItemClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+                  // Check authentication if required
+                  if (item.requireAuth && !isAuthenticated) {
+                    e.preventDefault();
+                    // Save intended destination for redirect after login
+                    sessionStorage.setItem('redirectAfterLogin', item.href);
+                    onClose();
+                    window.location.href = '/login';
+                    return;
+                  }
+                  onClose();
+                };
+
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
-                    onClick={onClose}
+                    onClick={handleItemClick}
+                    scroll={true}
                     className={`
                       flex items-center gap-3 px-4 py-3 rounded-lg transition-all touch-manipulation
                       min-h-[48px] active:scale-[0.98]
@@ -293,6 +328,7 @@ function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
                   <Link
                     href="/profile"
                     onClick={onClose}
+                    scroll={true}
                     className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-all touch-manipulation min-h-[48px]"
                   >
                     <User className="w-5 h-5" />
@@ -301,6 +337,7 @@ function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
                   <Link
                     href="/settings"
                     onClick={onClose}
+                    scroll={true}
                     className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-all touch-manipulation min-h-[48px]"
                   >
                     <Settings className="w-5 h-5" />
@@ -312,6 +349,7 @@ function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
                     <Link
                       href="/admin/errors"
                       onClick={onClose}
+                      scroll={true}
                       className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-500 hover:bg-gray-50 active:bg-gray-100 transition-all touch-manipulation min-h-[48px]"
                     >
                       <Settings className="w-5 h-5" />
@@ -331,6 +369,7 @@ function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
                 <Link
                   href="/login"
                   onClick={onClose}
+                  scroll={true}
                   className="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-full font-semibold hover:shadow-lg hover:scale-105 transform transition-all"
                 >
                   시작하기
@@ -371,7 +410,7 @@ export function TopNavigation() {
               </button>
 
               {/* Logo */}
-              <Link href="/" className="flex items-center gap-2">
+              <Link href="/" scroll={true} className="flex items-center gap-2">
                 <GraduationCap className="w-6 h-6 text-primary-600" />
                 <span className="hidden sm:block font-bold text-xl bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent">
                   AI Park
@@ -385,36 +424,42 @@ export function TopNavigation() {
                   icon={<BookOpen className="w-4 h-4" />}
                   label="English"
                   isActive={pathname.includes('/english')}
+                  requireAuth={true}
                 />
                 <NavItem
                   href="/dashboard/math"
                   icon={<Calculator className="w-4 h-4" />}
                   label="Math"
                   isActive={pathname.includes('/math')}
+                  requireAuth={true}
                 />
                 <NavItem
                   href="/dashboard/science"
                   icon={<Beaker className="w-4 h-4" />}
                   label="Science"
                   isActive={pathname.includes('/science')}
+                  requireAuth={true}
                 />
                 <NavItem
                   href="/dashboard/social"
                   icon={<Landmark className="w-4 h-4" />}
                   label="Social"
                   isActive={pathname.includes('/social')}
+                  requireAuth={true}
                 />
                 <NavItem
                   href="/dashboard/korean"
                   icon={<BookOpen className="w-4 h-4" />}
                   label="Korean 📚"
                   isActive={pathname.includes('/korean')}
+                  requireAuth={true}
                 />
                 <NavItem
                   href="/dashboard"
                   icon={<LayoutDashboard className="w-4 h-4" />}
                   label="DashBoard"
                   isActive={pathname === '/dashboard'}
+                  requireAuth={true}
                 />
               </div>
             </div>

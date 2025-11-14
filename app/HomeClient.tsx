@@ -16,9 +16,9 @@ const FeaturesBentoGrid = dynamic(() => import("@/components/home/FeaturesBentoG
   loading: () => <div className="min-h-screen animate-pulse bg-gray-100 rounded-3xl" />
 });
 
-const InteractiveLearningTools = dynamic(() => import("@/components/home/InteractiveLearningTools").then(mod => ({ default: mod.InteractiveLearningTools })), {
-  loading: () => <div className="min-h-screen animate-pulse bg-gray-100 rounded-3xl" />
-});
+// const InteractiveLearningTools = dynamic(() => import("@/components/home/InteractiveLearningTools").then(mod => ({ default: mod.InteractiveLearningTools })), {
+//   loading: () => <div className="min-h-screen animate-pulse bg-gray-100 rounded-3xl" />
+// });
 
 const DemoVideosSection = dynamic(() => import("@/components/home/DemoVideosSection").then(mod => ({ default: mod.DemoVideosSection })), {
   loading: () => <div className="min-h-screen animate-pulse bg-gray-100 rounded-3xl" />
@@ -63,7 +63,7 @@ export function HomeClient() {
         <FeaturesBentoGrid />
 
         {/* Interactive Learning Tools - Deep Dive */}
-        <InteractiveLearningTools />
+        {/* <InteractiveLearningTools /> */}
 
         {/* Demo Videos - Real Learning Experience */}
         <DemoVideosSection />
