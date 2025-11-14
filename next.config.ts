@@ -11,6 +11,13 @@ const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
 
+  // Remove console logs in production (keep error/warn)
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production'
+      ? { exclude: ['error', 'warn'] }
+      : false,
+  },
+
   // Disable Next.js loading indicator (Next.js 15 syntax)
   devIndicators: false,
 

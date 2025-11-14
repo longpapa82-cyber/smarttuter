@@ -384,7 +384,7 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
         });
       }
     };
-  }, [subject, gradeLevel, sessionId]);
+  }, [subject, gradeLevel, sessionId, stop]);
 
   // Update session when messages change
   useEffect(() => {

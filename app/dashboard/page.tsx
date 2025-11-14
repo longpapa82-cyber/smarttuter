@@ -436,14 +436,7 @@ function DashboardContent() {
             )}
 
             {/* Math Summary - Show empty state if no data */}
-            {!learningStats?.math?.hasData ? (
-              <EmptyLearningCard
-                subject="수학"
-                subjectKey="math"
-                icon={<Calculator className="w-6 h-6" />}
-                gradient="from-purple-500 via-pink-600 to-rose-600"
-              />
-            ) : (
+            {learningStats?.math?.hasData ? (
               <Link href="/dashboard/math" className="h-full">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -463,7 +456,7 @@ function DashboardContent() {
                       </div>
                     </div>
                     <div className="text-right flex-shrink-0 ml-2">
-                      <div className="text-lg sm:text-xl md:text-2xl font-bold whitespace-nowrap">{getKoreanGradeLevel(learningStats.math.gradeLevel || profile?.gradeLevel)}</div>
+                      <div className="text-lg sm:text-xl md:text-2xl font-bold whitespace-nowrap">{getKoreanGradeLevel(learningStats!.math.gradeLevel || profile?.gradeLevel)}</div>
                       <div className="text-xs text-white/80 whitespace-nowrap">학년</div>
                     </div>
                   </div>
@@ -476,16 +469,16 @@ function DashboardContent() {
                           <span className="truncate">이번 주 학습 시간</span>
                         </span>
                         <span className="text-xs sm:text-sm font-semibold flex items-center gap-0.5 sm:gap-1 flex-shrink-0 whitespace-nowrap">
-                          <AnimatedCounter value={learningStats.math.weeklyHours} duration={1.5} delay={0.5} className="font-bold" />
+                          <AnimatedCounter value={learningStats!.math.weeklyHours} duration={1.5} delay={0.5} className="font-bold" />
                           <span className="text-white/60">/</span>
-                          <span>{learningStats.math.weeklyGoal}시간</span>
+                          <span>{learningStats!.math.weeklyGoal}시간</span>
                         </span>
                       </div>
                       <div className="w-full bg-white/20 rounded-full h-2.5 overflow-hidden">
                         <motion.div
                           className="h-full bg-white rounded-full relative shadow-lg"
                           initial={{ width: 0 }}
-                          animate={{ width: `${Math.min((learningStats.math.weeklyHours / learningStats.math.weeklyGoal) * 100, 100)}%` }}
+                          animate={{ width: `${Math.min((learningStats!.math.weeklyHours / learningStats!.math.weeklyGoal) * 100, 100)}%` }}
                           transition={{ duration: 1.5, delay: 0.3, ease: "easeOut" }}
                         >
                           <motion.div
@@ -506,7 +499,7 @@ function DashboardContent() {
                       <div className="text-center">
                         <div className="text-xs text-white/70 mb-1">완료</div>
                         <AnimatedCounter
-                          value={learningStats.math.completedUnits || 0}
+                          value={learningStats!.math.completedUnits || 0}
                           duration={1.5}
                           delay={0.6}
                           className="text-lg font-bold"
@@ -515,7 +508,7 @@ function DashboardContent() {
                       <div className="text-center">
                         <div className="text-xs text-white/70 mb-1">총</div>
                         <AnimatedCounter
-                          value={learningStats.math.totalUnits || 0}
+                          value={learningStats!.math.totalUnits || 0}
                           duration={1.5}
                           delay={0.7}
                           className="text-lg font-bold"
@@ -524,7 +517,7 @@ function DashboardContent() {
                       <div className="text-center">
                         <div className="text-xs text-white/70 mb-1">진도율</div>
                         <AnimatedCounter
-                          value={learningStats.math.totalUnits > 0 ? Math.round((learningStats.math.completedUnits / learningStats.math.totalUnits) * 100) : 0}
+                          value={learningStats!.math.totalUnits > 0 ? Math.round((learningStats!.math.completedUnits / learningStats!.math.totalUnits) * 100) : 0}
                           suffix="%"
                           duration={1.5}
                           delay={0.8}
@@ -533,7 +526,7 @@ function DashboardContent() {
                       </div>
                       <div className="text-center">
                         <div className="text-xs text-white/70 mb-1">레벨</div>
-                        <div className="text-lg font-bold">{learningStats.math.gradeLevel || '초등 1학년'}</div>
+                        <div className="text-lg font-bold">{learningStats!.math.gradeLevel || '초등 1학년'}</div>
                       </div>
                     </div>
                   </div>
@@ -551,17 +544,17 @@ function DashboardContent() {
                   </div>
                 </motion.div>
               </Link>
+            ) : (
+              <EmptyLearningCard
+                subject="수학"
+                subjectKey="math"
+                icon={<Calculator className="w-6 h-6" />}
+                gradient="from-purple-500 via-pink-600 to-rose-600"
+              />
             )}
 
             {/* Science Summary - Show empty state if no data */}
-            {!learningStats?.science?.hasData ? (
-              <EmptyLearningCard
-                subject="과학"
-                subjectKey="science"
-                icon={<Beaker className="w-6 h-6" />}
-                gradient="from-cyan-500 via-blue-600 to-indigo-600"
-              />
-            ) : (
+            {learningStats?.science?.hasData ? (
               <Link href="/dashboard/science" className="h-full">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -581,7 +574,7 @@ function DashboardContent() {
                       </div>
                     </div>
                     <div className="text-right flex-shrink-0 ml-2">
-                      <div className="text-lg sm:text-xl md:text-2xl font-bold whitespace-nowrap">{getKoreanGradeLevel(learningStats.science.gradeLevel || profile?.gradeLevel)}</div>
+                      <div className="text-lg sm:text-xl md:text-2xl font-bold whitespace-nowrap">{getKoreanGradeLevel(learningStats!.science.gradeLevel || profile?.gradeLevel)}</div>
                       <div className="text-xs text-white/80 whitespace-nowrap">학년</div>
                     </div>
                   </div>
@@ -594,16 +587,16 @@ function DashboardContent() {
                           <span className="truncate">이번 주 학습 시간</span>
                         </span>
                         <span className="text-xs sm:text-sm font-semibold flex items-center gap-0.5 sm:gap-1 flex-shrink-0 whitespace-nowrap">
-                          <AnimatedCounter value={learningStats.science.weeklyHours} duration={1.5} delay={0.6} className="font-bold" />
+                          <AnimatedCounter value={learningStats!.science.weeklyHours} duration={1.5} delay={0.6} className="font-bold" />
                           <span className="text-white/60">/</span>
-                          <span>{learningStats.science.weeklyGoal}시간</span>
+                          <span>{learningStats!.science.weeklyGoal}시간</span>
                         </span>
                       </div>
                       <div className="w-full bg-white/20 rounded-full h-2.5 overflow-hidden">
                         <motion.div
                           className="h-full bg-white rounded-full relative shadow-lg"
                           initial={{ width: 0 }}
-                          animate={{ width: `${Math.min((learningStats.science.weeklyHours / learningStats.science.weeklyGoal) * 100, 100)}%` }}
+                          animate={{ width: `${Math.min((learningStats!.science.weeklyHours / learningStats!.science.weeklyGoal) * 100, 100)}%` }}
                           transition={{ duration: 1.5, delay: 0.4, ease: "easeOut" }}
                         >
                           <motion.div
@@ -632,9 +625,9 @@ function DashboardContent() {
                           완료한 단원
                         </div>
                         <div className="text-lg font-bold flex items-baseline gap-1">
-                          <AnimatedCounter value={learningStats.science.completedUnits || 0} duration={1.2} delay={1.1} />
+                          <AnimatedCounter value={learningStats!.science.completedUnits || 0} duration={1.2} delay={1.1} />
                           <span className="text-sm text-white/60">/</span>
-                          <span className="text-sm">{learningStats.science.totalUnits || 0}</span>
+                          <span className="text-sm">{learningStats!.science.totalUnits || 0}</span>
                         </div>
                       </motion.div>
                       <motion.div
@@ -653,7 +646,7 @@ function DashboardContent() {
                           animate={{ opacity: 1 }}
                           transition={{ delay: 1.2, duration: 0.3 }}
                         >
-                          {learningStats.science.currentTopic || '주제 없음'}
+                          {learningStats!.science.currentTopic || '주제 없음'}
                         </motion.div>
                       </motion.div>
                     </div>
@@ -672,17 +665,17 @@ function DashboardContent() {
                   </div>
                 </motion.div>
               </Link>
+            ) : (
+              <EmptyLearningCard
+                subject="과학"
+                subjectKey="science"
+                icon={<Beaker className="w-6 h-6" />}
+                gradient="from-cyan-500 via-blue-600 to-indigo-600"
+              />
             )}
 
             {/* Social Studies Summary - Show empty state if no data */}
-            {!learningStats?.social?.hasData ? (
-              <EmptyLearningCard
-                subject="사회"
-                subjectKey="social-studies"
-                icon={<Landmark className="w-6 h-6" />}
-                gradient="from-orange-500 via-amber-600 to-yellow-600"
-              />
-            ) : (
+            {learningStats?.social?.hasData ? (
               <Link href="/dashboard/social" className="h-full">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -702,7 +695,7 @@ function DashboardContent() {
                       </div>
                     </div>
                     <div className="text-right flex-shrink-0 ml-2">
-                      <div className="text-lg sm:text-xl md:text-2xl font-bold whitespace-nowrap">{getKoreanGradeLevel(learningStats.social.gradeLevel || profile?.gradeLevel)}</div>
+                      <div className="text-lg sm:text-xl md:text-2xl font-bold whitespace-nowrap">{getKoreanGradeLevel(learningStats!.social.gradeLevel || profile?.gradeLevel)}</div>
                       <div className="text-xs text-white/80 whitespace-nowrap">학년</div>
                     </div>
                   </div>
@@ -715,16 +708,16 @@ function DashboardContent() {
                           <span className="truncate">이번 주 학습 시간</span>
                         </span>
                         <span className="text-xs sm:text-sm font-semibold flex items-center gap-0.5 sm:gap-1 flex-shrink-0 whitespace-nowrap">
-                          <AnimatedCounter value={learningStats.social.weeklyHours} duration={1.5} delay={0.7} className="font-bold" />
+                          <AnimatedCounter value={learningStats!.social.weeklyHours} duration={1.5} delay={0.7} className="font-bold" />
                           <span className="text-white/60">/</span>
-                          <span>{learningStats.social.weeklyGoal}시간</span>
+                          <span>{learningStats!.social.weeklyGoal}시간</span>
                         </span>
                       </div>
                       <div className="w-full bg-white/20 rounded-full h-2.5 overflow-hidden">
                         <motion.div
                           className="h-full bg-white rounded-full relative shadow-lg"
                           initial={{ width: 0 }}
-                          animate={{ width: `${Math.min((learningStats.social.weeklyHours / learningStats.social.weeklyGoal) * 100, 100)}%` }}
+                          animate={{ width: `${Math.min((learningStats!.social.weeklyHours / learningStats!.social.weeklyGoal) * 100, 100)}%` }}
                           transition={{ duration: 1.5, delay: 0.5, ease: "easeOut" }}
                         >
                           <motion.div
@@ -753,9 +746,9 @@ function DashboardContent() {
                           완료한 단원
                         </div>
                         <div className="text-lg font-bold flex items-baseline gap-1">
-                          <AnimatedCounter value={learningStats.social.completedUnits || 0} duration={1.2} delay={1.2} />
+                          <AnimatedCounter value={learningStats!.social.completedUnits || 0} duration={1.2} delay={1.2} />
                           <span className="text-sm text-white/60">/</span>
-                          <span className="text-sm">{learningStats.social.totalUnits || 0}</span>
+                          <span className="text-sm">{learningStats!.social.totalUnits || 0}</span>
                         </div>
                       </motion.div>
                       <motion.div
@@ -774,7 +767,7 @@ function DashboardContent() {
                           animate={{ opacity: 1 }}
                           transition={{ delay: 1.3, duration: 0.3 }}
                         >
-                          {learningStats.social.currentTopic || '주제 없음'}
+                          {learningStats!.social.currentTopic || '주제 없음'}
                         </motion.div>
                       </motion.div>
                     </div>
@@ -793,6 +786,13 @@ function DashboardContent() {
                   </div>
                 </motion.div>
               </Link>
+            ) : (
+              <EmptyLearningCard
+                subject="사회"
+                subjectKey="social-studies"
+                icon={<Landmark className="w-6 h-6" />}
+                gradient="from-orange-500 via-amber-600 to-yellow-600"
+              />
             )}
 
             {/* Korean Summary - Show empty state for now */}
@@ -841,7 +841,7 @@ function DashboardContent() {
                         </h4>
                         {learningStats?.english?.detailed?.lastSession ? (
                           <p className="text-sm text-white/80">
-                            마지막 주제: &ldquo;{learningStats?.english.detailed.lastSession.topic}&rdquo;
+                            마지막 주제: &ldquo;{learningStats!.english!.detailed!.lastSession!.topic}&rdquo;
                           </p>
                         ) : (
                           <p className="text-sm text-white/80">
@@ -875,7 +875,7 @@ function DashboardContent() {
                         </h4>
                         {learningStats?.math?.detailed?.lastSession ? (
                           <p className="text-sm text-white/80">
-                            마지막 주제: &ldquo;{learningStats.math.detailed.lastSession.topic}&rdquo;
+                            마지막 주제: &ldquo;{learningStats!.math!.detailed!.lastSession!.topic}&rdquo;
                           </p>
                         ) : (
                           <p className="text-sm text-white/80">
@@ -909,7 +909,7 @@ function DashboardContent() {
                         </h4>
                         {learningStats?.science?.currentTopic ? (
                           <p className="text-sm text-white/80">
-                            마지막 주제: &ldquo;{learningStats.science.currentTopic}&rdquo;
+                            마지막 주제: &ldquo;{learningStats!.science!.currentTopic}&rdquo;
                           </p>
                         ) : (
                           <p className="text-sm text-white/80">
@@ -943,7 +943,7 @@ function DashboardContent() {
                         </h4>
                         {learningStats?.social?.currentTopic ? (
                           <p className="text-sm text-white/80">
-                            마지막 주제: &ldquo;{learningStats.social.currentTopic}&rdquo;
+                            마지막 주제: &ldquo;{learningStats!.social!.currentTopic}&rdquo;
                           </p>
                         ) : (
                           <p className="text-sm text-white/80">

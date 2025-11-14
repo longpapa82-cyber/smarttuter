@@ -20,6 +20,7 @@ export function GoalsWidget({ gradeLevel, userId }: GoalsWidgetProps) {
 
   useEffect(() => {
     loadGoals();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
   const loadGoals = async () => {

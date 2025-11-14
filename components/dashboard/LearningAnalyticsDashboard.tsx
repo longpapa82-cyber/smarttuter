@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
   Chart as ChartJS,
@@ -45,11 +45,7 @@ export function LearningAnalyticsDashboard({
   const [analytics, setAnalytics] = useState<LearningAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadAnalytics();
-  }, [userId, subject]);
-
-  async function loadAnalytics() {
+  const loadAnalytics = useCallback(async () => {
     try {
       setLoading(true);
       // TODO: API 엔드포인트 생성 후 연결
@@ -65,7 +61,11 @@ export function LearningAnalyticsDashboard({
     } finally {
       setLoading(false);
     }
-  }
+  }, [userId, subject]);
+
+  useEffect(() => {
+    loadAnalytics();
+  }, [loadAnalytics]);
 
   // 과목별 색상 매핑
   const subjectColorMap: Record<string, { border: string; bg: string; gradient: string[] }> = {

@@ -51,6 +51,7 @@ export default function StepByStepGuide({
   // 문제 분석 및 단계 생성
   useEffect(() => {
     analyzeProblem();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [problem]);
 
   const analyzeProblem = async () => {

@@ -14,6 +14,7 @@ export function GoalTimeline({ userId }: GoalTimelineProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | 'all'>('week');
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadCompletedGoals();
   }, [selectedPeriod]);

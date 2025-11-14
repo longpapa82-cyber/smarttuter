@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
 import {
   Home,
@@ -29,10 +30,22 @@ import {
   type WeeklyReport,
   type LearningSession,
 } from '@/lib/utils/learningData';
-import { StudyTimeChart } from '@/components/reports/StudyTimeChart';
-import { PerformanceTrendChart } from '@/components/reports/PerformanceTrendChart';
-import { SubjectDistributionChart } from '@/components/reports/SubjectDistributionChart';
-import { generateLearningReportPDF } from '@/lib/utils/pdf-generator';
+
+// Dynamic imports for heavy components
+const StudyTimeChart = dynamic(() => import('@/components/reports/StudyTimeChart').then(mod => ({ default: mod.StudyTimeChart })), {
+  loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />,
+  ssr: false,
+});
+
+const PerformanceTrendChart = dynamic(() => import('@/components/reports/PerformanceTrendChart').then(mod => ({ default: mod.PerformanceTrendChart })), {
+  loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />,
+  ssr: false,
+});
+
+const SubjectDistributionChart = dynamic(() => import('@/components/reports/SubjectDistributionChart').then(mod => ({ default: mod.SubjectDistributionChart })), {
+  loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />,
+  ssr: false,
+});
 
 export default function LearningReportPage() {
   const router = useRouter();
@@ -97,6 +110,8 @@ export default function LearningReportPage() {
       const reportDate = today.toISOString().split('T')[0].replace(/-/g, '');
       const userName = '학습자'; // Default username, can be replaced with actual user data
 
+      // Dynamic import for PDF generator (only load when needed)
+      const { generateLearningReportPDF } = await import('@/lib/utils/pdf-generator');
       await generateLearningReportPDF(userName, reportDate);
     } catch (error) {
       console.error('PDF download error:', error);

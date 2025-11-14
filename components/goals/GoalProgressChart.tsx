@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { GoalProgress } from '@/lib/goals/types';
 
@@ -13,11 +13,7 @@ export function GoalProgressChart({ goalId, days = 7 }: GoalProgressChartProps) 
   const [history, setHistory] = useState<GoalProgress[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    loadHistory();
-  }, [goalId, days]);
-
-  const loadHistory = async () => {
+  const loadHistory = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await fetch(`/api/goals/history?goalId=${goalId}&days=${days}`);
@@ -30,7 +26,11 @@ export function GoalProgressChart({ goalId, days = 7 }: GoalProgressChartProps) 
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [goalId, days]);
+
+  useEffect(() => {
+    loadHistory();
+  }, [loadHistory]);
 
   if (isLoading) {
     return (

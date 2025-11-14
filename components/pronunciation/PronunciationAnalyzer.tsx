@@ -36,6 +36,7 @@ export function PronunciationAnalyzerComponent({ targetText, onAnalysisComplete 
         cancelAnimationFrame(animationFrameRef.current);
       }
       // Store reference before cleanup
+    // eslint-disable-next-line react-hooks/exhaustive-deps
       const analyzer = analyzerRef.current;
       if (analyzer) {
         analyzer.dispose();
