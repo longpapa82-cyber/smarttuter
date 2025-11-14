@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { TrendingUp, TrendingDown, Minus, AlertCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { DifficultyLevel } from "@/lib/learning-progress/types";
+import { DifficultyLevel as AdaptiveDifficultyLevel, DifficultyLabelKorean, DifficultyColor } from "@/lib/learning/adaptive-difficulty";
 import type { Subject } from "@/types/tutor";
 
 interface DifficultyIndicatorProps {

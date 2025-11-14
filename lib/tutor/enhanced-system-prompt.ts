@@ -15,6 +15,9 @@
  */
 
 import type { Subject, SchoolLevel } from './curriculum-database';
+import type { DifficultyLevel } from '../learning/adaptive-difficulty';
+import type { SocraticConversationState } from './socratic-prompts';
+import { generateSocraticSystemPrompt } from './socratic-prompts';
 
 export interface SystemPromptConfig {
   subject: Subject;
@@ -24,6 +27,11 @@ export interface SystemPromptConfig {
   includeChainOfThought?: boolean;
   includeRAGContext?: boolean;
   ragContext?: string;
+  difficultyLevel?: DifficultyLevel;
+  difficultyGuidance?: string;
+  // P0.3: Socratic Questioning System
+  enableSocraticMode?: boolean;
+  socraticState?: SocraticConversationState;
 }
 
 /**
@@ -37,7 +45,11 @@ export function generateEnhancedSystemPrompt(config: SystemPromptConfig): string
     studentName,
     includeChainOfThought = true,
     includeRAGContext = false,
-    ragContext
+    ragContext,
+    difficultyLevel,
+    difficultyGuidance,
+    enableSocraticMode = false,
+    socraticState
   } = config;
 
   const subjectKo = {
@@ -58,8 +70,8 @@ export function generateEnhancedSystemPrompt(config: SystemPromptConfig): string
   // 2. Subject Boundaries
   sections.push(buildSubjectBoundariesSection(subject, subjectKo));
 
-  // 3. Grade Level Awareness
-  sections.push(buildGradeLevelSection(grade, schoolLevel, subjectKo));
+  // 3. Grade Level Awareness (P0.1: Adaptive Difficulty)
+  sections.push(buildGradeLevelSection(grade, schoolLevel, subjectKo, difficultyGuidance));
 
   // 4. RAG Context (if provided)
   if (includeRAGContext && ragContext) {
@@ -74,6 +86,19 @@ export function generateEnhancedSystemPrompt(config: SystemPromptConfig): string
 
   // 7. Response Format
   sections.push(buildResponseFormatSection(includeChainOfThought, subject));
+
+  // 7.5. Socratic Questioning Mode (P0.3)
+  if (enableSocraticMode && socraticState) {
+    // Convert subject type for Socratic prompt
+    const socraticSubject = subject === 'social-studies' ? 'social' : subject;
+    const socraticPrompt = generateSocraticSystemPrompt({
+      subject: socraticSubject as 'english' | 'math' | 'science' | 'social',
+      studentQuestion: '', // Will be filled in API route
+      conversationState: socraticState,
+      gradeLevel: `${schoolLevel} ${grade}`,
+    });
+    sections.push(socraticPrompt);
+  }
 
   // 8. Quality Standards
   sections.push(buildQualityStandardsSection());
@@ -188,7 +213,8 @@ ${subjectContent[subject] || subjectContent.math}
 function buildGradeLevelSection(
   grade: string,
   schoolLevel: SchoolLevel,
-  subjectKo: string
+  subjectKo: string,
+  difficultyGuidance?: string
 ): string {
   const levelKo = {
     elementary: '초등학교',
@@ -197,9 +223,13 @@ function buildGradeLevelSection(
     university: '대학교'
   }[schoolLevel];
 
+  const difficultySection = difficultyGuidance
+    ? `\n\n**🎓 적응형 난이도 설정 (Adaptive Difficulty)**:\n${difficultyGuidance}\n이 난이도에 맞춰 설명의 깊이와 예시의 복잡도를 조절하세요.`
+    : '';
+
   return `# 🎯 학년 수준 인식 (Grade Level Awareness)
 
-**학생 학년**: ${levelKo} ${grade}학년
+**학생 학년**: ${levelKo} ${grade}학년${difficultySection}
 
 **학년 수준 준수 규칙**:
 

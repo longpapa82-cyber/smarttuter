@@ -141,3 +141,75 @@ button[aria-label*="Open Next.js Dev Tools"] {
 .katex-display-wrapper::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+/* ===================================
+   Accessibility: Keyboard Focus Styles
+   =================================== */
+
+/* Remove default outline and add custom focus styles */
+*:focus {
+  outline: none;
+}
+
+/* Keyboard-only focus indicator (focus-visible) */
+*:focus-visible {
+  outline: 3px solid #3b82f6;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Interactive elements focus styles */
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible {
+  outline: 3px solid #3b82f6;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+/* Input fields focus */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 0;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Card and interactive container focus */
+[role="article"]:focus-within,
+[role="region"]:focus-within {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+/* Skip to main content link */
+.skip-to-main {
+  position: absolute;
+  left: -9999px;
+  z-index: 999;
+  padding: 1rem 1.5rem;
+  background-color: #3b82f6;
+  color: white;
+  text-decoration: none;
+  border-radius: 0 0 0.5rem 0;
+  font-weight: 600;
+}
+
+.skip-to-main:focus {
+  left: 0;
+  top: 0;
+}
+
+/* Ensure visible focus on gradient backgrounds */
+.bg-gradient-to-r:focus-visible,
+.bg-gradient-to-br:focus-visible {
+  outline: 3px solid white;
+  outline-offset: 2px;
+}
+
+/* Progress bar focus */
+[role="progressbar"]:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}

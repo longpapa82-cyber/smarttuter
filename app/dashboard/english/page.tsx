@@ -1,22 +1,37 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { BookOpen, ArrowRight, TrendingUp, Target, Award, Mic, Book, Gamepad2, FileEdit } from "lucide-react";
 import { useUserStore } from "@/lib/gamification/store";
 import { useAuth } from "@/hooks/useAuth";
-import { EmptySubjectDashboard } from "@/components/dashboard/EmptySubjectDashboard";
 import { BetaBadge } from "@/components/common/BetaBadge";
+import { DashboardSkeleton, LoadingSpinner } from "@/components/dashboard/subject";
+import { SubjectBreadcrumb } from "@/components/dashboard/Breadcrumb";
 import type { EnglishDetailedStats } from "@/types/learning-stats";
 
-function LoadingSpinner() {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-500"></div>
-    </div>
-  );
-}
+// Dynamic imports for heavy components
+const EmptySubjectDashboard = dynamic(
+  () => import("@/components/dashboard/EmptySubjectDashboard").then(mod => ({ default: mod.EmptySubjectDashboard })),
+  { ssr: false }
+);
+
+const LearningAnalyticsDashboard = dynamic(
+  () => import("@/components/dashboard/LearningAnalyticsDashboard").then(mod => ({ default: mod.LearningAnalyticsDashboard })),
+  {
+    loading: () => (
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+        <div className="animate-pulse space-y-4">
+          <div className="h-6 bg-gray-200 rounded w-1/3"></div>
+          <div className="h-64 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    ),
+    ssr: false
+  }
+);
 
 function EnglishDashboardContent() {
   const { isAuthenticated, user } = useAuth();
@@ -87,6 +102,12 @@ function EnglishDashboardContent() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       <div className="max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12 py-6 sm:py-8 lg:py-10">
+        {/* Breadcrumb */}
+        <SubjectBreadcrumb
+          subject="english"
+          icon={<BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />}
+        />
+
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
@@ -431,6 +452,28 @@ function EnglishDashboardContent() {
               </div>
             </div>
           </motion.div>
+
+          {/* Learning Analytics Dashboard (P0.2) */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.8 }}
+          >
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <TrendingUp className="w-6 h-6 text-blue-600" />
+                학습 분석 대시보드
+              </h2>
+              <p className="text-sm text-gray-600 mt-1">
+                학습 패턴을 분석하고 효과적인 학습 경로를 추천해드립니다
+              </p>
+            </div>
+            <LearningAnalyticsDashboard
+              userId={user?.email || ''}
+              subject="english"
+              subjectColor="blue"
+            />
+          </motion.div>
         </div>
       </div>
     </div>
@@ -439,7 +482,13 @@ function EnglishDashboardContent() {
 
 export default function EnglishDashboardPage() {
   return (
-    <Suspense fallback={<LoadingSpinner />}>
+    <Suspense fallback={
+      <DashboardSkeleton
+        gradientFrom="blue-50"
+        gradientVia="indigo-50"
+        gradientTo="purple-50"
+      />
+    }>
       <EnglishDashboardContent />
     </Suspense>
   );

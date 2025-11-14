@@ -95,9 +95,13 @@ export function updateCurrentSession(data: {
 }
 
 // 세션 종료 및 저장
-export async function endSession() {
+export async function endSession(): Promise<{
+  completedGoals?: any[];
+  totalXPEarned?: number;
+  hasCompletedGoals?: boolean;
+}> {
   const sessionData = localStorage.getItem(STORAGE_KEYS.CURRENT_SESSION);
-  if (!sessionData) return;
+  if (!sessionData) return {};
 
   const session: LearningSession = JSON.parse(sessionData);
   const sessions = getAllSessions();
@@ -129,7 +133,18 @@ export async function endSession() {
       });
 
       if (response.ok) {
+        const data = await response.json();
         console.log('✅ 학습 데이터가 서버에 저장되었습니다');
+
+        // 🎯 목표 완료 데이터 반환
+        if (data.goals && data.goals.hasCompletedGoals) {
+          console.log('🎉 목표 완료!', data.goals);
+          return {
+            completedGoals: data.goals.completedGoals,
+            totalXPEarned: data.goals.totalXPEarned,
+            hasCompletedGoals: true,
+          };
+        }
       } else {
         const errorData = await response.json();
         console.warn('⚠️  학습 데이터 저장 실패:', errorData);
@@ -141,6 +156,8 @@ export async function endSession() {
   } else {
     console.log('ℹ️  학습 시간이 너무 짧아 서버에 저장하지 않습니다 (duration:', session.duration, 'minutes)');
   }
+
+  return {};
 }
 
 // 모든 세션 가져오기

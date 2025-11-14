@@ -10,7 +10,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/config';
 import { createErrorResponse } from '@/lib/api/error-handler';
 import { getAuthDb } from '@/lib/auth/db-redis';
-import type { LearningStats, EnglishDetailedStats, MathDetailedStats, ScienceDetailedStats, SocialDetailedStats } from '@/types/learning-stats';
+import type { LearningStats, EnglishDetailedStats, MathDetailedStats, ScienceDetailedStats, SocialDetailedStats, KoreanDetailedStats } from '@/types/learning-stats';
 
 // Helper function to safely parse Redis data (can be string or already parsed object)
 function parseRedisData(data: any) {
@@ -92,6 +92,22 @@ function getEmptyStats(subject: string | null) {
     return NextResponse.json({ success: true, data: emptySocialStats });
   }
 
+  if (subject === 'korean') {
+    const emptyKoreanStats: KoreanDetailedStats = {
+      lastSession: null,
+      nextTopic: null,
+      gradeProgress: null,
+      monthlyHours: { current: 0, target: 15 },
+      topics: [],
+      analysis: {
+        strengths: [],
+        weaknesses: [],
+        aiRecommendation: '국어 튜터와 학습을 시작하여 진행도 분석을 받아보세요!',
+      },
+    };
+    return NextResponse.json({ success: true, data: emptyKoreanStats });
+  }
+
   // Overall empty stats
   const emptyOverallStats: LearningStats = {
     english: {
@@ -99,6 +115,8 @@ function getEmptyStats(subject: string | null) {
       weeklyGoal: 20,
       hasData: false,
       cefrLevel: null,
+      completedUnits: 0,
+      totalUnits: 0,
       skills: { listening: 0, speaking: 0, reading: 0, writing: 0 },
       detailed: {
         lastSession: null,
@@ -402,6 +420,8 @@ export async function GET(request: NextRequest) {
         weeklyGoal: 20,
         hasData: englishParsed?.totalSessions > 0,
         cefrLevel: englishParsed?.cefrLevel || null,
+        completedUnits: englishParsed?.completedTopics?.length || 0,
+        totalUnits: 100,
         skills: englishParsed?.mastery || {
           listening: 0,
           speaking: 0,

@@ -29,6 +29,8 @@ import LevelAssessmentCard from '@/components/learning/LevelAssessmentCard';
 import LevelUpNotification from '@/components/learning/LevelUpNotification';
 import RoleplaySelector from '@/components/roleplay/RoleplaySelector';
 import { assessLevel, type LevelAssessment, type CEFRLevel } from '@/lib/learning/level-detector';
+import { GoalCompletionCelebration } from '@/components/goals/GoalCompletionCelebration';
+import type { LearningGoal } from '@/lib/goals/types';
 import {
   createInitialAdaptiveState,
   addConversationTurn,
@@ -178,12 +180,13 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
       inputMode: baseSettings.inputMode,
       inputLanguage: baseSettings.inputLanguage,
       outputLanguage: baseSettings.outputLanguage,
+      autoPlayResponses: baseSettings.autoPlayResponses,
     });
 
     return baseSettings;
   });
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isTTSEnabled, setIsTTSEnabled] = useState(() => voiceSettings.autoPlayResponses);
+  const [isTTSEnabled, setIsTTSEnabled] = useState(true); // Default ON for all subjects
   const [userTTSOverride, setUserTTSOverride] = useState(false); // Track if user manually toggled TTS
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
   const [isImageUploadOpen, setIsImageUploadOpen] = useState(false);
@@ -207,6 +210,12 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
     adjustmentResult: DifficultyAdjustmentResult;
     fromLevel: CEFRLevel;
     toLevel: CEFRLevel;
+  } | null>(null);
+
+  // Goal completion celebration state
+  const [completedGoals, setCompletedGoals] = useState<{
+    goals: any[];
+    totalXP: number;
   } | null>(null);
 
   // Browser TTS (Web Speech API)
@@ -358,9 +367,18 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
 
       if (typeof window !== 'undefined' && sessionId) {
         // endSession is async, but cleanup functions can't be async
-        // So we call it without await
-        endSession().then(() => {
+        // So we call it without await and handle goal completion
+        endSession().then((result) => {
           console.log(`✅ Learning session ended: ${sessionId}`);
+
+          // Check if any goals were completed
+          if (result.hasCompletedGoals && result.completedGoals && result.completedGoals.length > 0) {
+            console.log('🎉 Goals completed during session!', result);
+            setCompletedGoals({
+              goals: result.completedGoals,
+              totalXP: result.totalXPEarned || 0,
+            });
+          }
         }).catch((error) => {
           console.error('⚠️ Error ending session:', error);
         });
@@ -376,6 +394,16 @@ export default function SimpleChatInterface({ subject, gradeLevel }: SimpleChatI
       });
     }
   }, [messages]);
+
+  // Auto-focus input on mount (튜터 페이지 진입 시 자동 포커스)
+  useEffect(() => {
+    // Focus input field when component mounts
+    const timer = setTimeout(() => {
+      inputRef.current?.focus();
+    }, 500); // Wait for page load and animations
+
+    return () => clearTimeout(timer);
+  }, []); // Empty deps = run only once on mount
 
   // Auto-scroll when messages change
   useEffect(() => {
@@ -646,10 +674,11 @@ ${scenario.initialMessage}`,
       }
     }
 
-    // Smart TTS: 음성 입력 시 TTS 켜기, 텍스트 입력 시 TTS 끄기 (OCR 제외)
-    // English tutor: Always keep TTS enabled for pronunciation practice
-    // If user manually toggled TTS, respect their preference (don't auto-toggle)
-    if (subject !== 'english' && !userTTSOverride) {
+    // Smart TTS: Disabled - Keep TTS ON by default for all subjects
+    // All tutors now behave like English tutor: Keep TTS enabled unless user manually toggles it
+    // This ensures TTS is ON by default as requested
+    // If user manually toggled TTS, their preference is always respected via userTTSOverride flag
+    if (false && subject !== 'english' && !userTTSOverride) {
       const isVoiceInput = !!messageText && !isFromOCR; // messageText가 있고 OCR이 아니면 음성 입력
       if (isVoiceInput && !isTTSEnabled) {
         console.log('🔊 Voice input detected - enabling TTS');
@@ -1556,6 +1585,24 @@ ${scenario.initialMessage}`,
           adjustmentResult={levelUpNotification.adjustmentResult}
           fromLevel={levelUpNotification.fromLevel}
           toLevel={levelUpNotification.toLevel}
+        />
+      )}
+
+      {/* Goal Completion Celebration Modal (All subjects) */}
+      {completedGoals && completedGoals.goals.length > 0 && (
+        <GoalCompletionCelebration
+          goal={completedGoals.goals[0]} // Show first completed goal
+          onClose={() => {
+            // If there are more completed goals, show the next one
+            if (completedGoals.goals.length > 1) {
+              setCompletedGoals({
+                goals: completedGoals.goals.slice(1),
+                totalXP: completedGoals.totalXP,
+              });
+            } else {
+              setCompletedGoals(null);
+            }
+          }}
         />
       )}
     </div>

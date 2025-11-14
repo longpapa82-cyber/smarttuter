@@ -15,6 +15,11 @@ const COLORS = {
   english: '#ec4899', // Pink
 };
 
+const GRADIENT_COLORS = {
+  math: ['#a78bfa', '#8b5cf6', '#7c3aed'], // Purple gradient
+  english: ['#f472b6', '#ec4899', '#db2777'], // Pink gradient
+};
+
 export function SubjectDistributionChart({ sessions }: SubjectDistributionChartProps) {
   const { chartData, stats } = useMemo(() => {
     const mathSessions = sessions.filter((s) => s.subject === 'math');
@@ -108,20 +113,43 @@ export function SubjectDistributionChart({ sessions }: SubjectDistributionChartP
         <>
           <ResponsiveContainer width="100%" height={250}>
             <PieChart>
+              <defs>
+                <linearGradient id="mathPieGradient" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor={GRADIENT_COLORS.math[0]} />
+                  <stop offset="50%" stopColor={GRADIENT_COLORS.math[1]} />
+                  <stop offset="100%" stopColor={GRADIENT_COLORS.math[2]} />
+                </linearGradient>
+                <linearGradient id="englishPieGradient" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor={GRADIENT_COLORS.english[0]} />
+                  <stop offset="50%" stopColor={GRADIENT_COLORS.english[1]} />
+                  <stop offset="100%" stopColor={GRADIENT_COLORS.english[2]} />
+                </linearGradient>
+                <filter id="pieShadow">
+                  <feDropShadow dx="0" dy="4" stdDeviation="4" floodOpacity="0.3"/>
+                </filter>
+              </defs>
               <Pie
                 data={chartData}
                 cx="50%"
                 cy="50%"
-                labelLine={false}
+                labelLine={{
+                  stroke: '#9ca3af',
+                  strokeWidth: 2
+                }}
                 label={({ name, percentage }) => `${name} ${percentage}%`}
-                outerRadius={80}
+                outerRadius={85}
                 fill="#8884d8"
                 dataKey="value"
+                animationDuration={1500}
+                animationBegin={0}
+                stroke="#fff"
+                strokeWidth={3}
               >
                 {chartData.map((entry, index) => (
                   <Cell
                     key={`cell-${index}`}
-                    fill={entry.name === '수학' ? COLORS.math : COLORS.english}
+                    fill={entry.name === '수학' ? 'url(#mathPieGradient)' : 'url(#englishPieGradient)'}
+                    filter="url(#pieShadow)"
                   />
                 ))}
               </Pie>

@@ -121,8 +121,9 @@ export function VideoPlayer({
         muted={muted}
         loop={loop}
         playsInline
-        preload="metadata"
+        preload="auto"
         className="absolute inset-0 w-full h-full object-cover"
+        style={{ aspectRatio: '16/9' }}
         onPlay={() => setState(prev => ({ ...prev, isPlaying: true }))}
         onPause={() => setState(prev => ({ ...prev, isPlaying: false }))}
         onLoadedMetadata={(e) => {

@@ -17,6 +17,7 @@ import { responseCache } from "@/lib/cache/response-cache";
 import { quickClassify, apiTracker } from "@/lib/cache/api-optimizer";
 import { vertexAIClient } from "@/lib/ai/vertex-client";
 import { intelligentRouter } from "@/lib/ai/intelligent-router";
+import { getCurrentDifficulty, difficultyToPromptGuidance } from "@/lib/learning/difficulty-tracker";
 
 // Initialize Gemini client (Fallback)
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
@@ -302,17 +303,31 @@ export async function POST(req: NextRequest) {
       // Continue without RAG context - graceful degradation
     }
 
+    // Get current difficulty level (P0.1: Adaptive Difficulty)
+    const currentDifficulty = await getCurrentDifficulty(userId, 'english', userProfile.gradeLevel);
+    const difficultyGuidance = difficultyToPromptGuidance(currentDifficulty);
+
     // Generate enhanced system prompt (Week 4: Integrates all accuracy systems)
     // Pass CEFR level if provided (adaptive learning)
     const gradeForPrompt = String(userProfile.gradeLevelDetail || '5');
+
+    // P0.3: Socratic Questioning System (초기 구현)
+    const { createInitialConversationState } = await import('@/lib/tutor/socratic-prompts');
+    const socraticState = createInitialConversationState();
+
     const systemPrompt = generateEnhancedSystemPrompt({
       subject: 'english',
       grade: gradeForPrompt,
       schoolLevel: userProfile.gradeLevel,
       studentName: userId,
       includeChainOfThought: true,
+      difficultyLevel: currentDifficulty,
+      difficultyGuidance: difficultyGuidance,
       includeRAGContext: ragContext !== undefined, // P1-1: Enable RAG
-      ragContext
+      ragContext,
+      // P0.3: Enable Socratic Mode
+      enableSocraticMode: true,
+      socraticState: socraticState,
     });
 
 

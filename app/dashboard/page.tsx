@@ -29,6 +29,8 @@ import { StreakWidget } from "@/components/gamification/StreakWidget";
 import { DailyGoalsWidget } from "@/components/gamification/DailyGoalsWidget";
 import { WeeklyStats } from "@/components/gamification/WeeklyStats";
 import { AchievementBadges } from "@/components/gamification/AchievementBadges";
+import { GoalsWidget } from "@/components/goals/GoalsWidget";
+import { GoalTimeline } from "@/components/goals/GoalTimeline";
 import { AnimatedProgressBar, AnimatedCounter, PulseIndicator, LiveStats } from "@/components/animations";
 import {
   LearningProgressOverview,
@@ -42,6 +44,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { SkeletonDashboard } from "@/components/ui/Skeleton";
 import { EmptyLearningCard } from "@/components/dashboard/EmptyLearningCard";
 import type { LearningStats } from "@/types/learning-stats";
+// Phase 2: New Total Dashboard Components
+import { OverallStatsCard } from "@/components/dashboard/total/OverallStatsCard";
+import { SubjectComparisonChart } from "@/components/dashboard/total/SubjectComparisonChart";
+import { RecentActivitySummary } from "@/components/dashboard/total/RecentActivitySummary";
 
 function LoadingDashboard() {
   return (
@@ -276,7 +282,7 @@ function DashboardContent() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent">
-                Total DashBoard
+                DashBoard
               </h1>
               <p className="mt-2 text-gray-600">
                 {profile.username}님의 학습 현황과 추천 활동
@@ -298,8 +304,11 @@ function DashboardContent() {
             </div>
           </div>
 
-          {/* All Subjects Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 md:gap-6 xl:gap-8" style={{ gridAutoRows: '480px' }}>
+          {/* Phase 2: Overall Stats Card */}
+          <OverallStatsCard learningStats={learningStats} />
+
+          {/* All Subjects Summary Cards - Hidden */}
+          {false && (<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 md:gap-6 xl:gap-8" style={{ gridAutoRows: '480px' }}>
             {/* English Summary - Show empty state if no data */}
             {!learningStats?.english?.hasData ? (
               <EmptyLearningCard
@@ -328,7 +337,7 @@ function DashboardContent() {
                       </div>
                     </div>
                     <div className="text-right flex-shrink-0 ml-2">
-                      <div className="text-lg sm:text-xl md:text-2xl font-bold whitespace-nowrap">{learningStats.english.cefrLevel || 'N/A'}</div>
+                      <div className="text-lg sm:text-xl md:text-2xl font-bold whitespace-nowrap">{learningStats?.english.cefrLevel || 'N/A'}</div>
                       <div className="text-xs text-white/80 whitespace-nowrap">CEFR Level</div>
                     </div>
                   </div>
@@ -341,16 +350,16 @@ function DashboardContent() {
                           <span className="truncate">이번 주 학습 시간</span>
                         </span>
                         <span className="text-xs sm:text-sm font-semibold flex items-center gap-0.5 sm:gap-1 flex-shrink-0 whitespace-nowrap">
-                          <AnimatedCounter value={learningStats.english.weeklyHours} duration={1.5} delay={0.4} className="font-bold" />
+                          <AnimatedCounter value={learningStats?.english.weeklyHours ?? 0} duration={1.5} delay={0.4} className="font-bold" />
                           <span className="text-white/60">/</span>
-                          <span>{learningStats.english.weeklyGoal}시간</span>
+                          <span>{learningStats?.english.weeklyGoal ?? 0}시간</span>
                         </span>
                       </div>
                       <div className="w-full bg-white/20 rounded-full h-2.5 overflow-hidden">
                         <motion.div
                           className="h-full bg-white rounded-full relative shadow-lg"
                           initial={{ width: 0 }}
-                          animate={{ width: `${Math.min((learningStats.english.weeklyHours / learningStats.english.weeklyGoal) * 100, 100)}%` }}
+                          animate={{ width: `${Math.min(((learningStats?.english.weeklyHours ?? 0) / (learningStats?.english.weeklyGoal ?? 1)) * 100, 100)}%` }}
                           transition={{ duration: 1.5, delay: 0.2, ease: "easeOut" }}
                         >
                           <motion.div
@@ -371,7 +380,7 @@ function DashboardContent() {
                       <div className="text-center">
                         <div className="text-xs text-white/70 mb-1">Listening</div>
                         <AnimatedCounter
-                          value={learningStats.english.skills?.listening || 0}
+                          value={learningStats?.english.skills?.listening || 0}
                           suffix="%"
                           duration={1.5}
                           delay={0.6}
@@ -381,7 +390,7 @@ function DashboardContent() {
                       <div className="text-center">
                         <div className="text-xs text-white/70 mb-1">Speaking</div>
                         <AnimatedCounter
-                          value={learningStats.english.skills?.speaking || 0}
+                          value={learningStats?.english.skills?.speaking || 0}
                           suffix="%"
                           duration={1.5}
                           delay={0.7}
@@ -391,7 +400,7 @@ function DashboardContent() {
                       <div className="text-center">
                         <div className="text-xs text-white/70 mb-1">Reading</div>
                         <AnimatedCounter
-                          value={learningStats.english.skills?.reading || 0}
+                          value={learningStats?.english.skills?.reading || 0}
                           suffix="%"
                           duration={1.5}
                           delay={0.8}
@@ -401,7 +410,7 @@ function DashboardContent() {
                       <div className="text-center">
                         <div className="text-xs text-white/70 mb-1">Writing</div>
                         <AnimatedCounter
-                          value={learningStats.english.skills?.writing || 0}
+                          value={learningStats?.english.skills?.writing || 0}
                           suffix="%"
                           duration={1.5}
                           delay={0.9}
@@ -793,10 +802,16 @@ function DashboardContent() {
               icon={<BookMarked className="w-6 h-6" />}
               gradient="from-pink-500 via-rose-600 to-red-600"
             />
-          </div>
+          </div>)}
 
-          {/* Quick Start Section - Continue Learning */}
-          <motion.div
+          {/* Phase 2: Subject Comparison Chart - Hidden */}
+          {false && (<SubjectComparisonChart learningStats={learningStats} />)}
+
+          {/* Phase 2: Recent Activity Summary - Hidden */}
+          {false && (<RecentActivitySummary learningStats={learningStats} maxItems={3} />)}
+
+          {/* Quick Start Section - Continue Learning - Hidden */}
+          {false && (<motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.2 }}
@@ -807,7 +822,7 @@ function DashboardContent() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4 md:gap-6 lg:gap-8 auto-rows-fr">
               {/* Continue English */}
-              <Link href="/tutor/english" className="h-full">
+              <Link href="/dashboard/english" className="h-full">
                 <motion.div
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -826,7 +841,7 @@ function DashboardContent() {
                         </h4>
                         {learningStats?.english?.detailed?.lastSession ? (
                           <p className="text-sm text-white/80">
-                            마지막 주제: &ldquo;{learningStats.english.detailed.lastSession.topic}&rdquo;
+                            마지막 주제: &ldquo;{learningStats?.english.detailed.lastSession.topic}&rdquo;
                           </p>
                         ) : (
                           <p className="text-sm text-white/80">
@@ -841,7 +856,7 @@ function DashboardContent() {
               </Link>
 
               {/* Continue Math */}
-              <Link href="/tutor/math" className="h-full">
+              <Link href="/dashboard/math" className="h-full">
                 <motion.div
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -875,7 +890,7 @@ function DashboardContent() {
               </Link>
 
               {/* Continue Science */}
-              <Link href="/tutor/science" className="h-full">
+              <Link href="/dashboard/science" className="h-full">
                 <motion.div
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -909,7 +924,7 @@ function DashboardContent() {
               </Link>
 
               {/* Continue Social Studies */}
-              <Link href="/tutor/social-studies" className="h-full">
+              <Link href="/dashboard/social" className="h-full">
                 <motion.div
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -943,7 +958,7 @@ function DashboardContent() {
               </Link>
 
               {/* NEW: Korean Tutor */}
-              <Link href="/tutor/korean" className="h-full">
+              <Link href="/dashboard/korean" className="h-full">
                 <motion.div
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -968,7 +983,7 @@ function DashboardContent() {
                 </motion.div>
               </Link>
             </div>
-          </motion.div>
+          </motion.div>)}
 
           {/* Top Section: Level & Streak */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -982,6 +997,12 @@ function DashboardContent() {
           {profile.dailyGoals && (
             <DailyGoalsWidget goalsProgress={profile.dailyGoals} size="medium" />
           )}
+
+          {/* Learning Goals Section */}
+          <GoalsWidget gradeLevel={profile?.gradeLevel || 'middle'} userId={user?.email} />
+
+          {/* Goal Achievement Timeline */}
+          <GoalTimeline userId={user?.email} />
 
           {/* Weekly Stats */}
           <WeeklyStats />
@@ -1050,8 +1071,8 @@ function DashboardContent() {
             )}
           </div>
 
-          {/* Supplementary Learning Activities */}
-          <div>
+          {/* Supplementary Learning Activities - Hidden */}
+          {false && (<div>
             <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
               <Target className="w-6 h-6 text-purple-600" />
               보조 학습 활동
@@ -1149,7 +1170,7 @@ function DashboardContent() {
                 </motion.div>
               </Link>
             </div>
-          </div>
+          </div>)}
 
           {/* Analytics & Reports */}
           <div>
@@ -1248,27 +1269,27 @@ function DashboardContent() {
               <h4 className="font-semibold mb-4">서비스</h4>
               <ul className="space-y-2">
                 <li>
-                  <Link href="/tutor/english" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  <Link href="/dashboard/english" className="text-gray-400 hover:text-white transition-colors text-sm">
                     영어 튜터
                   </Link>
                 </li>
                 <li>
-                  <Link href="/tutor/math" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  <Link href="/dashboard/math" className="text-gray-400 hover:text-white transition-colors text-sm">
                     수학 튜터
                   </Link>
                 </li>
                 <li>
-                  <Link href="/tutor/science" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  <Link href="/dashboard/science" className="text-gray-400 hover:text-white transition-colors text-sm">
                     과학 튜터
                   </Link>
                 </li>
                 <li>
-                  <Link href="/tutor/social-studies" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  <Link href="/dashboard/social" className="text-gray-400 hover:text-white transition-colors text-sm">
                     사회 튜터
                   </Link>
                 </li>
                 <li>
-                  <Link href="/tutor/korean" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  <Link href="/dashboard/korean" className="text-gray-400 hover:text-white transition-colors text-sm">
                     국어 튜터
                   </Link>
                 </li>

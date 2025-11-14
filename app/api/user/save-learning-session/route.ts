@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/config';
 import { getAuthDb } from '@/lib/auth/db-redis';
+import { updateGoalProgress } from '@/lib/goals/goal-manager';
+import type { GoalSubject } from '@/lib/goals/types';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -223,6 +225,52 @@ export async function POST(request: NextRequest) {
     // 통계 캐시 무효화 (다음 조회 시 새 데이터 반영)
     await db.del(`user:${userId}:learning-stats`);
 
+    // 🎯 학습 목표 업데이트
+    const subjectMapping: Record<string, GoalSubject> = {
+      'english': 'english',
+      'math': 'math',
+      'science': 'science',
+      'social-studies': 'social',
+      'korean': 'korean',
+    };
+    const goalSubject = subjectMapping[sessionData.subject] || 'all';
+
+    // 1. study_time 메트릭 업데이트 (분 단위)
+    const studyTimeResult = await updateGoalProgress(
+      userId,
+      'study_time',
+      sessionData.duration,
+      goalSubject
+    );
+
+    // 2. sessions 메트릭 업데이트
+    const sessionsResult = await updateGoalProgress(
+      userId,
+      'sessions',
+      1,
+      goalSubject
+    );
+
+    // 3. conversations 메트릭 업데이트 (메시지 수)
+    const conversationsResult = await updateGoalProgress(
+      userId,
+      'conversations',
+      sessionData.messageCount,
+      goalSubject
+    );
+
+    // 완료된 목표 수집
+    const allCompletedGoals = [
+      ...studyTimeResult.completedGoals,
+      ...sessionsResult.completedGoals,
+      ...conversationsResult.completedGoals,
+    ];
+
+    // 총 획득 XP 계산
+    const totalXPEarned = studyTimeResult.totalXPEarned +
+                          sessionsResult.totalXPEarned +
+                          conversationsResult.totalXPEarned;
+
     return NextResponse.json({
       success: true,
       message: '학습 세션이 저장되었습니다',
@@ -230,6 +278,11 @@ export async function POST(request: NextRequest) {
         totalHours: Math.round(learningStats.totalHours * 10) / 10,
         totalSessions: learningStats.totalSessions,
         lastTopic: learningStats.lastSession?.topic,
+      },
+      goals: {
+        completedGoals: allCompletedGoals,
+        totalXPEarned: totalXPEarned,
+        hasCompletedGoals: allCompletedGoals.length > 0,
       },
     });
   } catch (error) {

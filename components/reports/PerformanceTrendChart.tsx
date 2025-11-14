@@ -135,48 +135,75 @@ export function PerformanceTrendChart({ sessions, days = 7 }: PerformanceTrendCh
           data={chartData}
           margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
         >
-          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.5} />
+          <defs>
+            <linearGradient id="mathGradient" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#a78bfa" />
+              <stop offset="50%" stopColor="#8b5cf6" />
+              <stop offset="100%" stopColor="#7c3aed" />
+            </linearGradient>
+            <linearGradient id="englishGradient" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#f472b6" />
+              <stop offset="50%" stopColor="#ec4899" />
+              <stop offset="100%" stopColor="#db2777" />
+            </linearGradient>
+            <filter id="shadow">
+              <feDropShadow dx="0" dy="2" stdDeviation="2" floodOpacity="0.3"/>
+            </filter>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.3} />
           <XAxis
             dataKey="dateLabel"
-            stroke="#6b7280"
-            style={{ fontSize: '12px' }}
+            stroke="#9ca3af"
+            style={{ fontSize: '12px', fontWeight: 500 }}
             tickLine={false}
+            axisLine={{ stroke: '#e5e7eb' }}
           />
           <YAxis
-            stroke="#6b7280"
-            style={{ fontSize: '12px' }}
+            stroke="#9ca3af"
+            style={{ fontSize: '12px', fontWeight: 500 }}
             tickLine={false}
+            axisLine={{ stroke: '#e5e7eb' }}
             domain={[0, 100]}
             ticks={[0, 25, 50, 75, 100]}
-            label={{ value: '점수', angle: -90, position: 'insideLeft', style: { fontSize: '12px' } }}
+            label={{ value: '점수', angle: -90, position: 'insideLeft', style: { fontSize: '12px', fill: '#6b7280' } }}
           />
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(139, 92, 246, 0.2)', strokeWidth: 2 }} />
           <Legend
-            wrapperStyle={{ fontSize: '14px' }}
+            wrapperStyle={{ fontSize: '14px', fontWeight: 600 }}
             formatter={(value) => {
               if (value === 'mathScore') return '수학';
               if (value === 'englishScore') return '영어';
               return value;
             }}
           />
-          <ReferenceLine y={70} stroke="#10b981" strokeDasharray="3 3" label="목표" />
+          <ReferenceLine
+            y={70}
+            stroke="#10b981"
+            strokeDasharray="5 5"
+            strokeWidth={2}
+            label={{ value: '목표', position: 'right', fill: '#10b981', fontWeight: 600 }}
+          />
           <Line
             type="monotone"
             dataKey="mathScore"
-            stroke="#8b5cf6"
-            strokeWidth={3}
-            dot={{ fill: '#8b5cf6', r: 4 }}
-            activeDot={{ r: 6 }}
+            stroke="url(#mathGradient)"
+            strokeWidth={4}
+            dot={{ fill: '#8b5cf6', r: 5, strokeWidth: 2, stroke: '#fff', filter: 'url(#shadow)' }}
+            activeDot={{ r: 8, fill: '#7c3aed', stroke: '#fff', strokeWidth: 3 }}
             connectNulls
+            animationDuration={1500}
+            animationBegin={0}
           />
           <Line
             type="monotone"
             dataKey="englishScore"
-            stroke="#ec4899"
-            strokeWidth={3}
-            dot={{ fill: '#ec4899', r: 4 }}
-            activeDot={{ r: 6 }}
+            stroke="url(#englishGradient)"
+            strokeWidth={4}
+            dot={{ fill: '#ec4899', r: 5, strokeWidth: 2, stroke: '#fff', filter: 'url(#shadow)' }}
+            activeDot={{ r: 8, fill: '#db2777', stroke: '#fff', strokeWidth: 3 }}
             connectNulls
+            animationDuration={1500}
+            animationBegin={200}
           />
         </LineChart>
       </ResponsiveContainer>

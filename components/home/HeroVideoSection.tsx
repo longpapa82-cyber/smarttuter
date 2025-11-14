@@ -5,7 +5,10 @@ import { HeroContent } from './HeroContent';
 
 export function HeroVideoSection() {
   return (
-    <section className="relative w-full h-[500px] sm:h-[600px] lg:h-[700px] overflow-hidden">
+    <section
+      className="relative w-full h-[500px] sm:h-[600px] lg:h-[700px] overflow-hidden"
+      style={{ contentVisibility: 'auto' }}
+    >
       {/* Video Background */}
       <VideoPlayer
         src="/videos/demo_s.mp4"

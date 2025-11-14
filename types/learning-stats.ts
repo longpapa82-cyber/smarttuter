@@ -72,6 +72,8 @@ export interface MathDetailedStats {
 // 기존 인터페이스 (메인 대시보드용)
 export interface EnglishStats extends SubjectStats {
   cefrLevel: string | null;
+  completedUnits: number;
+  totalUnits: number;
   skills: {
     listening: number;
     speaking: number;

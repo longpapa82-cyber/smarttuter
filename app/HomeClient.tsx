@@ -2,12 +2,35 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useAuth } from "@/hooks/useAuth";
-import { VideoModal } from "@/components/demo/VideoModal";
 import { HeroVideoSection } from "@/components/home/HeroVideoSection";
-import { FeaturesSection } from "@/components/home/FeaturesSection";
-import { HowItWorksSection } from "@/components/home/HowItWorksSection";
-import { AIDifferentiationSection } from "@/components/home/AIDifferentiationSection";
+
+// Dynamic imports for better code splitting
+const VideoModal = dynamic(() => import("@/components/demo/VideoModal").then(mod => ({ default: mod.VideoModal })), {
+  ssr: false,
+  loading: () => null
+});
+
+const FeaturesBentoGrid = dynamic(() => import("@/components/home/FeaturesBentoGrid").then(mod => ({ default: mod.FeaturesBentoGrid })), {
+  loading: () => <div className="min-h-screen animate-pulse bg-gray-100 rounded-3xl" />
+});
+
+const InteractiveLearningTools = dynamic(() => import("@/components/home/InteractiveLearningTools").then(mod => ({ default: mod.InteractiveLearningTools })), {
+  loading: () => <div className="min-h-screen animate-pulse bg-gray-100 rounded-3xl" />
+});
+
+const DemoVideosSection = dynamic(() => import("@/components/home/DemoVideosSection").then(mod => ({ default: mod.DemoVideosSection })), {
+  loading: () => <div className="min-h-screen animate-pulse bg-gray-100 rounded-3xl" />
+});
+
+const GamificationPreviewSection = dynamic(() => import("@/components/home/GamificationPreviewSection").then(mod => ({ default: mod.GamificationPreviewSection })), {
+  loading: () => <div className="min-h-screen animate-pulse bg-gray-100 rounded-3xl" />
+});
+
+const NewsletterSection = dynamic(() => import("@/components/home/NewsletterSection").then(mod => ({ default: mod.NewsletterSection })), {
+  loading: () => <div className="min-h-screen animate-pulse bg-gray-100 rounded-3xl" />
+});
 
 export function HomeClient() {
   const { isAuthenticated, isLoading, navigateProtected } = useAuth();
@@ -33,17 +56,23 @@ export function HomeClient() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50">
       <main>
-        {/* NEW: Hero Video Section */}
+        {/* Hero Video Section - Enhanced with 2025 UI/UX */}
         <HeroVideoSection />
 
-        {/* Features Section */}
-        <FeaturesSection />
+        {/* Features Bento Grid - Showcasing All Features */}
+        <FeaturesBentoGrid />
 
-        {/* How It Works Section */}
-        <HowItWorksSection />
+        {/* Interactive Learning Tools - Deep Dive */}
+        <InteractiveLearningTools />
 
-        {/* AI Differentiation Section */}
-        <AIDifferentiationSection />
+        {/* Demo Videos - Real Learning Experience */}
+        <DemoVideosSection />
+
+        {/* Gamification Preview - Engaging Learning */}
+        <GamificationPreviewSection />
+
+        {/* Newsletter - Stay Updated */}
+        <NewsletterSection />
       </main>
 
       {/* Footer */}

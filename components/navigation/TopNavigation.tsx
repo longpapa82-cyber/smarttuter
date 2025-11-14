@@ -168,9 +168,35 @@ function ProfileDropdown() {
 function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const pathname = usePathname();
   const { user, isAuthenticated, signOut } = useAuth();
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
   // Check if user is admin
   const isAdmin = user?.email === 'a090723@naver.com';
+
+  // Swipe gesture detection: minimum swipe distance (50px)
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+
+    // Close menu on left swipe
+    if (isLeftSwipe) {
+      onClose();
+    }
+  };
 
   const mobileNavItems = [
     { href: "/", label: "홈", icon: <Home className="w-5 h-5" /> },
@@ -178,8 +204,8 @@ function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
     { href: "/dashboard/math", label: "Math", icon: <Calculator className="w-5 h-5" /> },
     { href: "/dashboard/science", label: "Science", icon: <Beaker className="w-5 h-5" /> },
     { href: "/dashboard/social", label: "Social", icon: <Landmark className="w-5 h-5" /> },
-    { href: "/tutor/korean", label: "Korean 📚", icon: <BookOpen className="w-5 h-5" /> },
-    { href: "/dashboard", label: "Total DashBoard", icon: <LayoutDashboard className="w-5 h-5" /> },
+    { href: "/dashboard/korean", label: "Korean 📚", icon: <BookOpen className="w-5 h-5" /> },
+    { href: "/dashboard", label: "DashBoard", icon: <LayoutDashboard className="w-5 h-5" /> },
   ];
 
   const handleLogout = () => {
@@ -207,6 +233,9 @@ function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
             exit={{ x: -280 }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
             className="fixed left-0 top-0 bottom-0 w-72 bg-white shadow-2xl z-50 lg:hidden overflow-y-auto"
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
           >
             <div className="p-4 border-b border-gray-200">
               <div className="flex items-center justify-between">
@@ -227,24 +256,35 @@ function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
             </div>
 
             <div className="p-4 space-y-1">
-              {mobileNavItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={onClose}
-                  className={`
-                    flex items-center gap-3 px-4 py-3 rounded-lg transition-all touch-manipulation
-                    min-h-[48px] active:scale-[0.98]
-                    ${pathname === item.href
-                      ? 'bg-primary-50 text-primary-600 font-semibold'
-                      : 'text-gray-700 hover:bg-gray-50 active:bg-gray-100'
-                    }
-                  `}
-                >
-                  {item.icon}
-                  <span>{item.label}</span>
-                </Link>
-              ))}
+              {mobileNavItems.map((item) => {
+                // Check if active based on pathname containing subject name
+                let isActive = false;
+                if (item.href === '/' || item.href === '/dashboard') {
+                  isActive = pathname === item.href;
+                } else {
+                  const subject = item.href.split('/').pop() || '';
+                  isActive = pathname.includes(subject);
+                }
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={onClose}
+                    className={`
+                      flex items-center gap-3 px-4 py-3 rounded-lg transition-all touch-manipulation
+                      min-h-[48px] active:scale-[0.98]
+                      ${isActive
+                        ? 'bg-primary-50 text-primary-600 font-semibold'
+                        : 'text-gray-700 hover:bg-gray-50 active:bg-gray-100'
+                      }
+                    `}
+                  >
+                    {item.icon}
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
             </div>
 
             <div className="border-t border-gray-200 p-4">
@@ -344,36 +384,36 @@ export function TopNavigation() {
                   href="/dashboard/english"
                   icon={<BookOpen className="w-4 h-4" />}
                   label="English"
-                  isActive={pathname === '/dashboard/english'}
+                  isActive={pathname.includes('/english')}
                 />
                 <NavItem
                   href="/dashboard/math"
                   icon={<Calculator className="w-4 h-4" />}
                   label="Math"
-                  isActive={pathname === '/dashboard/math'}
+                  isActive={pathname.includes('/math')}
                 />
                 <NavItem
                   href="/dashboard/science"
                   icon={<Beaker className="w-4 h-4" />}
                   label="Science"
-                  isActive={pathname === '/dashboard/science'}
+                  isActive={pathname.includes('/science')}
                 />
                 <NavItem
                   href="/dashboard/social"
                   icon={<Landmark className="w-4 h-4" />}
                   label="Social"
-                  isActive={pathname === '/dashboard/social'}
+                  isActive={pathname.includes('/social')}
                 />
                 <NavItem
-                  href="/tutor/korean"
+                  href="/dashboard/korean"
                   icon={<BookOpen className="w-4 h-4" />}
                   label="Korean 📚"
-                  isActive={pathname === '/tutor/korean'}
+                  isActive={pathname.includes('/korean')}
                 />
                 <NavItem
                   href="/dashboard"
                   icon={<LayoutDashboard className="w-4 h-4" />}
-                  label="Total DashBoard"
+                  label="DashBoard"
                   isActive={pathname === '/dashboard'}
                 />
               </div>

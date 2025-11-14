@@ -104,31 +104,35 @@ export function StudyTimeChart({ sessions, days = 7 }: StudyTimeChartProps) {
         >
           <defs>
             <linearGradient id="colorMath" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8} />
-              <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.1} />
+              <stop offset="5%" stopColor="#a78bfa" stopOpacity={0.9} />
+              <stop offset="50%" stopColor="#8b5cf6" stopOpacity={0.6} />
+              <stop offset="95%" stopColor="#7c3aed" stopOpacity={0.2} />
             </linearGradient>
             <linearGradient id="colorEnglish" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#ec4899" stopOpacity={0.8} />
-              <stop offset="95%" stopColor="#ec4899" stopOpacity={0.1} />
+              <stop offset="5%" stopColor="#f472b6" stopOpacity={0.9} />
+              <stop offset="50%" stopColor="#ec4899" stopOpacity={0.6} />
+              <stop offset="95%" stopColor="#db2777" stopOpacity={0.2} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.5} />
+          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.3} />
           <XAxis
             dataKey="dateLabel"
-            stroke="#6b7280"
-            style={{ fontSize: '12px' }}
+            stroke="#9ca3af"
+            style={{ fontSize: '12px', fontWeight: 500 }}
             tickLine={false}
+            axisLine={{ stroke: '#e5e7eb' }}
           />
           <YAxis
-            stroke="#6b7280"
-            style={{ fontSize: '12px' }}
+            stroke="#9ca3af"
+            style={{ fontSize: '12px', fontWeight: 500 }}
             tickLine={false}
-            label={{ value: '분', angle: -90, position: 'insideLeft', style: { fontSize: '12px' } }}
+            axisLine={{ stroke: '#e5e7eb' }}
+            label={{ value: '분', angle: -90, position: 'insideLeft', style: { fontSize: '12px', fill: '#6b7280' } }}
             domain={[0, maxValue]}
           />
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(139, 92, 246, 0.1)' }} />
           <Legend
-            wrapperStyle={{ fontSize: '14px' }}
+            wrapperStyle={{ fontSize: '14px', fontWeight: 600 }}
             formatter={(value) => {
               if (value === 'math') return '수학';
               if (value === 'english') return '영어';
@@ -141,7 +145,9 @@ export function StudyTimeChart({ sessions, days = 7 }: StudyTimeChartProps) {
             stackId="1"
             stroke="#8b5cf6"
             fill="url(#colorMath)"
-            strokeWidth={2}
+            strokeWidth={3}
+            animationDuration={1500}
+            animationBegin={0}
           />
           <Area
             type="monotone"
@@ -149,7 +155,9 @@ export function StudyTimeChart({ sessions, days = 7 }: StudyTimeChartProps) {
             stackId="1"
             stroke="#ec4899"
             fill="url(#colorEnglish)"
-            strokeWidth={2}
+            strokeWidth={3}
+            animationDuration={1500}
+            animationBegin={200}
           />
         </AreaChart>
       </ResponsiveContainer>
