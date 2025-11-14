@@ -67,27 +67,6 @@ export function EnhancedVideoCard({
   };
 
   // 카드 애니메이션 variants
-  const cardVariants = {
-    collapsed: {
-      height: 'auto',
-      scale: 1,
-      transition: {
-        type: 'spring',
-        stiffness: 300,
-        damping: 30
-      }
-    },
-    expanded: {
-      height: 'auto',
-      scale: 1.02,
-      transition: {
-        type: 'spring',
-        stiffness: 300,
-        damping: 30
-      }
-    }
-  };
-
   const handleCloseVideo = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsReady(false);
@@ -99,10 +78,9 @@ export function EnhancedVideoCard({
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      variants={cardVariants}
-      animate={isPlaying ? 'expanded' : 'collapsed'}
+      animate={isPlaying ? { scale: 1.02 } : { scale: 1 }}
       whileHover={!isPlaying ? { y: -8, scale: 1.02 } : {}}
-      transition={{ duration: 0.3 }}
+      transition={{ type: "spring" as const, stiffness: 300, damping: 30 }}
       className="relative group rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl"
       layout
     >
