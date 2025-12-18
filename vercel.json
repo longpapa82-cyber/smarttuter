@@ -18,7 +18,7 @@
   },
   "build": {
     "env": {
-      "NEXT_PUBLIC_APP_URL": "https://smarttuter.vercel.app",
+      "NEXT_PUBLIC_APP_URL": "https://aipark.vercel.app",
       "SENTRY_SUPPRESS_TURBOPACK_WARNING": "1"
     }
   },
