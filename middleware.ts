@@ -5,8 +5,17 @@ import { getToken } from 'next-auth/jwt'
 /**
  * Middleware for route protection
  * Protects authenticated routes and redirects unauthenticated users to login
+ *
+ * TEMPORARILY DISABLED: Authentication bypass for quick access
  */
 export async function middleware(request: NextRequest) {
+  // ⚠️ AUTHENTICATION TEMPORARILY DISABLED
+  // Allow all requests without authentication check
+  // This enables guest access to all pages
+  return NextResponse.next()
+
+  /*
+  // === ORIGINAL AUTHENTICATION CODE (COMMENTED OUT) ===
   const { pathname } = request.nextUrl
 
   // Bypass authentication for E2E tests
@@ -106,6 +115,7 @@ export async function middleware(request: NextRequest) {
 
   // Allow the request to proceed
   return NextResponse.next()
+  */
 }
 
 /**
