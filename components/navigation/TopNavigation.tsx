@@ -99,11 +99,11 @@ function ProfileDropdown() {
     window.location.href = '/login';
   };
 
-  // 로그아웃 상태: 시작하기 버튼
+  // 로그아웃 상태: 시작하기 버튼 (로그인 불필요 - 홈으로 이동)
   if (!isAuthenticated) {
     return (
       <Link
-        href="/login"
+        href="/"
         scroll={true}
         className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-full font-semibold text-sm hover:shadow-lg hover:scale-105 transform transition-all"
       >
@@ -221,12 +221,12 @@ function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
 
   const mobileNavItems = [
     { href: "/", label: "홈", icon: <Home className="w-5 h-5" />, requireAuth: false },
-    { href: "/dashboard/english", label: "English", icon: <BookOpen className="w-5 h-5" />, requireAuth: true },
-    { href: "/dashboard/math", label: "Math", icon: <Calculator className="w-5 h-5" />, requireAuth: true },
-    { href: "/dashboard/science", label: "Science", icon: <Beaker className="w-5 h-5" />, requireAuth: true },
-    { href: "/dashboard/social", label: "Social", icon: <Landmark className="w-5 h-5" />, requireAuth: true },
-    { href: "/dashboard/korean", label: "Korean 📚", icon: <BookOpen className="w-5 h-5" />, requireAuth: true },
-    { href: "/dashboard", label: "DashBoard", icon: <LayoutDashboard className="w-5 h-5" />, requireAuth: true },
+    { href: "/dashboard/english", label: "English", icon: <BookOpen className="w-5 h-5" />, requireAuth: false },
+    { href: "/dashboard/math", label: "Math", icon: <Calculator className="w-5 h-5" />, requireAuth: false },
+    { href: "/dashboard/science", label: "Science", icon: <Beaker className="w-5 h-5" />, requireAuth: false },
+    { href: "/dashboard/social", label: "Social", icon: <Landmark className="w-5 h-5" />, requireAuth: false },
+    { href: "/dashboard/korean", label: "Korean 📚", icon: <BookOpen className="w-5 h-5" />, requireAuth: false },
+    { href: "/dashboard", label: "DashBoard", icon: <LayoutDashboard className="w-5 h-5" />, requireAuth: false },
   ];
 
   const handleLogout = () => {
@@ -367,7 +367,7 @@ function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
                 </>
               ) : (
                 <Link
-                  href="/login"
+                  href="/"
                   onClick={onClose}
                   scroll={true}
                   className="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-full font-semibold hover:shadow-lg hover:scale-105 transform transition-all"
@@ -424,42 +424,42 @@ export function TopNavigation() {
                   icon={<BookOpen className="w-4 h-4" />}
                   label="English"
                   isActive={pathname.includes('/english')}
-                  requireAuth={true}
+                  requireAuth={false}
                 />
                 <NavItem
                   href="/dashboard/math"
                   icon={<Calculator className="w-4 h-4" />}
                   label="Math"
                   isActive={pathname.includes('/math')}
-                  requireAuth={true}
+                  requireAuth={false}
                 />
                 <NavItem
                   href="/dashboard/science"
                   icon={<Beaker className="w-4 h-4" />}
                   label="Science"
                   isActive={pathname.includes('/science')}
-                  requireAuth={true}
+                  requireAuth={false}
                 />
                 <NavItem
                   href="/dashboard/social"
                   icon={<Landmark className="w-4 h-4" />}
                   label="Social"
                   isActive={pathname.includes('/social')}
-                  requireAuth={true}
+                  requireAuth={false}
                 />
                 <NavItem
                   href="/dashboard/korean"
                   icon={<BookOpen className="w-4 h-4" />}
                   label="Korean 📚"
                   isActive={pathname.includes('/korean')}
-                  requireAuth={true}
+                  requireAuth={false}
                 />
                 <NavItem
                   href="/dashboard"
                   icon={<LayoutDashboard className="w-4 h-4" />}
                   label="DashBoard"
                   isActive={pathname === '/dashboard'}
-                  requireAuth={true}
+                  requireAuth={false}
                 />
               </div>
             </div>
