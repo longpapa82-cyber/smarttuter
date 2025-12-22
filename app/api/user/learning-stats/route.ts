@@ -226,7 +226,19 @@ function getEmptyStats(subject: string | null) {
 // GET /api/user/learning-stats?subject=math - Get detailed Math stats
 export async function GET(request: NextRequest) {
   try {
+    // ⚠️ AUTHENTICATION DISABLED: Always allow access
     const session = await getServerSession(authOptions);
+
+    // Always return empty stats for unauthenticated users (authentication disabled)
+    const { searchParams } = new URL(request.url);
+    const subject = searchParams.get('subject');
+
+    if (!session?.user) {
+      console.log('[Learning Stats] No session - returning empty stats (auth disabled)');
+      return getEmptyStats(subject);
+    }
+
+    /* ORIGINAL AUTH CODE (COMMENTED OUT)
     const guestModeCookie = request.cookies.get('aipark_guest_mode');
     const guestMode = guestModeCookie?.value === 'true';
 
@@ -245,12 +257,10 @@ export async function GET(request: NextRequest) {
     }
 
     // If guest mode without session, return empty stats
-    const { searchParams } = new URL(request.url);
-    const subject = searchParams.get('subject');
-
     if (guestMode && !session?.user) {
       return getEmptyStats(subject);
     }
+    */
 
     // Use email as primary identifier, fallback to user ID
     const userId = session!.user!.email || session!.user!.id;

@@ -12,12 +12,31 @@ import { createErrorResponse } from '@/lib/api/error-handler';
 // GET /api/user/profile - Get current user's profile
 export async function GET(request: NextRequest) {
   try {
+    // ⚠️ AUTHENTICATION DISABLED: Always allow access
     const session = await getServerSession(authOptions);
 
+    // Return empty profile for unauthenticated users (authentication disabled)
+    if (!session?.user) {
+      console.log('[Profile] No session - returning guest profile (auth disabled)');
+      return NextResponse.json({
+        success: true,
+        user: {
+          id: 'guest-user',
+          name: '게스트',
+          email: 'guest@aipark.com',
+          gradeLevel: null,
+          gradeDetail: null,
+          preferredSubjects: [],
+        },
+      });
+    }
+
+    /* ORIGINAL AUTH CODE (COMMENTED OUT)
     // Check for session and user identifier (email or id)
     if (!session?.user) {
       return createErrorResponse('인증이 필요합니다', 401, 'UNAUTHORIZED');
     }
+    */
 
     // Use email as primary identifier, fallback to user ID
     const userId = session.user.email || session.user.id;
@@ -56,12 +75,30 @@ export async function GET(request: NextRequest) {
 // POST /api/user/profile - Create/Update user profile (onboarding)
 export async function POST(request: NextRequest) {
   try {
+    // ⚠️ AUTHENTICATION DISABLED: Always allow access
     const session = await getServerSession(authOptions);
 
+    // Return success for unauthenticated users without saving (authentication disabled)
+    if (!session?.user) {
+      const body = await request.json();
+      console.log('[Profile] No session - skipping profile update (auth disabled)', body);
+      return NextResponse.json({
+        success: true,
+        user: {
+          id: 'guest-user',
+          name: '게스트',
+          email: 'guest@aipark.com',
+          ...body,
+        },
+      });
+    }
+
+    /* ORIGINAL AUTH CODE (COMMENTED OUT)
     // Check for session and user identifier (email or id)
     if (!session?.user) {
       return createErrorResponse('인증이 필요합니다', 401, 'UNAUTHORIZED');
     }
+    */
 
     // Use email as primary identifier, fallback to user ID
     const userId = session.user.email || session.user.id;
