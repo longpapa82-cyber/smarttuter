@@ -35,15 +35,19 @@ interface NavItemProps {
 }
 
 function NavItem({ href, icon, label, isActive, onClick, showBeta = false, requireAuth = false }: NavItemProps) {
-  const { navigateProtected, isAuthenticated } = useAuth();
+  // ⚠️ AUTHENTICATION DISABLED: Auth check commented out
+  // const { navigateProtected, isAuthenticated } = useAuth();
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // ⚠️ AUTHENTICATION BYPASS: Authentication check disabled
+    /* ORIGINAL CODE (COMMENTED OUT)
     // If authentication is required and user is not authenticated, prevent default and redirect to login
     if (requireAuth && !isAuthenticated) {
       e.preventDefault();
       navigateProtected(href);
       return;
     }
+    */
 
     // If custom onClick is provided, call it
     if (onClick) {
@@ -288,6 +292,8 @@ function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
                 }
 
                 const handleItemClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+                  // ⚠️ AUTHENTICATION BYPASS: Authentication check disabled
+                  /* ORIGINAL CODE (COMMENTED OUT)
                   // Check authentication if required
                   if (item.requireAuth && !isAuthenticated) {
                     e.preventDefault();
@@ -297,6 +303,7 @@ function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
                     window.location.href = '/login';
                     return;
                   }
+                  */
                   onClose();
                 };
 

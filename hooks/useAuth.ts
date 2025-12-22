@@ -1,6 +1,9 @@
 /**
  * Authentication Hook
  * Provides authentication state and helper functions
+ *
+ * ⚠️ AUTHENTICATION TEMPORARILY DISABLED
+ * All users are treated as authenticated (guest mode)
  */
 
 'use client';
@@ -13,9 +16,10 @@ export function useAuth() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  const isAuthenticated = status === 'authenticated';
-  const isLoading = status === 'loading';
-  const user = session?.user;
+  // ⚠️ AUTHENTICATION BYPASS: Always return authenticated
+  const isAuthenticated = true; // status === 'authenticated';
+  const isLoading = false; // status === 'loading';
+  const user = session?.user || { id: 'guest-user', name: '게스트', email: 'guest@aipark.com' };
 
   /**
    * Sign out and redirect to homepage
@@ -48,18 +52,30 @@ export function useAuth() {
   /**
    * Require authentication - redirect to login if not authenticated
    * @param redirectTo - URL to redirect to if not authenticated (default: /login)
+   *
+   * ⚠️ AUTHENTICATION BYPASS: No-op function (authentication disabled)
    */
   const requireAuth = useCallback((redirectTo: string = '/login') => {
+    // Do nothing (authentication disabled)
+
+    /* ORIGINAL CODE (COMMENTED OUT)
     if (status === 'unauthenticated') {
       router.push(redirectTo);
     }
-  }, [status, router]);
+    */
+  }, []);
 
   /**
    * Navigate to a protected route - redirect to login if not authenticated
    * @param path - Path to navigate to
+   *
+   * ⚠️ AUTHENTICATION BYPASS: Always navigate directly
    */
   const navigateProtected = useCallback((path: string) => {
+    // Always navigate directly (authentication disabled)
+    router.push(path);
+
+    /* ORIGINAL CODE (COMMENTED OUT)
     if (isAuthenticated) {
       router.push(path);
     } else {
@@ -67,7 +83,8 @@ export function useAuth() {
       sessionStorage.setItem('redirectAfterLogin', path);
       router.push('/login');
     }
-  }, [isAuthenticated, router]);
+    */
+  }, [router]);
 
   return {
     // State

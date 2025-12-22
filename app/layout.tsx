@@ -138,6 +138,7 @@ export default function RootLayout({
       </head>
       <body className="antialiased">
         <ErrorBoundary>
+          {/* ⚠️ AUTHENTICATION DISABLED: SessionProvider kept for compatibility, but authentication is bypassed in useAuth hook */}
           <SessionProvider>
             <ProfileSyncProvider>
               <StoreProvider>
