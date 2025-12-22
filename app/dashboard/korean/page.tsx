@@ -47,12 +47,14 @@ function KoreanDashboardContent() {
   // Fetch Korean learning stats from API
   useEffect(() => {
     async function loadStats() {
-      // Guest mode or not authenticated - show empty state without API call
+      // ⚠️ AUTHENTICATION DISABLED: Always fetch stats (API returns guest data if not authenticated)
+      /* ORIGINAL AUTH CHECK (COMMENTED OUT)
       if (!isAuthenticated || !user) {
         setStats(null);
         setLoading(false);
         return;
       }
+      */
 
       try {
         setLoading(true);
@@ -82,7 +84,7 @@ function KoreanDashboardContent() {
     // Auto-refresh every 60 seconds
     const interval = setInterval(loadStats, 60000);
     return () => clearInterval(interval);
-  }, [isAuthenticated, user]);
+  }, []); // ⚠️ Empty deps - always load stats regardless of auth status
 
   // Loading state
   if (loading) {

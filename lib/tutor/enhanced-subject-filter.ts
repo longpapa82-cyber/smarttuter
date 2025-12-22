@@ -81,13 +81,15 @@ export interface EnhancedFilterResult {
 /**
  * 기본 필터 설정
  *
- * Phase 5: Restored minConfidenceThreshold to 0.9 after RAG-first pipeline implementation
- * RAG-first 파이프라인 구현 완료 후 임계값을 0.9로 복원
+ * Phase 5+: Adjusted minConfidenceThreshold to 0.7 to allow natural conversation starters
+ * 인사말, 간단한 대화 시작 등을 허용하기 위해 임계값을 0.7로 조정
+ * - 70% 이상: 허용 (인사말, 간단한 질문 포함)
+ * - 70% 미만: 차단 (전혀 관련 없는 내용)
  * RAG Direct (90%+ 신뢰도)가 Enhanced Filter 이전에 실행되어 먼저 반환되므로,
- * Enhanced Filter는 이제 RAG가 실패한 경우에만 실행되며 높은 기준(90%)을 유지할 수 있음
+ * Enhanced Filter는 이제 RAG가 실패한 경우에만 실행됨
  */
 export const DEFAULT_FILTER_CONFIG: EnhancedFilterConfig = {
-  minConfidenceThreshold: 0.9, // 90% 이상만 허용 (Phase 5: 0.5 → 0.9 복원)
+  minConfidenceThreshold: 0.7, // 70% 이상만 허용 (0.9 → 0.7: 자연스러운 대화 허용)
   requireCrossValidation: true,
   strictMode: true,
   quickClassificationPenalty: 0.85, // Quick 분류 신뢰도 15% 감소

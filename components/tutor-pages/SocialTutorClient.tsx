@@ -31,20 +31,25 @@ export default function SocialTutorClient() {
     return () => clearTimeout(timer);
   }, []);
 
+  // ⚠️ AUTHENTICATION BYPASS: Authentication checks disabled
   // Authentication check: redirect to login if not authenticated
+  /* DISABLED - Authentication bypassed
   useEffect(() => {
     if (isMounted && isReady && !authLoading && !isAuthenticated) {
       sessionStorage.setItem('redirectAfterLogin', '/tutor/social');
       router.push('/login');
     }
   }, [isMounted, isReady, authLoading, isAuthenticated, router]);
+  */
 
   // Profile check: redirect to onboarding if authenticated but no profile
+  /* DISABLED - Profile check bypassed
   useEffect(() => {
     if (isMounted && isReady && !authLoading && isAuthenticated && !profile) {
       router.push('/onboarding');
     }
   }, [isMounted, isReady, authLoading, isAuthenticated, profile, router]);
+  */
 
   if (!isMounted || !isReady || authLoading) {
     return <LoadingSpinner />;

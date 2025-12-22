@@ -2,6 +2,12 @@
 // Handles SW lifecycle and updates
 
 export async function registerServiceWorker() {
+  // ⚠️ SERVICE WORKER TEMPORARILY DISABLED
+  // Reason: Conflicts with authentication bypass - Service Worker tries to cache 401 responses
+  console.log('⚠️ Service Worker disabled (authentication bypass mode)')
+  return null
+
+  /* ORIGINAL CODE (COMMENTED OUT)
   if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
     return null
   }
@@ -38,6 +44,7 @@ export async function registerServiceWorker() {
     console.error('❌ Service Worker registration failed:', error)
     return null
   }
+  */
 }
 
 export function unregisterServiceWorker() {

@@ -10,31 +10,19 @@ export default function KoreanTutorPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch('/api/auth/session');
-        if (!response.ok) {
-          router.push('/login');
-          return;
-        }
-
-        const session = await response.json();
-        if (!session || !session.user) {
-          router.push('/login');
-          return;
-        }
-
-        setUserProfile(session.user);
-      } catch (error) {
-        console.error('Auth check failed:', error);
-        router.push('/login');
-      } finally {
-        setIsLoading(false);
-      }
+    // ⚠️ AUTHENTICATION BYPASS: Always set guest user profile
+    const guestProfile = {
+      id: 'guest-user',
+      name: '게스트',
+      email: 'guest@aipark.com',
+      schoolLevel: '초등학교',
+      gradeLevel: null,
+      gradeDetail: null,
     };
 
-    checkAuth();
-  }, [router]);
+    setUserProfile(guestProfile);
+    setIsLoading(false);
+  }, []);
 
   if (isLoading) {
     return (

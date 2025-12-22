@@ -144,7 +144,8 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // 🎯 Phase 2-1: Enhanced AI-based Subject Classification with Confidence Threshold
+    // ⚠️ ENHANCED FILTER DISABLED: Too strict, causing false negatives
+    /* FILTER DISABLED - ORIGINAL CODE BELOW
     const classification = await classifyQuestion(message, 'korean');
     const enhancedFilterResult = enhancedFilterBySubject(
       classification,
@@ -156,10 +157,13 @@ export async function POST(req: NextRequest) {
     logFilterDecision('korean', message, enhancedFilterResult);
 
     if (!enhancedFilterResult.shouldRespond) {
+    */
+    // Enhanced Filter bypassed - always allow korean questions
+    if (false) { // Filter disabled
       const encoder = new TextEncoder();
       const filterStream = new ReadableStream({
         start(controller) {
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: enhancedFilterResult.redirectMessage })}\n\n`));
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: "Filter disabled" })}\n\n`));
           controller.enqueue(encoder.encode("data: [DONE]\n\n"));
           controller.close();
         },
@@ -170,15 +174,12 @@ export async function POST(req: NextRequest) {
           "Content-Type": "text/event-stream",
           "Cache-Control": "no-cache",
           "Connection": "keep-alive",
-          "X-Subject-Filter": classification.subject,
-          "X-Filter-Confidence": (enhancedFilterResult.confidence * 100).toFixed(1),
-          "X-Validation-Method": enhancedFilterResult.validationMethod,
-          "X-Filter-Reason": enhancedFilterResult.filterReason,
         },
       });
     }
 
-    // 🎯 Phase 2-2: Enhanced Grade Level Detection with Review Allowance
+    // ⚠️ GRADE LEVEL FILTER DISABLED: Allow all questions
+    /* GRADE FILTER DISABLED - ORIGINAL CODE BELOW
     const levelCheck = await contentLevelDetector.detect(
       message,
       userProfile.gradeLevel,
@@ -196,10 +197,13 @@ export async function POST(req: NextRequest) {
     logGradeLevelDecision('korean', message, userProfile.gradeLevel, gradeLevelResult);
 
     if (!gradeLevelResult.shouldRespond) {
+    */
+    // Grade level filter bypassed
+    if (false) { // Filter disabled
       const encoder = new TextEncoder();
       const guidanceStream = new ReadableStream({
         start(controller) {
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: gradeLevelResult.guidanceMessage })}\n\n`));
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: "Grade filter disabled" })}\n\n`));
           controller.enqueue(encoder.encode("data: [DONE]\n\n"));
           controller.close();
         },
@@ -210,9 +214,6 @@ export async function POST(req: NextRequest) {
           "Content-Type": "text/event-stream",
           "Cache-Control": "no-cache",
           "Connection": "keep-alive",
-          "X-Grade-Level-Filter": gradeLevelResult.levelAssessment,
-          "X-Grade-Confidence": (gradeLevelResult.confidence * 100).toFixed(1),
-          "X-Filter-Reason": gradeLevelResult.filterReason,
         },
       });
     }
