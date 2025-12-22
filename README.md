@@ -294,3 +294,6 @@ MIT License - 자유롭게 사용하세요!
 ## 👨‍💻 개발자
 
 Made with ❤️ by SmartTuter Team
+
+
+<!-- Deployment: Mon Dec 22 15:12:26 KST 2025 -->
