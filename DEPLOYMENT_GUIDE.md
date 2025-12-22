@@ -181,3 +181,4 @@ wrangler pages deploy .next
 3. **방법 4**: Vercel CLI로 환경 변수 재설정 및 배포
 4. **방법 5**: 다른 플랫폼으로 임시 배포 (Netlify 추천)
 
+Mon Dec 22 17:00:32 KST 2025: Manual promotion trigger
